@@ -72,7 +72,7 @@
 ### 設定
 
 - **切換語言：** 在英文、繁體中文與西班牙文之間切換
-- **查看版本：** 確認目前應用程式版本 (v1.2.7)
+- **查看版本：** 確認目前應用程式版本 (v1.2.8)
 - **法律資訊：** 查看使用條款與隱私權政策
 - **登出：** 安全登出並立即返回登入畫面
 
@@ -97,18 +97,20 @@
 
 ### 版本管理
 
-- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.2.7)
+- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.2.8)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 版本資訊
 
-### v1.2.7 (最新版本) - 2026-02-08
+### v1.2.8 (最新版本) - 2026-02-09
 
-**重要錯誤修正更新**
+**自動主題模式修正與改進**
 
-- 🐛 **修正新增任務失敗**：解決無法新增任務的嚴重錯誤
-- 💬 **改善評分功能**：優化 Rate Us 功能的使用者體驗
-- ⚡ **增強穩定性**：提升應用程式整體可靠性
+- 🎨 **修正自動主題模式**：正確跟隨 iOS 系統外觀設定（Light/Dark Mode）
+- ⚡ **即時主題偵測**：新增系統主題變化監聽，即時響應 iOS 設定
+- 🔧 **改善偵測邏輯**：優化主題偵測機制與 fallback 處理
+- 💬 **修正評分彈窗**：確保 Rate Us 模組正確顯示
+- ✨ **增強使用者體驗**：提升應用程式穩定性與介面流暢度
 
 ---
 
@@ -216,7 +218,7 @@ A cross-platform React Native task management application with calendar view, Go
 ### Settings
 
 - **Switch Language:** Toggle between English, Traditional Chinese, and Spanish
-- **View Version:** Check current application version (v1.2.7)
+- **View Version:** Check current application version (v1.2.8)
 - **Legal Information:** View terms of use and privacy policy
 - **Sign Out:** Securely sign out and return to login screen
 
@@ -241,12 +243,24 @@ A cross-platform React Native task management application with calendar view, Go
 
 ### Version Management
 
-- **Semantic Versioning** - Major.Minor.Patch (Current: v1.2.7)
+- **Semantic Versioning** - Major.Minor.Patch (Current: v1.2.8)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Version Information
 
-### v1.2.4 (Latest)
+### v1.2.8 (Latest) - 2026-02-09
+
+**Auto Theme Mode Fix & Improvements**
+
+- 🎨 **Fixed Auto Theme Mode**: Now properly follows iOS system appearance settings (Light/Dark Mode)
+- ⚡ **Real-time Theme Detection**: Added system theme change listener for instant response
+- 🔧 **Improved Detection Logic**: Enhanced theme detection mechanism with better fallback handling
+- 💬 **Fixed Rate Us Modal**: Ensured proper display of Rate Us module
+- ✨ **Enhanced User Experience**: Improved app stability and interface smoothness
+
+---
+
+### v1.2.4
 
 **New in This Version**
 
@@ -336,7 +350,7 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 ### Configuración
 
 - **Cambiar Idioma:** Alterna entre Inglés, Chino Tradicional y Español
-- **Ver Versión:** Verifica la versión actual de la aplicación (v1.2.4)
+- **Ver Versión:** Verifica la versión actual de la aplicación (v1.2.8)
 - **Información Legal:** Ver términos de uso y política de privacidad
 - **Cerrar Sesión:** Cierra sesión de forma segura y regresa a la pantalla de inicio de sesión
 
@@ -361,12 +375,24 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 
 ### Gestión de Versiones
 
-- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.2.7)
+- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.2.8)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Información de Versión
 
-### v1.2.4 (Última)
+### v1.2.8 (Última) - 2026-02-09
+
+**Corrección y Mejoras del Modo de Tema Automático**
+
+- 🎨 **Corregido Modo de Tema Automático**: Ahora sigue correctamente la configuración de apariencia del sistema iOS (Modo Claro/Oscuro)
+- ⚡ **Detección de Tema en Tiempo Real**: Añadido listener de cambios de tema del sistema para respuesta instantánea
+- 🔧 **Lógica de Detección Mejorada**: Mecanismo de detección de tema mejorado con mejor manejo de respaldo
+- 💬 **Corregido Modal de Valoración**: Asegurada visualización correcta del módulo Rate Us
+- ✨ **Experiencia de Usuario Mejorada**: Mejora en la estabilidad de la aplicación y fluidez de la interfaz
+
+---
+
+### v1.2.4
 
 **Novedades de esta versión**
 
