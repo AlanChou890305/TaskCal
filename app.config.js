@@ -13,12 +13,12 @@ const getEnvironmentConfig = () => {
   return {
     name: "TaskCal",
     slug: "too-doo-list",
-    version: "1.2.8",
+    version: "1.2.9",
     description: "Simple and intuitive task management app with Google SSO",
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "16",
+    iosBuildNumber: "17",
   };
 };
 
@@ -54,7 +54,10 @@ module.exports = {
         ],
       },
     },
-    // Android configuration removed as this project targets iOS only
+    // Android minimal configuration (required for expo prebuild)
+    android: {
+      package: envConfig.package,
+    },
     web: {
       port: 8081,
       bundler: "metro",

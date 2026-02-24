@@ -1,3 +1,5 @@
+import { PRIMARY } from "./theme";
+
 /**
  * 通知配置文件
  *
@@ -30,7 +32,7 @@ export const REMINDER_MINUTES_BEFORE_TASK = [30];
  */
 export const NOTIFICATION_CONFIG = {
   // 通知圖示顏色（Android）
-  color: "#6c63ff",
+  color: PRIMARY,
 
   // 通知優先級（Android）
   priority: "high", // 'default' | 'high' | 'max'

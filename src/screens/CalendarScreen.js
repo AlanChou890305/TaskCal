@@ -37,6 +37,9 @@ import { dataPreloadService } from "../services/dataPreloadService";
 import { format } from "date-fns";
 import { formatTimestamp, formatTimeDisplay as formatTimeDisplayUtil } from "../utils/dateUtils";
 import AdBanner from "../components/AdBanner";
+import IOSButton from "../components/IOSButton";
+import { BlurView } from "expo-blur";
+import { PRIMARY } from "../config/theme";
 
 function getToday() {
   const today = new Date();
@@ -49,6 +52,9 @@ function getToday() {
 // 格式化時間為 HH:MM（移除秒數）
 // 使用工具文件中的函數，保持向後兼容
 const formatTimeDisplay = formatTimeDisplayUtil;
+
+const isIOS26Plus =
+  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 const TaskSkeleton = ({ theme }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -79,7 +85,20 @@ const TaskSkeleton = ({ theme }) => {
   });
 
   return (
-    <View style={styles.taskItemRow}>
+    <View
+      style={[
+        styles.taskItemRow,
+        {
+          backgroundColor: theme.card,
+          borderRadius: theme.radius?.lg || 12,
+          marginBottom: theme.spacing?.md || 12,
+          paddingVertical: theme.spacing?.sm || 8,
+          paddingHorizontal: theme.spacing?.md || 12,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: theme.cardBorder,
+        },
+      ]}
+    >
       <View style={styles.checkbox}>
         <Animated.View
           style={[
@@ -88,9 +107,7 @@ const TaskSkeleton = ({ theme }) => {
               height: 24,
               borderRadius: 4,
               backgroundColor:
-                theme.mode === "dark"
-                  ? "rgba(255,255,255,0.1)"
-                  : "rgba(0,0,0,0.1)",
+                theme.shimmer,
             },
             { opacity },
           ]}
@@ -114,9 +131,7 @@ const TaskSkeleton = ({ theme }) => {
                 height: 16,
                 borderRadius: 4,
                 backgroundColor:
-                  theme.mode === "dark"
-                    ? "rgba(255,255,255,0.1)"
-                    : "rgba(0,0,0,0.1)",
+                  theme.shimmer,
                 width: "80%",
               },
               { opacity },
@@ -130,9 +145,7 @@ const TaskSkeleton = ({ theme }) => {
                 height: 14,
                 borderRadius: 4,
                 backgroundColor:
-                  theme.mode === "dark"
-                    ? "rgba(255,255,255,0.1)"
-                    : "rgba(0,0,0,0.1)",
+                  theme.shimmer,
                 width: 50,
               },
               { opacity },
@@ -1425,7 +1438,21 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const renderTask = ({ item }) => (
-    <View style={styles.taskItemRow}>
+    <View
+      style={[
+        styles.taskItemRow,
+        {
+          backgroundColor: theme.card,
+          borderRadius: theme.radius?.lg || 12,
+          marginBottom: theme.spacing?.md || 12,
+          paddingVertical: theme.spacing?.sm || 8,
+          paddingHorizontal: theme.spacing?.md || 12,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: theme.cardBorder,
+          ...theme.shadows?.card,
+        },
+      ]}
+    >
       <TouchableOpacity
         style={styles.checkbox}
         onPress={() => toggleTaskChecked(item)}
@@ -1448,7 +1475,7 @@ function CalendarScreen({ navigation, route }) {
             flex: 1,
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: theme.mode === "dark" ? "rgb(58, 58, 60)" : "#fff",
+            backgroundColor: "transparent",
           },
         ]}
         onPress={() => openEditTask(item)}
@@ -1464,6 +1491,8 @@ function CalendarScreen({ navigation, route }) {
                   item.is_completed || item.checked
                     ? theme.textTertiary
                     : theme.text,
+                fontSize: theme.typography?.body?.fontSize || 17,
+                letterSpacing: theme.typography?.body?.letterSpacing || -0.41,
               },
               (item.is_completed || item.checked) && styles.taskTextChecked,
             ]}
@@ -1475,7 +1504,16 @@ function CalendarScreen({ navigation, route }) {
         </View>
         <View style={styles.taskTimeContainer}>
           {item.time ? (
-            <Text style={[styles.taskTimeRight, { color: theme.primary }]}>
+            <Text
+              style={[
+                styles.taskTimeRight,
+                {
+                  color: theme.primary,
+                  fontSize: theme.typography?.subheadline?.fontSize || 15,
+                  fontWeight: "600",
+                },
+              ]}
+            >
               {formatTimeDisplay(item.time)}
             </Text>
           ) : null}
@@ -1532,7 +1570,7 @@ function CalendarScreen({ navigation, route }) {
           { flex: 1, backgroundColor: theme.backgroundSecondary },
         ]}
       >
-        <View style={[styles.taskAreaContent, { flex: 1 }]}>
+        <View style={[styles.taskAreaContent, { flex: 1, backgroundColor: theme.backgroundSecondary }]}>
           <View
             style={[
               styles.tasksHeaderRow,
@@ -1559,61 +1597,81 @@ function CalendarScreen({ navigation, route }) {
             </Text>
           </View>
 
-          {/* Floating Add Button */}
-          <TouchableOpacity
-            style={[
-              styles.fabAddButton,
-              {
-                backgroundColor: theme.primary,
-                shadowColor: theme.primary,
-                // Web 版需要更多底部空間，避免被底部導航欄切到
-                bottom: Platform.OS === "web" ? 80 : 8,
-              },
-            ]}
-            onPress={() => openAddTask(selectedDate)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.addButtonIcon}>
-              <Svg
-                width={32}
-                height={32}
-                viewBox="0 0 32 32"
-                style={{
-                  display: "flex",
-                  alignSelf: "center",
-                  justifyContent: "center",
-                }}
+          {/* Floating Add Button - 玻璃效果 */}
+          {isIOS26Plus ? (
+            <BlurView
+              intensity={70}
+              tint={
+                theme.mode === "dark"
+                  ? "systemUltraThinMaterialDark"
+                  : "systemUltraThinMaterialLight"
+              }
+              style={[
+                styles.fabAddButton,
+                {
+                  backgroundColor:
+                    theme.mode === "dark"
+                      ? "rgba(80, 80, 85, 0.25)"
+                      : "rgba(255, 255, 255, 0.25)",
+                  shadowColor: "#000",
+                  shadowOpacity: 0.2,
+                  shadowRadius: 12,
+                  bottom: 88,
+                  overflow: "hidden",
+                  borderWidth: 0.5,
+                  borderTopColor: "rgba(255, 255, 255, 0.4)",
+                  borderLeftColor: "rgba(255, 255, 255, 0.4)",
+                  borderBottomColor: "rgba(255, 255, 255, 0.15)",
+                  borderRightColor: "rgba(255, 255, 255, 0.15)",
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={{ width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}
+                onPress={() => openAddTask(selectedDate)}
+                activeOpacity={0.7}
               >
-                <Line
-                  x1="16"
-                  y1="6"
-                  x2="16"
-                  y2="26"
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <Line
-                  x1="6"
-                  y1="16"
-                  x2="26"
-                  y2="16"
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-              </Svg>
-            </View>
-          </TouchableOpacity>
+                <View style={styles.addButtonIcon}>
+                  <Svg width={32} height={32} viewBox="0 0 32 32" style={{ display: "flex", alignSelf: "center" }}>
+                    <Line x1="16" y1="6" x2="16" y2="26" stroke={theme.mode === "dark" ? "#ffffff" : theme.primary} strokeWidth="3" strokeLinecap="round" />
+                    <Line x1="6" y1="16" x2="26" y2="16" stroke={theme.mode === "dark" ? "#ffffff" : theme.primary} strokeWidth="3" strokeLinecap="round" />
+                  </Svg>
+                </View>
+              </TouchableOpacity>
+            </BlurView>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.fabAddButton,
+                {
+                  backgroundColor: theme.primary,
+                  shadowColor: theme.primary,
+                  shadowOpacity: 0.35,
+                  shadowRadius: 8,
+                  bottom: 0,
+                },
+              ]}
+              onPress={() => openAddTask(selectedDate)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.addButtonIcon}>
+                <Svg width={32} height={32} viewBox="0 0 32 32" style={{ display: "flex", alignSelf: "center" }}>
+                  <Line x1="16" y1="6" x2="16" y2="26" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                  <Line x1="6" y1="16" x2="26" y2="16" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                </Svg>
+              </View>
+            </TouchableOpacity>
+          )}
 
           {shouldShowSkeleton ? (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}>
               <FlatList
                 data={[1, 2, 3, 4]} // 顯示 4 個 skeleton
                 keyExtractor={(item) => `skeleton-${item}`}
                 renderItem={() => <TaskSkeleton theme={theme} />}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
+                style={{ backgroundColor: theme.backgroundSecondary }}
               />
             </View>
           ) : dayTasks.length === 0 ? (
@@ -1650,7 +1708,7 @@ function CalendarScreen({ navigation, route }) {
               </Text>
             </View>
           ) : (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}>
               <FlatList
                 data={dayTasks.slice().sort((a, b) => {
                   // 已完成的任務排到最底下
@@ -1666,6 +1724,7 @@ function CalendarScreen({ navigation, route }) {
                 renderItem={renderTask}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
+                style={{ backgroundColor: theme.backgroundSecondary }}
               />
             </View>
           )}
@@ -1731,33 +1790,103 @@ function CalendarScreen({ navigation, route }) {
                 : null,
             ]}
           >
-            <View
-              style={[
-                styles.modalHeader,
-                {
-                  paddingTop: insets.top + 16,
-                  backgroundColor:
-                    theme.mode === "dark" ? theme.background : "#fff",
-                  borderBottomColor:
-                    theme.mode === "dark" ? "#2a2a2a" : theme.divider,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.modalBackButton}
-                onPress={() => setModalVisible(false)}
-                accessibilityLabel="Go back"
-                accessibilityHint="Close the task creation/editing modal"
-                focusable={Platform.OS === "web" ? false : undefined}
-                tabIndex={Platform.OS === "web" ? -1 : undefined}
+            {isIOS26Plus ? (
+              <View
+                style={[
+                  styles.modalHeader,
+                  {
+                    paddingTop: insets.top + 12,
+                    backgroundColor:
+                      theme.mode === "dark"
+                        ? theme.background
+                        : theme.modalBackground,
+                    borderBottomWidth: 0,
+                  },
+                ]}
               >
-                <MaterialIcons name="arrow-back" size={24} color={theme.text} />
-              </TouchableOpacity>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>
-                {editingTask ? t.editTask : t.createTask}
-              </Text>
-              <View style={styles.modalHeaderSpacer} />
-            </View>
+                <TouchableOpacity
+                  style={[
+                    styles.modalBackButton,
+                    {
+                      backgroundColor:
+                        theme.mode === "dark"
+                          ? "rgba(255, 255, 255, 0.12)"
+                          : "rgba(0, 0, 0, 0.06)",
+                      borderRadius: 22,
+                      width: 44,
+                      height: 44,
+                    },
+                  ]}
+                  onPress={() => setModalVisible(false)}
+                  accessibilityLabel="Go back"
+                  accessibilityHint="Close the task creation/editing modal"
+                >
+                  <MaterialIcons name="arrow-back" size={20} color={theme.text} />
+                </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    { color: theme.text },
+                  ]}
+                >
+                  {editingTask ? t.editTask : t.createTask}
+                </Text>
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor:
+                        theme.mode === "dark"
+                          ? "rgba(255, 255, 255, 0.12)"
+                          : "rgba(0, 0, 0, 0.06)",
+                      borderRadius: 22,
+                      paddingHorizontal: 16,
+                      height: 44,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onPress={saveTask}
+                  >
+                    <Text
+                      style={{
+                        color: theme.primary,
+                        fontWeight: "600",
+                        fontSize: 15,
+                      }}
+                    >
+                      {editingTask ? t.update : t.save}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : (
+              <View
+                style={[
+                  styles.modalHeader,
+                  {
+                    paddingTop: insets.top + 16,
+                    backgroundColor:
+                      theme.mode === "dark" ? theme.background : "#fff",
+                    borderBottomColor:
+                      theme.mode === "dark" ? "#2a2a2a" : theme.divider,
+                  },
+                ]}
+              >
+                <TouchableOpacity
+                  style={styles.modalBackButton}
+                  onPress={() => setModalVisible(false)}
+                  accessibilityLabel="Go back"
+                  accessibilityHint="Close the task creation/editing modal"
+                  focusable={Platform.OS === "web" ? false : undefined}
+                  tabIndex={Platform.OS === "web" ? -1 : undefined}
+                >
+                  <MaterialIcons name="arrow-back" size={24} color={theme.text} />
+                </TouchableOpacity>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>
+                  {editingTask ? t.editTask : t.createTask}
+                </Text>
+                <View style={styles.modalHeaderSpacer} />
+              </View>
+            )}
             <ScrollView
               ref={modalScrollViewRef}
               style={styles.modalScrollView}
@@ -2136,70 +2265,65 @@ function CalendarScreen({ navigation, route }) {
                 </View>
               </View>
             </ScrollView>
-            <View
-              style={[
-                styles.modalButtons,
-                {
-                  backgroundColor:
-                    theme.mode === "dark" ? theme.background : "#fff",
-                  borderTopColor: theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
-                },
-              ]}
-            >
-              {editingTask ? (
-                <>
-                  <TouchableOpacity
-                    style={[
-                      styles.deleteButton,
-                      { backgroundColor: theme.backgroundTertiary },
-                    ]}
+            {isIOS26Plus ? (
+              editingTask ? (
+                <View
+                  style={[
+                    styles.modalButtons,
+                    {
+                      backgroundColor:
+                        theme.mode === "dark" ? theme.background : theme.modalBackground,
+                      borderTopColor:
+                        theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
+                      justifyContent: "flex-start",
+                    },
+                  ]}
+                >
+                  <IOSButton
+                    title={t.delete}
                     onPress={showDeleteConfirm}
-                  >
-                    <Text
-                      style={[styles.deleteButtonText, { color: theme.error }]}
-                    >
-                      {t.delete}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.saveButton,
-                      { backgroundColor: theme.primary },
-                    ]}
+                    theme={theme}
+                    variant="destructive"
+                  />
+                </View>
+              ) : null
+            ) : (
+              <View
+                style={[
+                  styles.modalButtons,
+                  {
+                    backgroundColor:
+                      theme.mode === "dark" ? theme.background : "#fff",
+                    borderTopColor:
+                      theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
+                  },
+                ]}
+              >
+                {editingTask ? (
+                  <>
+                    <IOSButton
+                      title={t.delete}
+                      onPress={showDeleteConfirm}
+                      theme={theme}
+                      variant="destructive"
+                    />
+                    <IOSButton
+                      title={t.update}
+                      onPress={saveTask}
+                      theme={theme}
+                      variant="primary"
+                    />
+                  </>
+                ) : (
+                  <IOSButton
+                    title={t.save}
                     onPress={saveTask}
-                  >
-                    <Text
-                      style={[
-                        styles.saveButtonText,
-                        { color: theme.buttonText },
-                      ]}
-                    >
-                      {t.update}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <>
-                  <View style={{ flex: 1 }} />
-                  <TouchableOpacity
-                    style={[
-                      styles.saveButton,
-                      { backgroundColor: theme.primary },
-                    ]}
-                    onPress={saveTask}
-                  >
-                    <Text
-                      style={[
-                        styles.saveButtonText,
-                        { color: theme.buttonText },
-                      ]}
-                    >
-                      {t.save}
-                    </Text>
-                  </TouchableOpacity>
-                </>
-              )}
-            </View>
+                    theme={theme}
+                    variant="primary"
+                  />
+                )}
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
         {renderDatePickerOverlay()}
@@ -2272,47 +2396,24 @@ function CalendarScreen({ navigation, route }) {
               style={{
                 flexDirection: "row",
                 width: "100%",
+                padding: 16,
+                gap: 12,
               }}
             >
-              <TouchableOpacity
+              <IOSButton
+                title={t.cancel}
                 onPress={() => setDeleteConfirmVisible(false)}
-                style={{
-                  flex: 1,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  borderRightWidth: 1,
-                  borderRightColor: theme.divider,
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.primary,
-                    fontSize: 17,
-                    fontWeight: "400",
-                  }}
-                >
-                  {t.cancel}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
+                theme={theme}
+                variant="secondary"
+                style={{ flex: 1 }}
+              />
+              <IOSButton
+                title={t.delete}
                 onPress={deleteTask}
-                style={{
-                  flex: 1,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.error,
-                    fontSize: 17,
-                    fontWeight: "600",
-                  }}
-                >
-                  {t.delete}
-                </Text>
-              </TouchableOpacity>
+                theme={theme}
+                variant="destructive"
+                style={{ flex: 1 }}
+              />
             </View>
           </View>
         </TouchableOpacity>
@@ -2365,15 +2466,15 @@ function CalendarScreen({ navigation, route }) {
                   theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
               }}
             >
-              <TouchableOpacity
+              <IOSButton
+                title={t.cancel}
                 onPress={() => setDatePickerVisible(false)}
-                style={{ paddingVertical: 8, paddingHorizontal: 8 }}
-              >
-                <Text style={{ color: theme.primary, fontSize: 17 }}>
-                  {t.cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                theme={theme}
+                variant="secondary"
+                style={{ flex: 1, marginRight: 8 }}
+              />
+              <IOSButton
+                title={t.confirm}
                 onPress={() => {
                   if (tempDate) {
                     const year = tempDate.getFullYear();
@@ -2386,18 +2487,10 @@ function CalendarScreen({ navigation, route }) {
                   }
                   setDatePickerVisible(false);
                 }}
-                style={{ paddingVertical: 8, paddingHorizontal: 8 }}
-              >
-                <Text
-                  style={{
-                    color: theme.primary,
-                    fontSize: 17,
-                    fontWeight: "600",
-                  }}
-                >
-                  {t.confirm}
-                </Text>
-              </TouchableOpacity>
+                theme={theme}
+                variant="primary"
+                style={{ flex: 1, marginLeft: 8 }}
+              />
             </View>
             {tempDate && (
               <View style={{ alignItems: "center", width: "100%" }}>
@@ -2467,15 +2560,15 @@ function CalendarScreen({ navigation, route }) {
                   theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
               }}
             >
-              <TouchableOpacity
+              <IOSButton
+                title={t.cancel}
                 onPress={() => setTimePickerVisible(false)}
-                style={{ paddingVertical: 8, paddingHorizontal: 8 }}
-              >
-                <Text style={{ color: theme.primary, fontSize: 17 }}>
-                  {t.cancel}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+                theme={theme}
+                variant="secondary"
+                style={{ flex: 1, marginRight: 8 }}
+              />
+              <IOSButton
+                title={t.confirm}
                 onPress={() => {
                   if (tempTime) {
                     const hours = String(tempTime.getHours()).padStart(2, "0");
@@ -2487,18 +2580,10 @@ function CalendarScreen({ navigation, route }) {
                   }
                   setTimePickerVisible(false);
                 }}
-                style={{ paddingVertical: 8, paddingHorizontal: 8 }}
-              >
-                <Text
-                  style={{
-                    color: theme.primary,
-                    fontSize: 17,
-                    fontWeight: "600",
-                  }}
-                >
-                  {t.confirm}
-                </Text>
-              </TouchableOpacity>
+                theme={theme}
+                variant="primary"
+                style={{ flex: 1, marginLeft: 8 }}
+              />
             </View>
             {tempTime && (
               <View style={{ alignItems: "center", width: "100%" }}>
@@ -2727,7 +2812,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   checkbox: {
-    marginRight: 2,
+    marginRight: 8,
     padding: 4,
     alignItems: "center",
     justifyContent: "center",
@@ -2742,12 +2827,12 @@ const styles = StyleSheet.create({
     bottom: 8,
     zIndex: 10,
     borderRadius: 32,
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
     width: 64,
     height: 64,
-    shadowColor: "#6c63ff",
+    shadowColor: PRIMARY,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 8,
@@ -2776,7 +2861,9 @@ const styles = StyleSheet.create({
     // backgroundColor moved to inline style to use theme
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   fixedHeader: {
     backgroundColor: "transparent",
@@ -2893,7 +2980,7 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   selectedDayText: {
-    color: "#6c63ff", // Light mode selected text color
+    color: PRIMARY, // Light mode selected text color
     fontWeight: "700",
     zIndex: 4,
   },
@@ -2910,7 +2997,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     zIndex: 10,
   },
   todayCircle: {
@@ -2960,7 +3047,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   todayCircleLarge: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -2978,7 +3065,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   noTaskContainer: {
     flex: 1,
@@ -2989,7 +3076,7 @@ const styles = StyleSheet.create({
     // No background color, just text color change
   },
   selectedDayText: {
-    color: "#6c63ff", // Same as add button color
+    color: PRIMARY, // Same as add button color
     fontWeight: "600",
   },
   tasksContainer: {
@@ -3036,12 +3123,12 @@ const styles = StyleSheet.create({
   addButton: {
     marginLeft: 12,
     borderRadius: 20,
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     alignItems: "center",
     justifyContent: "center",
     width: 40,
     height: 40,
-    shadowColor: "#6c63ff",
+    shadowColor: PRIMARY,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -3063,41 +3150,26 @@ const styles = StyleSheet.create({
   },
   taskList: {
     width: "100%",
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
   },
   taskItem: {
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    elevation: 1,
     flexDirection: "row",
     alignItems: "center",
     minHeight: 40,
-    marginTop: 8,
-    marginBottom: 8,
-    marginHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
   taskTextContainer: {
     flex: 1,
-    marginLeft: 12,
-    marginRight: 8,
+    marginLeft: 8,
+    marginRight: 12,
     flexShrink: 1,
   },
   taskText: {
-    fontSize: 16,
+    fontSize: 17,
     color: "#333",
     textDecorationLine: "none",
     flexShrink: 1,
     maxWidth: "100%",
+    fontWeight: "400",
   },
   taskTimeContainer: {
     flexShrink: 0,
@@ -3125,7 +3197,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   linkInputContainerFocused: {
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
   },
   linkInput: {
     flex: 1,
@@ -3170,7 +3242,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   timeInputSelected: {
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
     backgroundColor: "#f0f0ff",
   },
   timeInputText: {
@@ -3250,7 +3322,7 @@ const styles = StyleSheet.create({
   timeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: PRIMARY,
     marginHorizontal: 10,
   },
   timeWheelItem: {
@@ -3261,7 +3333,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   timeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   timeWheelText: {
     fontSize: 18,
@@ -3281,7 +3353,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(108, 99, 255, 0.1)",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
   },
   timePickerActions: {
     flexDirection: "row",
@@ -3339,7 +3411,7 @@ const styles = StyleSheet.create({
   },
   simpleTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   simpleTimePickerBody: {
@@ -3374,7 +3446,7 @@ const styles = StyleSheet.create({
   simpleTimeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: PRIMARY,
     marginHorizontal: 20,
   },
   timeInputContainer: {
@@ -3442,7 +3514,7 @@ const styles = StyleSheet.create({
   },
   timePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   timePickerBody: {
@@ -3474,7 +3546,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   timeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   timeWheelText: {
     fontSize: 18,
@@ -3494,12 +3566,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(108, 99, 255, 0.1)",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
   },
   timeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: PRIMARY,
     marginHorizontal: 10,
   },
   spinnerOverlay: {
@@ -3588,7 +3660,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginLeft: 8,
     borderRadius: 8,
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     alignItems: "center",
   },
   spinnerDoneText: {
@@ -3598,7 +3670,7 @@ const styles = StyleSheet.create({
   },
   taskTimeRight: {
     fontSize: 14,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
     textAlign: "right",
   },
@@ -3634,7 +3706,7 @@ const styles = StyleSheet.create({
   },
   timeWheelTextSelected: {
     fontSize: 24,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   timeWheelHighlight: {
@@ -3646,13 +3718,13 @@ const styles = StyleSheet.create({
     marginTop: -20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
     zIndex: -1,
   },
   timeSeparator: {
     fontSize: 28,
     marginHorizontal: 8,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   timePickerActions: {
@@ -3727,7 +3799,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   doneButtonText: {
-    color: "#6c63ff",
+    color: PRIMARY,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -3763,7 +3835,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   inputFilled: {
-    borderColor: "#6c63ff",
+    borderColor: PRIMARY,
   },
   noteInput: {
     height: 100,
@@ -3789,17 +3861,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   saveButton: {
-    backgroundColor: "#6c63ff",
-    borderRadius: 8,
-    paddingVertical: 12,
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 16,
     paddingHorizontal: 24,
-    minWidth: 80,
+    minWidth: 100,
+    minHeight: 50,
     alignItems: "center",
+    justifyContent: "center",
   },
   saveButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 15,
+    fontSize: 17,
+    letterSpacing: -0.41,
   },
   modalHeader: {
     flexDirection: "row",
@@ -3831,9 +3906,11 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "transparent",
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 16,
     paddingHorizontal: 16,
+    minHeight: 50,
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: "#e0e0e0",
     alignItems: "center",
@@ -3903,7 +3980,7 @@ const styles = StyleSheet.create({
   },
   simpleTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   simpleTimePickerBody: {
@@ -3932,7 +4009,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   simpleTimeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   simpleTimeWheelText: {
     fontSize: 18,
@@ -3946,7 +4023,7 @@ const styles = StyleSheet.create({
   simpleTimeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: PRIMARY,
     marginHorizontal: 10,
   },
   // 原生時間選擇器樣式
@@ -3990,7 +4067,7 @@ const styles = StyleSheet.create({
   },
   nativeTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   nativeTimePickerBody: {
@@ -4043,7 +4120,7 @@ const styles = StyleSheet.create({
   },
   timePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: PRIMARY,
     fontWeight: "600",
   },
   timePickerBody: {
@@ -4092,7 +4169,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   webTimePickerItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   webTimePickerText: {
     fontSize: 16,
@@ -4139,7 +4216,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   webTimePickerItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
   },
   webTimePickerText: {
     fontSize: 16,
@@ -4153,7 +4230,7 @@ const styles = StyleSheet.create({
   webTimeSeparator: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: PRIMARY,
     marginHorizontal: 10,
   },
   headerContainer: {
@@ -4217,7 +4294,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   todayButton: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: PRIMARY,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,

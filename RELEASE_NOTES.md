@@ -1,44 +1,41 @@
-# Release Notes - Version 1.2.8 (Build 16)
+# Release Notes - Version 1.2.9 (Build 17)
 
-**Release Date**: 2026-02-09
+**Release Date**: 2026-02-25
 
 ---
 
 ## What's New
 
 ### English
-- Fixed auto theme mode to properly follow iOS system appearance settings
-- Added real-time system theme change detection for instant updates
-- Improved theme detection logic with better fallback mechanism
-- Fixed Rate Us modal to ensure proper display
-- Enhanced app stability and user experience
+- Fixed theme color to correctly use the app's signature purple (#6c63ff) across all UI
+- Fixed iOS Widget primary color to match the app theme
+- Improved internal code quality and performance
+- Reduced unnecessary debug logs for better performance
 
 ### 繁體中文
-- 修正自動主題模式以正確跟隨 iOS 系統外觀設定
-- 新增即時系統主題變化偵測，即時更新
-- 改善主題偵測邏輯與備用機制
-- 修正評分彈窗確保正確顯示
-- 增強應用程式穩定性與使用者體驗
+- 修正主題色，所有 UI 統一使用應用程式標誌性紫色 (#6c63ff)
+- 修正 iOS Widget 主色與應用程式主題一致
+- 改善內部程式碼品質與效能
+- 減少不必要的除錯日誌以提升效能
 
 ### Español
-- Corregido modo de tema automático para seguir correctamente la configuración de apariencia del sistema iOS
-- Añadida detección de cambios de tema del sistema en tiempo real para actualizaciones instantáneas
-- Mejorada lógica de detección de tema con mejor mecanismo de respaldo
-- Corregido modal de valoración para asegurar visualización correcta
-- Mayor estabilidad de la aplicación y experiencia de usuario
+- Corregido color del tema para usar correctamente el morado característico de la app (#6c63ff) en toda la interfaz
+- Corregido color principal del widget de iOS para que coincida con el tema de la app
+- Mejorada la calidad del código interno y el rendimiento
+- Reducidos los registros de depuración innecesarios para mejor rendimiento
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-Experience seamless dark mode! Now auto theme perfectly follows your iOS system settings with instant updates. Enjoy a more polished and responsive interface that adapts to your preferences automatically.
+Enjoy a more polished and consistent experience! Theme colors are now perfectly unified across the app and iOS widget, with improved performance under the hood.
 
 ### 繁體中文
-體驗無縫深色模式！現在自動主題完美跟隨您的 iOS 系統設定並即時更新。享受更精緻且即時回應的介面，自動適應您的偏好設定。
+享受更精緻一致的使用體驗！主題顏色現在在應用程式與 iOS Widget 之間完美統一，底層效能也同步提升。
 
 ### Español
-¡Experimenta el modo oscuro sin interrupciones! Ahora el tema automático sigue perfectamente la configuración de tu sistema iOS con actualizaciones instantáneas. Disfruta de una interfaz más pulida y receptiva que se adapta automáticamente a tus preferencias.
+¡Disfruta de una experiencia más refinada y consistente! Los colores del tema ahora están perfectamente unificados en la app y el widget de iOS, con mejoras de rendimiento internas.
 
 ---
 
@@ -51,15 +48,12 @@ task management, todo list, productivity, calendar widget, iOS widget, task orga
 ## Technical Details
 
 ### Fixed Issues
-- **Auto Theme Detection**: Fixed `userInterfaceStyle` setting from "Light" to "Automatic" in app.config.js and Info.plist
-- **Appearance API Integration**: Added Appearance API for reliable iOS system theme detection
-- **Real-time Theme Updates**: Implemented system theme change listener for instant response to iOS settings
-- **Fallback Mechanism**: Improved auto mode with proper fallback (useColorScheme → Appearance.getColorScheme → light)
-- **Rate Us Modal**: Fixed modal display logic to ensure proper fallback behavior
-
-### Impact
-- **Before**: Auto theme mode always showed light theme regardless of iOS dark mode setting
-- **After**: Auto theme correctly follows iOS system appearance with instant updates
+- **Theme Color Refactor**: Introduced `PRIMARY`, `PRIMARY_LIGHT`, `PRIMARY_DARK` constants in `theme.js` as single source of truth for brand color `#6c63ff`
+- **Widget Color Mismatch**: Fixed Widget `primaryColor` from `#9E59FA` to `#6c63ff` to match app theme
+- **Shimmer Token**: Added `shimmer` to theme for consistent skeleton loading colors (replaces inline ternaries)
+- **App Group Restored**: Restored App Group entitlement (`group.com.cty0305.too.doo.list.data`) that was accidentally removed
+- **Hardcoded Colors Eliminated**: Replaced all 48 occurrences of `#3B82F6` across CalendarScreen, SettingScreen, notificationConfig, notificationService with `PRIMARY` or `theme.primary`
+- **Console.log Cleanup**: Removed verbose/redundant logs in App.js (210 → 153)
 
 ---
 
@@ -70,7 +64,7 @@ task management, todo list, productivity, calendar widget, iOS widget, task orga
 - [ ] README.md version information updated
 - [ ] App tested on simulator
 - [ ] Widget tested and working
-- [ ] Auto theme tested with iOS Light/Dark mode switching
+- [ ] Theme color verified on light/dark mode
 - [ ] Xcode Archive successful
 - [ ] App Store Connect submission ready
 
@@ -78,4 +72,4 @@ task management, todo list, productivity, calendar widget, iOS widget, task orga
 
 ## Migration Notes
 
-No migration required. This release includes bug fixes and improvements with no breaking changes or data structure modifications.
+No migration required. This release includes bug fixes and code quality improvements with no breaking changes or data structure modifications.

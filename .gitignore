@@ -41,6 +41,9 @@ manifest.json
 .cursor/chat/
 .cursor/prompts_history/
 
+# Claude Code
+.claude/mcp_settings.json
+
 # OS
 .DS_Store
 .DS_Store?

@@ -22,6 +22,7 @@ import {
   formatTimeDisplay as formatTimeDisplayUtil,
 } from "./src/utils/dateUtils";
 import { translations } from "./src/locales";
+import { BlurView } from "expo-blur";
 
 // Screen imports
 import CalendarScreen from "./src/screens/CalendarScreen";
@@ -120,12 +121,6 @@ if (Platform.OS === "web" && typeof window !== "undefined") {
     // For web OAuth, if there's no clear indicator it's from native app, process it directly
     // Only redirect to native app if we're confident it came from native app
     if (mightBeFromNativeApp) {
-      console.log(
-        "🚨 [IMMEDIATE] OAuth callback might be from native app, preparing redirect...",
-      );
-      console.log("🚨 [IMMEDIATE] Current URL:", currentUrl);
-      console.log("🚨 [IMMEDIATE] Using app scheme:", appScheme);
-
       // Build redirect URL
       let redirectUrl;
       if (url.hash.includes("access_token")) {
@@ -143,7 +138,6 @@ if (Platform.OS === "web" && typeof window !== "undefined") {
       }
 
       if (redirectUrl) {
-        console.log("🚨 [IMMEDIATE] Redirecting to:", redirectUrl);
         // Try redirect, but if it fails (pure web OAuth), let normal flow handle it
         try {
           window.location.href = redirectUrl;
@@ -153,18 +147,10 @@ if (Platform.OS === "web" && typeof window !== "undefined") {
               '<div style="font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column;"><div style="font-size: 20px; margin-bottom: 20px;">Login successful!</div><div style="font-size: 16px; color: #666;">Please return to the TaskCal app.</div></div>';
           }, 100);
         } catch (e) {
-          console.log(
-            "🚨 [IMMEDIATE] Redirect failed, treating as web OAuth:",
-            e,
-          );
           // If redirect fails, it's probably pure web OAuth, let normal flow handle it
         }
       }
     } else {
-      console.log(
-        "🚨 [IMMEDIATE] OAuth callback detected on web (pure web OAuth), letting normal flow handle it...",
-      );
-      console.log("🚨 [IMMEDIATE] Current URL:", currentUrl);
       // Pure web OAuth - let the normal OAuth callback handler process it
       // This ensures web OAuth works correctly without trying to redirect to native app
     }
@@ -178,11 +164,6 @@ if (Platform.OS !== "web") {
     originalConsoleError("[ERROR]", ...args);
   };
 
-  // Log app startup
-  console.log("✅ App.js loaded successfully");
-  console.log("Platform:", Platform.OS);
-  // Don't check process.env here - it may not be available yet in native builds
-  console.log("App initialization starting...");
 }
 
 import { supabase } from "./supabaseClient";
@@ -233,8 +214,9 @@ import {
   useNavigation,
   useFocusEffect,
 } from "@react-navigation/native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import TabView from "react-native-bottom-tabs";
 
 // UI Components
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -248,11 +230,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 
 // Fonts
 import { useFonts } from "expo-font";
-import {
-  Roboto_400Regular,
-  Roboto_500Medium,
-  Roboto_700Bold,
-} from "@expo-google-fonts/roboto";
 import {
   NotoSansTC_400Regular,
   NotoSansTC_500Medium,
@@ -281,8 +258,10 @@ function getToday() {
 // 使用工具文件中的函數，保持向後兼容
 const formatTimeDisplay = formatTimeDisplayUtil;
 
-const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+const isIOS26Plus =
+  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 const SplashScreen = ({ navigation }) => {
   const { theme, themeMode, loadTheme: reloadTheme } = useContext(ThemeContext);
@@ -300,7 +279,6 @@ const SplashScreen = ({ navigation }) => {
         try {
           const isAvailable = await AppleAuthentication.isAvailableAsync();
           setIsAppleAvailable(isAvailable);
-          console.log("🍎 Apple Authentication available:", isAvailable);
         } catch (error) {
           console.error(
             "Error checking Apple Authentication availability:",
@@ -321,14 +299,8 @@ const SplashScreen = ({ navigation }) => {
       try {
         // Only handle OAuth callback on web platform
         if (Platform.OS !== "web" || typeof window === "undefined") {
-          console.log(
-            "OAuth callback: Not on web platform, skipping callback handling",
-          );
           return;
         }
-
-        console.log("OAuth callback: Starting callback handling");
-        console.log("OAuth callback: Current URL:", window.location.href);
 
         // Check if we should redirect to native app
         // This should ONLY happen if OAuth was initiated from a native app
@@ -348,15 +320,9 @@ const SplashScreen = ({ navigation }) => {
           navigator.userAgent.includes("Mobile");
 
         if (hasOAuthParams && isFromNativeApp) {
-          console.log(
-            "OAuth callback: Detected native app OAuth flow, preparing redirect...",
-          );
-
           // Determine the correct URL scheme based on environment/domain
           const envScheme = process.env.NEXT_PUBLIC_APP_SCHEME;
           let appScheme = envScheme || "taskcal";
-
-          console.log("OAuth callback: Using app scheme:", appScheme);
 
           // Extract auth params from URL
           let redirectUrl;
@@ -377,10 +343,6 @@ const SplashScreen = ({ navigation }) => {
           }
 
           if (redirectUrl) {
-            console.log(
-              "OAuth callback: Redirecting to native app:",
-              redirectUrl,
-            );
             try {
               window.location.href = redirectUrl;
               // Show user message after attempting redirect
@@ -398,17 +360,11 @@ const SplashScreen = ({ navigation }) => {
             }
           }
         } else if (hasOAuthParams) {
-          // This is a pure web OAuth callback - process it directly
-          console.log(
-            "OAuth callback: Pure web OAuth detected, processing directly...",
-          );
-
           // Process the OAuth callback for web
           try {
             // If we have a code, exchange it for session
             if (url.search.includes("code=")) {
               const code = url.searchParams.get("code");
-              console.log("OAuth callback: Exchanging code for session...");
 
               const { data: sessionData, error: exchangeError } =
                 await supabase.auth.exchangeCodeForSession(code);
@@ -437,7 +393,6 @@ const SplashScreen = ({ navigation }) => {
               const refreshToken = hashParams.get("refresh_token");
 
               if (accessToken && refreshToken) {
-                console.log("OAuth callback: Setting session with tokens...");
                 const { error: sessionError } = await supabase.auth.setSession({
                   access_token: accessToken,
                   refresh_token: refreshToken,
@@ -569,10 +524,7 @@ const SplashScreen = ({ navigation }) => {
           return;
         }
 
-        console.log("OAuth callback: Session data:", data);
-
         if (data?.session) {
-          console.log("OAuth callback: User session found");
           // Force a refresh of the auth state
           const {
             data: { user },
@@ -587,10 +539,8 @@ const SplashScreen = ({ navigation }) => {
             return;
           }
 
-          console.log("OAuth callback: User verified, navigating to main app");
           navigateToMainApp({ focusToday: true });
         } else {
-          console.log("OAuth callback: No session found in callback");
 
           // Add fallback mechanisms for incognito mode or session issues
 
@@ -815,6 +765,16 @@ const SplashScreen = ({ navigation }) => {
           } catch (error) {
             console.error("Error in auth state change handler:", error);
           }
+        } else if (event === "TOKEN_REFRESH_FAILED") {
+          // Refresh token is invalid or expired — clear local session and sign out
+          console.log("[Auth] Token refresh failed, signing out...");
+          dataPreloadService.clearCache();
+          setHasNavigated(false);
+          try {
+            await supabase.auth.signOut({ scope: "local" });
+          } catch (e) {
+            // Ignore sign-out errors; SIGNED_OUT event will handle navigation
+          }
         } else if (event === "SIGNED_OUT") {
           // 清除預載入緩存
           dataPreloadService.clearCache();
@@ -864,7 +824,6 @@ const SplashScreen = ({ navigation }) => {
     // Check for existing session on mount
     const checkSession = async () => {
       try {
-        console.log("[checkSession] Starting session check...");
         const {
           data: { session },
           error,
@@ -1269,17 +1228,14 @@ const SplashScreen = ({ navigation }) => {
     // Add multiple fallback checks for OAuth
     const fallbackChecks = [
       setTimeout(async () => {
-        console.log("Fallback 1: Checking session after 2 seconds");
         await checkSessionAndNavigate();
       }, 2000),
 
       setTimeout(async () => {
-        console.log("Fallback 2: Checking session after 5 seconds");
         await checkSessionAndNavigate();
       }, 5000),
 
       setTimeout(async () => {
-        console.log("Fallback 3: Final session check after 10 seconds");
         await checkSessionAndNavigate();
       }, 10000),
     ];
@@ -1313,7 +1269,6 @@ const SplashScreen = ({ navigation }) => {
           navigateToMainApp({ focusToday: true });
           return true; // Success
         } else {
-          console.log("Fallback: No session found");
           return false;
         }
       } catch (error) {
@@ -1341,7 +1296,6 @@ const SplashScreen = ({ navigation }) => {
     // Check if navigation and addListener are available
     if (navigation && typeof navigation.addListener === "function") {
       const unsubscribe = navigation.addListener("state", (e) => {
-        console.log("Navigation state changed:", e.data.state);
       });
       return unsubscribe;
     }
@@ -1352,14 +1306,11 @@ const SplashScreen = ({ navigation }) => {
   const handleGoogleSignIn = async () => {
     // Prevent multiple simultaneous sign-in attempts
     if (isSigningIn) {
-      console.log("⚠️ Sign-in already in progress, ignoring duplicate request");
       return;
     }
 
     setIsSigningIn(true);
-    console.log("🔐 Google Authentication - Starting...");
     try {
-      console.log("VERBOSE: Starting Google authentication process");
 
       if (!supabase) {
         console.error("CRITICAL: Supabase client is NOT initialized");
@@ -1378,9 +1329,7 @@ const SplashScreen = ({ navigation }) => {
       }
 
       if (existingSession) {
-        console.log("VERBOSE: User is already signed in");
         // Let the auth state change listener handle navigation
-        console.log("⏳ Waiting for auth state listener to navigate...");
         return;
       }
 
@@ -1409,7 +1358,6 @@ const SplashScreen = ({ navigation }) => {
           // Use the same scheme as defined in app.config.js
           const appScheme = "taskcal";
 
-          console.log("🔍 DEBUG - Using app scheme:", appScheme);
 
           // Use app scheme for direct deep link
           return `${appScheme}://auth/callback`;
@@ -1418,7 +1366,6 @@ const SplashScreen = ({ navigation }) => {
         // For web, always return the current origin
         // Supabase will redirect back to the same page with auth tokens/code
         const currentOrigin = window.location.origin;
-        console.log("VERBOSE: Current origin:", currentOrigin);
 
         // For web (both localhost and production), return current origin
         // This allows Supabase to redirect back to the same page with auth data
@@ -1426,15 +1373,9 @@ const SplashScreen = ({ navigation }) => {
       };
 
       const redirectUrl = getRedirectUrl();
-      console.log("VERBOSE: Using redirect URL:", redirectUrl);
 
       // Debug: Log current window location for web
       if (Platform.OS === "web") {
-        console.log("VERBOSE: Current window location:", {
-          origin: window.location.origin,
-          href: window.location.href,
-          pathname: window.location.pathname,
-        });
       }
 
       // Start the OAuth flow
@@ -1456,11 +1397,8 @@ const SplashScreen = ({ navigation }) => {
       }
 
       if (data?.url) {
-        console.log("VERBOSE: Opening auth URL in browser");
-        console.log("VERBOSE: Auth URL:", data.url);
         if (Platform.OS === "web") {
           // For web, we need to redirect to the auth URL
-          console.log("VERBOSE: Redirecting to:", data.url);
           // Use window.location.replace to avoid back button issues (web only)
           if (
             Platform.OS === "web" &&
@@ -1471,19 +1409,11 @@ const SplashScreen = ({ navigation }) => {
           }
         } else {
           // For mobile, use WebBrowser which handles deep links properly
-          console.log(
-            "VERBOSE: Opening OAuth browser session with WebBrowser...",
-          );
-          console.log("VERBOSE: Redirect URL:", redirectUrl);
 
           // Use WebBrowser.openAuthSessionAsync for OAuth flow
           const result = await WebBrowser.openAuthSessionAsync(
             data.url,
             redirectUrl,
-          );
-          console.log(
-            "VERBOSE: WebBrowser result:",
-            JSON.stringify(result, null, 2),
           );
 
           // ✅ KEY FIX: The result.url contains the OAuth callback URL
@@ -1625,18 +1555,10 @@ const SplashScreen = ({ navigation }) => {
 
             return;
           } else if (result.type === "cancel") {
-            console.log("VERBOSE: User cancelled the auth flow");
-            console.log(
-              "VERBOSE: This might be due to deep link not working properly",
-            );
-            console.log(
-              "VERBOSE: Check if Supabase redirect URL includes: taskcal://auth/callback",
-            );
             setIsSigningIn(false);
             // Don't show alert for cancel - user might have closed browser due to redirect issue
             return;
           } else if (result.type === "dismiss") {
-            console.log("VERBOSE: Auth flow was dismissed");
             setIsSigningIn(false);
             return;
           }
@@ -1682,7 +1604,6 @@ const SplashScreen = ({ navigation }) => {
               // Retry if we haven't reached max attempts
               if (attempt < maxAttempts) {
                 const delay = 2000 * attempt; // Increasing delay: 2s, 4s, 6s, 8s
-                console.log(`[Auth Fallback] Retrying in ${delay}ms...`);
                 setTimeout(
                   () => checkSessionWithRetry(attempt + 1, maxAttempts),
                   delay,
@@ -1717,7 +1638,6 @@ const SplashScreen = ({ navigation }) => {
           setTimeout(() => checkSessionWithRetry(1, 5), 2000);
         }
       } else {
-        console.log("VERBOSE: No URL returned from OAuth");
       }
     } catch (error) {
       console.error("CRITICAL: Authentication Error:", {
@@ -1768,7 +1688,6 @@ const SplashScreen = ({ navigation }) => {
         { cancelable: true },
       );
     } finally {
-      console.log("🔐 Google Authentication - Completed");
       setIsSigningIn(false);
     }
   };
@@ -1776,7 +1695,6 @@ const SplashScreen = ({ navigation }) => {
   const handleAppleSignIn = async () => {
     // Prevent multiple simultaneous sign-in attempts
     if (isAppleSigningIn || isSigningIn) {
-      console.log("⚠️ Sign-in already in progress, ignoring duplicate request");
       return;
     }
 
@@ -1790,7 +1708,6 @@ const SplashScreen = ({ navigation }) => {
     }
 
     setIsAppleSigningIn(true);
-    console.log("🍎 Apple Authentication - Starting...");
 
     try {
       if (!supabase) {
@@ -1810,7 +1727,6 @@ const SplashScreen = ({ navigation }) => {
       }
 
       if (existingSession) {
-        console.log("VERBOSE: User is already signed in");
         setIsAppleSigningIn(false);
         return;
       }
@@ -2134,7 +2050,6 @@ const SplashScreen = ({ navigation }) => {
         }
 
         // The auth state change listener will handle navigation
-        console.log("⏳ Waiting for auth state listener to navigate...");
       } else {
         throw new Error("No user data returned from Supabase");
       }
@@ -2198,7 +2113,6 @@ const SplashScreen = ({ navigation }) => {
         },
       ]);
     } finally {
-      console.log("🍎 Apple Authentication - Completed");
       setIsAppleSigningIn(false);
     }
   };
@@ -2502,9 +2416,6 @@ const TaskSkeleton = ({ theme }) => {
 export default function App() {
   // Load fonts
   const [fontsLoaded] = useFonts({
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold,
     NotoSansTC_400Regular,
     NotoSansTC_500Medium,
     NotoSansTC_700Bold,
@@ -2518,7 +2429,7 @@ export default function App() {
       // Add Google Fonts links
       const fontsLink = document.createElement("link");
       fontsLink.href =
-        "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap";
+        "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap";
       fontsLink.rel = "stylesheet";
       document.head.appendChild(fontsLink);
       cleanupElements.push(fontsLink);
@@ -2528,8 +2439,8 @@ export default function App() {
       style.textContent = `
         /* Apply to all text content containers, but not icons */
         [dir] > * {
-          font-family: 'Roboto', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
-            Helvetica, Arial, sans-serif !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Noto Sans TC',
+            system-ui, sans-serif !important;
         }
         
         /* Exclude icons and SVG elements */
@@ -2542,8 +2453,8 @@ export default function App() {
         
         /* Apply to input fields */
         input, textarea, select {
-          font-family: 'Roboto', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 
-            Helvetica, Arial, sans-serif !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Noto Sans TC',
+            system-ui, sans-serif !important;
         }
 
         body {
@@ -3172,6 +3083,10 @@ export default function App() {
   function MainTabs() {
     const { t } = useContext(LanguageContext);
     const { theme } = useContext(ThemeContext);
+    const [tabIndex, setTabIndex] = React.useState(0);
+    const insets = useSafeAreaInsets();
+    const colorScheme = useColorScheme();
+
     React.useEffect(() => {
       if (typeof document !== "undefined") {
         setTimeout(() => {
@@ -3179,48 +3094,95 @@ export default function App() {
         }, 0);
       }
     });
+
+    // iOS 26+: native UITabBar with Liquid Glass
+    if (isIOS26Plus) {
+      const routes = [
+        {
+          key: "calendar",
+          title: t.tasks || "Tasks",
+          focusedIcon: { sfSymbol: "checkmark.square.fill" },
+          unfocusedIcon: { sfSymbol: "checkmark.square" },
+        },
+        {
+          key: "settings",
+          title: t.settings || "Settings",
+          focusedIcon: { sfSymbol: "gearshape.fill" },
+          unfocusedIcon: { sfSymbol: "gearshape" },
+        },
+      ];
+
+      const renderScene = ({ route }) => {
+        switch (route.key) {
+          case "calendar":
+            return <CalendarScreen />;
+          case "settings":
+            return <SettingScreen />;
+          default:
+            return null;
+        }
+      };
+
+      return (
+        <TabView
+          navigationState={{ index: tabIndex, routes }}
+          onIndexChange={setTabIndex}
+          renderScene={renderScene}
+          scrollEdgeAppearance="transparent"
+          tabBarStyle={{ backgroundColor: "transparent" }}
+        />
+      );
+    }
+
+    // iOS < 26: standard React Navigation bottom tabs (proper centering)
+    const verticalPad = Math.round(insets.bottom * 0.5);
+    const isDark = theme?.mode === "dark";
+    const tabBgColor = isDark ? "#1c1c1e" : "#f9f9f9";
+    const tabActiveColor = isDark ? "#60A5FA" : "#3B82F6";
+    const tabInactiveColor = isDark ? "#636366" : "#999999";
+
     return (
       <Tab.Navigator
-        initialRouteName="Calendar"
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
+          tabBarIcon: ({ focused, color, size }) => {
             if (route.name === "Calendar") {
-              iconName = "calendar-today";
-            } else if (route.name === "Setting") {
-              iconName = "settings";
+              return (
+                <MaterialCommunityIcons
+                  name="checkbox-marked-outline"
+                  size={size}
+                  color={color}
+                />
+              );
+            } else {
+              return (
+                <MaterialCommunityIcons
+                  name={focused ? "cog" : "cog-outline"}
+                  size={size}
+                  color={color}
+                />
+              );
             }
-            return <MaterialIcons name={iconName} size={size} color={color} />;
           },
-          tabBarActiveTintColor: theme.mode === "dark" ? "#ffffff" : "#000000",
-          tabBarInactiveTintColor: "#888888",
-          tabBarShowLabel: false,
+          tabBarActiveTintColor: tabActiveColor,
+          tabBarInactiveTintColor: tabInactiveColor,
           tabBarStyle: {
-            height: 80,
-            paddingBottom: 8,
-            paddingTop: 8,
-            backgroundColor: theme.tabBarBackground,
-            borderTopWidth: 1,
-            borderTopColor: theme.divider,
-          },
-          tabBarIconStyle: {
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "auto",
-            marginBottom: "auto",
+            backgroundColor: tabBgColor,
+            borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
+            paddingTop: verticalPad,
+            paddingBottom: verticalPad,
           },
         })}
       >
         <Tab.Screen
           name="Calendar"
           component={CalendarScreen}
-          options={{ title: t.calendar }}
+          options={{ title: t.tasks || "Tasks" }}
         />
         <Tab.Screen
-          name="Setting"
+          name="Settings"
           component={SettingScreen}
-          options={{ title: t.settings }}
+          options={{ title: t.settings || "Settings" }}
         />
       </Tab.Navigator>
     );
@@ -3334,27 +3296,25 @@ export default function App() {
 
 // Helper function to get font family based on platform and language
 const getFontFamily = (language = "en", weight = "regular") => {
+  const isChinese = language === "zh";
+
   if (Platform.OS === "web") {
     // For web, use CSS font family with fallback
-    const isChinese = language === "zh";
-    if (weight === "bold") {
-      return isChinese
-        ? '"Noto Sans TC", "Roboto", -apple-system, system-ui, sans-serif'
-        : '"Roboto", "Noto Sans TC", -apple-system, system-ui, sans-serif';
-    }
     return isChinese
-      ? '"Noto Sans TC", "Roboto", -apple-system, system-ui, sans-serif'
-      : '"Roboto", "Noto Sans TC", -apple-system, system-ui, sans-serif';
+      ? '"Noto Sans TC", -apple-system, system-ui, sans-serif'
+      : '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif';
   }
 
-  // For native apps, use loaded fonts
-  const isChinese = language === "zh";
-  if (weight === "bold") {
-    return isChinese ? "NotoSansTC_700Bold" : "Roboto_700Bold";
-  } else if (weight === "medium") {
-    return isChinese ? "NotoSansTC_500Medium" : "Roboto_500Medium";
+  // For native apps: system font (SF Pro) for non-Chinese, NotoSansTC for Chinese
+  if (!isChinese) {
+    return undefined; // React Native defaults to SF Pro on iOS
   }
-  return isChinese ? "NotoSansTC_400Regular" : "Roboto_400Regular";
+  if (weight === "bold") {
+    return "NotoSansTC_700Bold";
+  } else if (weight === "medium") {
+    return "NotoSansTC_500Medium";
+  }
+  return "NotoSansTC_400Regular";
 };
 
 const styles = StyleSheet.create({
@@ -3379,16 +3339,16 @@ const styles = StyleSheet.create({
     bottom: 8,
     zIndex: 10,
     borderRadius: 32,
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     alignItems: "center",
     justifyContent: "center",
     width: 64,
     height: 64,
-    shadowColor: "#6c63ff",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 7,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
   },
   // ...
   // Removed bottomMenuBar style, handled by Tab.Navigator now
@@ -3530,7 +3490,7 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   selectedDayText: {
-    color: "#6c63ff", // Light mode selected text color
+    color: "#3B82F6", // Light mode selected text color
     fontWeight: "700",
     zIndex: 4,
   },
@@ -3547,7 +3507,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     zIndex: 10,
   },
   todayCircle: {
@@ -3597,7 +3557,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   todayCircleLarge: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -3615,7 +3575,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   noTaskContainer: {
     flex: 1,
@@ -3626,7 +3586,7 @@ const styles = StyleSheet.create({
     // No background color, just text color change
   },
   selectedDayText: {
-    color: "#6c63ff", // Same as add button color
+    color: "#3B82F6", // Same as add button color
     fontWeight: "600",
   },
   tasksContainer: {
@@ -3673,12 +3633,12 @@ const styles = StyleSheet.create({
   addButton: {
     marginLeft: 12,
     borderRadius: 20,
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     alignItems: "center",
     justifyContent: "center",
     width: 40,
     height: 40,
-    shadowColor: "#6c63ff",
+    shadowColor: "#3B82F6",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -3762,7 +3722,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   linkInputContainerFocused: {
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
   },
   linkInput: {
     flex: 1,
@@ -3807,7 +3767,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   timeInputSelected: {
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
     backgroundColor: "#f0f0ff",
   },
   timeInputText: {
@@ -3887,7 +3847,7 @@ const styles = StyleSheet.create({
   timeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: "#3B82F6",
     marginHorizontal: 10,
   },
   timeWheelItem: {
@@ -3898,7 +3858,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   timeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   timeWheelText: {
     fontSize: 18,
@@ -3918,7 +3878,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(108, 99, 255, 0.1)",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
   },
   timePickerActions: {
     flexDirection: "row",
@@ -3976,7 +3936,7 @@ const styles = StyleSheet.create({
   },
   simpleTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   simpleTimePickerBody: {
@@ -4011,7 +3971,7 @@ const styles = StyleSheet.create({
   simpleTimeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: "#3B82F6",
     marginHorizontal: 20,
   },
   timeInputContainer: {
@@ -4079,7 +4039,7 @@ const styles = StyleSheet.create({
   },
   timePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   timePickerBody: {
@@ -4111,7 +4071,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   timeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   timeWheelText: {
     fontSize: 18,
@@ -4131,12 +4091,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(108, 99, 255, 0.1)",
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
   },
   timeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: "#3B82F6",
     marginHorizontal: 10,
   },
   spinnerOverlay: {
@@ -4225,7 +4185,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginLeft: 8,
     borderRadius: 8,
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     alignItems: "center",
   },
   spinnerDoneText: {
@@ -4235,7 +4195,7 @@ const styles = StyleSheet.create({
   },
   taskTimeRight: {
     fontSize: 14,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
     textAlign: "right",
   },
@@ -4271,7 +4231,7 @@ const styles = StyleSheet.create({
   },
   timeWheelTextSelected: {
     fontSize: 24,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   timeWheelHighlight: {
@@ -4283,13 +4243,13 @@ const styles = StyleSheet.create({
     marginTop: -20,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
     zIndex: -1,
   },
   timeSeparator: {
     fontSize: 28,
     marginHorizontal: 8,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   timePickerActions: {
@@ -4364,7 +4324,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   doneButtonText: {
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontSize: 16,
     fontWeight: "600",
   },
@@ -4400,7 +4360,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   inputFilled: {
-    borderColor: "#6c63ff",
+    borderColor: "#3B82F6",
   },
   noteInput: {
     height: 100,
@@ -4426,7 +4386,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   saveButton: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -4540,7 +4500,7 @@ const styles = StyleSheet.create({
   },
   simpleTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   simpleTimePickerBody: {
@@ -4569,7 +4529,7 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   simpleTimeWheelItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   simpleTimeWheelText: {
     fontSize: 18,
@@ -4583,7 +4543,7 @@ const styles = StyleSheet.create({
   simpleTimeSeparator: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: "#3B82F6",
     marginHorizontal: 10,
   },
   // 原生時間選擇器樣式
@@ -4627,7 +4587,7 @@ const styles = StyleSheet.create({
   },
   nativeTimePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   nativeTimePickerBody: {
@@ -4680,7 +4640,7 @@ const styles = StyleSheet.create({
   },
   timePickerDoneText: {
     fontSize: 16,
-    color: "#6c63ff",
+    color: "#3B82F6",
     fontWeight: "600",
   },
   timePickerBody: {
@@ -4729,7 +4689,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   webTimePickerItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   webTimePickerText: {
     fontSize: 16,
@@ -4776,7 +4736,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   webTimePickerItemSelected: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
   },
   webTimePickerText: {
     fontSize: 16,
@@ -4790,7 +4750,7 @@ const styles = StyleSheet.create({
   webTimeSeparator: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#6c63ff",
+    color: "#3B82F6",
     marginHorizontal: 10,
   },
   headerContainer: {
@@ -4854,7 +4814,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   todayButton: {
-    backgroundColor: "#6c63ff",
+    backgroundColor: "#3B82F6",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,

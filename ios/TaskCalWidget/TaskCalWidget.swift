@@ -5,8 +5,8 @@ import UIKit
 private let appGroupId = "group.com.cty0305.too.doo.list.data"
 private let widgetDataKey = "widgetTasksByDate"
 
-// App primary color (purple)
-private let primaryColor = Color(red: 0.62, green: 0.35, blue: 0.98)
+// App primary color (#6c63ff)
+private let primaryColor = Color(red: 108/255, green: 99/255, blue: 1.0)
 
 struct TaskCalWidgetEntry: TimelineEntry {
   let date: Date

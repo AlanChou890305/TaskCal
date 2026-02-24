@@ -1,6 +1,7 @@
 // Traditional Chinese (Taiwan) translations
 export default {
   settings: "設定",
+  tasks: "任務",
   checkUpdate: "檢查更新",
   updateAvailable: "下載最新版本",
   latestVersion: "最新版本",

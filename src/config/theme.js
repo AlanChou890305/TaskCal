@@ -3,13 +3,61 @@
  * 支援淺色模式（Light）和深色模式（Dark）
  */
 
+// ============================================================
+// 主題色（改這裡就能同步更新所有顏色）
+// ============================================================
+export const PRIMARY = "#6c63ff";
+export const PRIMARY_LIGHT = "#8b84ff";
+export const PRIMARY_DARK = "#5649d6";
+
+// iOS Typography Scale (Apple HIG)
+const typography = {
+  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700", letterSpacing: 0.37 },
+  title1:     { fontSize: 28, lineHeight: 34, fontWeight: "700", letterSpacing: 0.36 },
+  title2:     { fontSize: 22, lineHeight: 28, fontWeight: "700", letterSpacing: 0.35 },
+  title3:     { fontSize: 20, lineHeight: 25, fontWeight: "600", letterSpacing: 0.38 },
+  headline:   { fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.41 },
+  body:       { fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.41 },
+  callout:    { fontSize: 16, lineHeight: 21, fontWeight: "400", letterSpacing: -0.32 },
+  subheadline:{ fontSize: 15, lineHeight: 20, fontWeight: "400", letterSpacing: -0.24 },
+  footnote:   { fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.08 },
+  caption1:   { fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0 },
+  caption2:   { fontSize: 11, lineHeight: 13, fontWeight: "400", letterSpacing: 0.07 },
+};
+
+// iOS Spacing Scale
+const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  xxxl: 32,
+  screenPadding: 16,
+  cardPadding: 16,
+  sectionGap: 24,
+  listItemHeight: 44,
+};
+
+// iOS Border Radius Scale
+const radius = {
+  xs: 4,
+  sm: 6,
+  md: 10,
+  lg: 12,
+  xl: 14,
+  xxl: 16,
+  pill: 999,
+};
+
 export const lightTheme = {
   mode: "light",
 
   // 主要顏色
-  primary: "#6c63ff",
-  primaryLight: "#8b84ff",
-  primaryDark: "#5649d6",
+  primary: PRIMARY,
+  primaryLight: PRIMARY_LIGHT,
+  primaryDark: PRIMARY_DARK,
 
   // 背景色
   background: "#ffffff",
@@ -29,10 +77,10 @@ export const lightTheme = {
   // 輸入框
   input: "#ffffff",
   inputBorder: "#ddd",
-  inputBorderFocused: "#6c63ff",
+  inputBorderFocused: PRIMARY,
 
   // 按鈕
-  button: "#6c63ff",
+  button: PRIMARY,
   buttonText: "#ffffff",
   buttonSecondary: "#f0f0f0",
   buttonSecondaryText: "#333333",
@@ -49,9 +97,17 @@ export const lightTheme = {
   // 陰影
   shadow: "#000000",
   shadowOpacity: 0.1,
+  shadows: {
+    card:     { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 8,  elevation: 1 },
+    elevated: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 12, elevation: 3 },
+    floating: { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 },
+  },
+
+  // Shimmer / skeleton 效果
+  shimmer: "rgba(0,0,0,0.1)",
 
   // 複選框
-  checkbox: "#6c63ff",
+  checkbox: PRIMARY,
   checkboxUnchecked: "#aaa",
 
   // Modal
@@ -60,30 +116,40 @@ export const lightTheme = {
 
   // Tab Bar
   tabBarBackground: "#ffffff",
-  tabBarActive: "#6c63ff",
+  tabBarActive: PRIMARY,
   tabBarInactive: "#999999",
 
   // Calendar
-  calendarHeader: "#6c63ff",
+  calendarHeader: PRIMARY,
   calendarHeaderText: "#ffffff",
-  calendarToday: "#6c63ff",
+  calendarToday: PRIMARY,
   calendarTodayText: "#ffffff",
   calendarWeekend: "#ff5252",
-  calendarSelected: "#e3f2fd", // 淡藍色
+  calendarSelected: "#ede9ff", // 淡紫色
 
   // Task
   taskChecked: "#999999",
   taskUnchecked: "#000000",
   taskTime: "#666666",
+
+  // UI Tokens
+  borderRadius: 12,
+  borderRadiusSmall: 8,
+  borderRadiusLarge: 16,
+
+  // iOS Design System
+  typography,
+  spacing,
+  radius,
 };
 
 export const darkTheme = {
   mode: "dark",
 
   // 主要顏色
-  primary: "#8b84ff",
+  primary: PRIMARY_LIGHT,
   primaryLight: "#a39dff",
-  primaryDark: "#6c63ff",
+  primaryDark: PRIMARY,
 
   // 背景色 - 調整為更淺的灰色，避免純黑
   background: "#1c1c1e",
@@ -103,10 +169,10 @@ export const darkTheme = {
   // 輸入框 - 調整為更淺的背景
   input: "#303030",
   inputBorder: "#505050",
-  inputBorderFocused: "#8b84ff",
+  inputBorderFocused: PRIMARY_LIGHT,
 
   // 按鈕
-  button: "#8b84ff",
+  button: PRIMARY_LIGHT,
   buttonText: "#ffffff",
   buttonSecondary: "#303030",
   buttonSecondaryText: "#f5f5f5",
@@ -123,9 +189,17 @@ export const darkTheme = {
   // 陰影
   shadow: "#000000",
   shadowOpacity: 0.3,
+  shadows: {
+    card:     { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 8,  elevation: 1 },
+    elevated: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.30, shadowRadius: 12, elevation: 3 },
+    floating: { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 5 },
+  },
+
+  // Shimmer / skeleton 效果
+  shimmer: "rgba(255,255,255,0.1)",
 
   // 複選框
-  checkbox: "#8b84ff",
+  checkbox: PRIMARY_LIGHT,
   checkboxUnchecked: "#f5f5f5", // 深色模式用白色
 
   // Modal
@@ -134,13 +208,13 @@ export const darkTheme = {
 
   // Tab Bar
   tabBarBackground: "#252525",
-  tabBarActive: "#8b84ff",
+  tabBarActive: PRIMARY_LIGHT,
   tabBarInactive: "#808080",
 
   // Calendar
-  calendarHeader: "#8b84ff",
+  calendarHeader: PRIMARY_LIGHT,
   calendarHeaderText: "#ffffff",
-  calendarToday: "#8b84ff",
+  calendarToday: PRIMARY_LIGHT,
   calendarTodayText: "#ffffff",
   calendarWeekend: "#ef5350",
   calendarSelected: "#353550",
@@ -149,6 +223,16 @@ export const darkTheme = {
   taskChecked: "#808080",
   taskUnchecked: "#f5f5f5",
   taskTime: "#d0d0d0",
+
+  // UI Tokens
+  borderRadius: 12,
+  borderRadiusSmall: 8,
+  borderRadiusLarge: 16,
+
+  // iOS Design System
+  typography,
+  spacing,
+  radius,
 };
 
 /**

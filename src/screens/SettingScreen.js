@@ -15,6 +15,7 @@ import {
   Image,
   Dimensions,
   Linking,
+  StyleSheet,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import * as Application from "expo-application";
@@ -32,6 +33,8 @@ import { mixpanelService } from "../services/mixpanelService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
+import IOSCard from "../components/IOSCard";
+import IOSSectionHeader from "../components/IOSSectionHeader";
 
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -726,9 +729,8 @@ function SettingScreen() {
       >
         <Text
           style={{
-            fontSize: 22,
+            ...theme.typography.title2,
             color: theme.text,
-            fontWeight: "bold",
             letterSpacing: 0.5,
             textAlign: "left",
             paddingLeft: 24,
@@ -746,38 +748,9 @@ function SettingScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Account Section Title */}
-        <View style={{ marginTop: 24, marginBottom: 12 }}>
-          <Text
-            style={{
-              color: theme.textSecondary,
-              fontSize: 13,
-              fontWeight: "600",
-              marginLeft: 28,
-              marginBottom: 0,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.account}
-          </Text>
-        </View>
+        <IOSSectionHeader title={t.account} theme={theme} style={{ paddingHorizontal: 28 }} />
         {/* Account Info Card */}
-        <View
-          style={{
-            backgroundColor: theme.card,
-            borderRadius: 16,
-            marginHorizontal: 20,
-            marginTop: 0,
-            marginBottom: 0,
-            padding: 20,
-            shadowColor: theme.shadow,
-            shadowOpacity: theme.shadowOpacity,
-            shadowRadius: 6,
-            elevation: 1,
-            borderWidth: 1,
-            borderColor: theme.cardBorder,
-          }}
-        >
+        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 20 }} shadowStyle="elevated">
           <View
             style={{
               flexDirection: "row",
@@ -795,8 +768,7 @@ function SettingScreen() {
                     marginRight: 15,
                     backgroundColor:
                       theme.mode === "dark"
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
                       outputRange: [0.3, 0.7],
@@ -809,9 +781,7 @@ function SettingScreen() {
                       height: 20,
                       borderRadius: 4,
                       backgroundColor:
-                        theme.mode === "dark"
-                          ? "rgba(255,255,255,0.1)"
-                          : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                       width: "60%",
                       marginBottom: 8,
                       opacity: shimmerAnim.interpolate({
@@ -825,9 +795,7 @@ function SettingScreen() {
                       height: 14,
                       borderRadius: 4,
                       backgroundColor:
-                        theme.mode === "dark"
-                          ? "rgba(255,255,255,0.1)"
-                          : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                       width: "40%",
                       opacity: shimmerAnim.interpolate({
                         inputRange: [0, 1],
@@ -913,8 +881,7 @@ function SettingScreen() {
                     borderRadius: 4,
                     backgroundColor:
                       theme.mode === "dark"
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                     width: "40%",
                     marginBottom: 8,
                     opacity: shimmerAnim.interpolate({
@@ -929,8 +896,7 @@ function SettingScreen() {
                     borderRadius: 4,
                     backgroundColor:
                       theme.mode === "dark"
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                     width: "50%",
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
@@ -1043,39 +1009,13 @@ function SettingScreen() {
               </>
             )}
           </View>
-        </View>
+        </IOSCard>
 
         {/* Developer Tools */}
         {__DEV__ && (
-          <View style={{ marginTop: 24, marginBottom: 8 }}>
-            <Text
-              style={{
-                color: theme.textSecondary,
-                fontSize: 13,
-                fontWeight: "600",
-                marginLeft: 28,
-                marginBottom: 12,
-                letterSpacing: 0.3,
-                textTransform: "uppercase",
-              }}
-            >
-              {t.devTools || "Developer Tools"}
-            </Text>
-            <View
-              style={{
-                backgroundColor: theme.card,
-                borderRadius: 16,
-                marginHorizontal: 20,
-                paddingVertical: 8,
-                borderWidth: 1,
-                borderColor: theme.cardBorder,
-                shadowColor: theme.shadow,
-                shadowOpacity: theme.shadowOpacity,
-                shadowRadius: 6,
-                elevation: 1,
-                overflow: "hidden",
-              }}
-            >
+          <>
+            <IOSSectionHeader title={t.devTools || "Developer Tools"} theme={theme} style={{ paddingHorizontal: 28 }} />
+            <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
               <TouchableOpacity
                 onPress={() => handleUserTypeChange("member")}
                 activeOpacity={0.6}
@@ -1111,7 +1051,7 @@ function SettingScreen() {
 
               <View
                 style={{
-                  height: 1,
+                  height: StyleSheet.hairlineWidth,
                   backgroundColor: theme.divider,
                   marginHorizontal: 20,
                 }}
@@ -1152,7 +1092,7 @@ function SettingScreen() {
 
               <View
                 style={{
-                  height: 1,
+                  height: StyleSheet.hairlineWidth,
                   backgroundColor: theme.divider,
                   marginHorizontal: 20,
                 }}
@@ -1190,7 +1130,7 @@ function SettingScreen() {
 
               <View
                 style={{
-                  height: 1,
+                  height: StyleSheet.hairlineWidth,
                   backgroundColor: theme.divider,
                   marginHorizontal: 20,
                 }}
@@ -1232,39 +1172,13 @@ function SettingScreen() {
                   </Text>
                 </View>
               </TouchableOpacity>
-            </View>
-          </View>
+            </IOSCard>
+          </>
         )}
 
         {/* General Section */}
-        <View style={{ marginTop: 24, marginBottom: 8 }}>
-          <Text
-            style={{
-              color: theme.textSecondary,
-              fontSize: 13,
-              fontWeight: "600",
-              marginLeft: 28,
-              marginBottom: 12,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.general}
-          </Text>
-          <View
-            style={{
-              backgroundColor: theme.card,
-              borderRadius: 16,
-              marginHorizontal: 20,
-              overflow: "hidden",
-              shadowColor: theme.shadow,
-              shadowOpacity: theme.shadowOpacity,
-              shadowRadius: 6,
-              elevation: 1,
-              borderWidth: 1,
-              borderColor: theme.cardBorder,
-            }}
-          >
+        <IOSSectionHeader title={t.general} theme={theme} style={{ paddingHorizontal: 28 }} />
+        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Language Selection */}
             <TouchableOpacity
               onPress={() => {
@@ -1277,7 +1191,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -1291,7 +1205,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.language}
                 </Text>
@@ -1416,7 +1330,7 @@ function SettingScreen() {
 
             <View
               style={{
-                height: 1,
+                height: StyleSheet.hairlineWidth,
                 backgroundColor: theme.divider,
                 marginHorizontal: 20,
               }}
@@ -1434,7 +1348,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -1448,7 +1362,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.theme}
                 </Text>
@@ -1582,7 +1496,7 @@ function SettingScreen() {
 
             <View
               style={{
-                height: 1,
+                height: StyleSheet.hairlineWidth,
                 backgroundColor: theme.divider,
                 marginHorizontal: 20,
               }}
@@ -1600,7 +1514,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -1613,9 +1527,7 @@ function SettingScreen() {
                       height: 16,
                       borderRadius: 4,
                       backgroundColor:
-                        theme.mode === "dark"
-                          ? "rgba(255,255,255,0.1)"
-                          : "rgba(0,0,0,0.1)",
+                        theme.shimmer,
                       width: "60%",
                       opacity: shimmerAnim.interpolate({
                         inputRange: [0, 1],
@@ -1634,8 +1546,8 @@ function SettingScreen() {
                     <Text
                       style={{
                         color: theme.text,
-                        fontSize: 16,
-                        fontWeight: "500",
+                        fontSize: theme.typography.callout.fontSize,
+                        fontWeight: "400",
                       }}
                     >
                       {t.reminderSettings}
@@ -1818,38 +1730,11 @@ function SettingScreen() {
                 )}
               </View>
             )}
-          </View>
-        </View>
+        </IOSCard>
 
         {/* Support Section */}
-        <View style={{ marginTop: 24, marginBottom: 8 }}>
-          <Text
-            style={{
-              color: theme.textSecondary,
-              fontSize: 13,
-              fontWeight: "600",
-              marginLeft: 28,
-              marginBottom: 12,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.support}
-          </Text>
-          <View
-            style={{
-              backgroundColor: theme.card,
-              borderRadius: 16,
-              marginHorizontal: 20,
-              overflow: "hidden",
-              shadowColor: theme.shadow,
-              shadowOpacity: theme.shadowOpacity,
-              shadowRadius: 6,
-              elevation: 1,
-              borderWidth: 1,
-              borderColor: theme.cardBorder,
-            }}
-          >
+        <IOSSectionHeader title={t.support} theme={theme} style={{ paddingHorizontal: 28 }} />
+        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Rate Us on App Store */}
             <TouchableOpacity
               onPress={async () => {
@@ -1881,7 +1766,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -1895,7 +1780,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.rateUs || "Rate Us"}
                 </Text>
@@ -1909,7 +1794,7 @@ function SettingScreen() {
 
             <View
               style={{
-                height: 1,
+                height: StyleSheet.hairlineWidth,
                 backgroundColor: theme.divider,
                 marginHorizontal: 20,
               }}
@@ -1923,7 +1808,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -1937,7 +1822,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.feedback || "Send Feedback"}
                 </Text>
@@ -1948,8 +1833,7 @@ function SettingScreen() {
                 color={theme.textTertiary}
               />
             </TouchableOpacity>
-          </View>
-        </View>
+        </IOSCard>
 
         {/* Feedback Form Modal */}
         <Modal
@@ -2232,7 +2116,7 @@ function SettingScreen() {
                       backgroundColor:
                         isSubmittingFeedback || !feedbackText.trim()
                           ? theme.textTertiary
-                          : "#6c63ff", // Brand purple
+                          : theme.primary,
                       borderRadius: 12,
                       paddingVertical: 16,
                       alignItems: "center",
@@ -2268,34 +2152,8 @@ function SettingScreen() {
         </Modal>
 
         {/* Legal & Support Section */}
-        <View style={{ marginTop: 24, marginBottom: 8 }}>
-          <Text
-            style={{
-              color: theme.textSecondary,
-              fontSize: 13,
-              fontWeight: "600",
-              marginLeft: 28,
-              marginBottom: 12,
-              letterSpacing: 0.3,
-              textTransform: "uppercase",
-            }}
-          >
-            {t.legalAndSupport || "Legal & Support"}
-          </Text>
-          <View
-            style={{
-              backgroundColor: theme.card,
-              borderRadius: 16,
-              marginHorizontal: 20,
-              overflow: "hidden",
-              shadowColor: theme.shadow,
-              shadowOpacity: theme.shadowOpacity,
-              shadowRadius: 6,
-              elevation: 1,
-              borderWidth: 1,
-              borderColor: theme.cardBorder,
-            }}
-          >
+        <IOSSectionHeader title={t.legalAndSupport || "Legal & Support"} theme={theme} style={{ paddingHorizontal: 28 }} />
+        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Terms of Use */}
             <TouchableOpacity
               onPress={() => navigation.navigate("Terms")}
@@ -2304,7 +2162,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -2318,7 +2176,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.terms}
                 </Text>
@@ -2332,7 +2190,7 @@ function SettingScreen() {
 
             <View
               style={{
-                height: 1,
+                height: StyleSheet.hairlineWidth,
                 backgroundColor: theme.divider,
                 marginHorizontal: 20,
               }}
@@ -2346,7 +2204,7 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 14,
+                paddingVertical: 12,
                 paddingHorizontal: 20,
               }}
             >
@@ -2360,7 +2218,7 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: 16, fontWeight: "500" }}
+                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
                 >
                   {t.privacy}
                 </Text>
@@ -2374,7 +2232,7 @@ function SettingScreen() {
 
             <View
               style={{
-                height: 1,
+                height: StyleSheet.hairlineWidth,
                 backgroundColor: theme.divider,
                 marginHorizontal: 20,
               }}
@@ -2391,7 +2249,7 @@ function SettingScreen() {
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      paddingVertical: 14,
+                      paddingVertical: 12,
                       paddingHorizontal: 20,
                     }}
                   >
@@ -2411,8 +2269,8 @@ function SettingScreen() {
                       <Text
                         style={{
                           color: theme.text,
-                          fontSize: 16,
-                          fontWeight: "500",
+                          fontSize: theme.typography.callout.fontSize,
+                          fontWeight: "400",
                         }}
                       >
                         {t.version}{" "}
@@ -2459,7 +2317,7 @@ function SettingScreen() {
                       flexDirection: "row",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      paddingVertical: 14,
+                      paddingVertical: 12,
                       paddingHorizontal: 20,
                     }}
                   >
@@ -2479,8 +2337,8 @@ function SettingScreen() {
                       <Text
                         style={{
                           color: theme.text,
-                          fontSize: 16,
-                          fontWeight: "500",
+                          fontSize: theme.typography.callout.fontSize,
+                          fontWeight: "400",
                         }}
                       >
                         {t.version}{" "}
@@ -2501,26 +2359,10 @@ function SettingScreen() {
                 )}
               </>
             )}
-          </View>
-        </View>
+        </IOSCard>
 
         {/* Log Out Button */}
-        <View
-          style={{
-            backgroundColor: theme.card,
-            borderRadius: 16,
-            marginHorizontal: 20,
-            marginTop: 32,
-            marginBottom: 0,
-            overflow: "hidden",
-            shadowColor: theme.shadow,
-            shadowOpacity: theme.shadowOpacity,
-            shadowRadius: 6,
-            elevation: 1,
-            borderWidth: 1,
-            borderColor: theme.cardBorder,
-          }}
-        >
+        <IOSCard theme={theme} style={{ marginHorizontal: 20, marginTop: 32, padding: 0, overflow: "hidden" }}>
           <TouchableOpacity
             onPress={() => {
               setLogoutModalVisible(true);
@@ -2530,7 +2372,7 @@ function SettingScreen() {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              paddingVertical: 14,
+              paddingVertical: 12,
               paddingHorizontal: 20,
             }}
           >
@@ -2546,7 +2388,7 @@ function SettingScreen() {
               {t.logout || "Log out"}
             </Text>
           </TouchableOpacity>
-        </View>
+        </IOSCard>
 
         {/* Delete Account */}
         <TouchableOpacity

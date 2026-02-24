@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import { PRIMARY } from "../config/theme";
 
 /**
  * 根據提醒時間點生成個性化的通知文字
@@ -68,7 +69,7 @@ export async function registerForPushNotificationsAsync() {
           name: "default",
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: "#6c63ff",
+          lightColor: PRIMARY,
         });
         console.log("✅ Android notification channel set");
       } catch (error) {

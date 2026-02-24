@@ -1,6 +1,7 @@
 // Spanish translations
 export default {
   settings: "Configuración",
+  tasks: "Tareas",
   userName: "Nombre de usuario",
   account: "Cuenta",
   logout: "Cerrar sesión",

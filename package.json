@@ -1,6 +1,6 @@
 {
   "name": "too-doo-list",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start --dev-client",
@@ -26,6 +26,7 @@
     "expo": "~54.0.25",
     "expo-apple-authentication": "^8.0.7",
     "expo-auth-session": "~7.0.9",
+    "expo-blur": "~15.0.8",
     "expo-build-properties": "~1.0.9",
     "expo-constants": "~18.0.9",
     "expo-dev-client": "~6.0.18",
@@ -42,6 +43,7 @@
     "react-ga4": "^2.1.0",
     "react-is": "^19.1.0",
     "react-native": "0.81.5",
+    "react-native-bottom-tabs": "^1.1.0",
     "react-native-calendars": "^1.1299.0",
     "react-native-draggable-flatlist": "^4.0.0",
     "react-native-drax": "^0.10.3",
