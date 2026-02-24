@@ -766,9 +766,7 @@ function SettingScreen() {
                     height: 50,
                     borderRadius: 25,
                     marginRight: 15,
-                    backgroundColor:
-                      theme.mode === "dark"
-                        theme.shimmer,
+                    backgroundColor: theme.shimmer,
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
                       outputRange: [0.3, 0.7],
@@ -879,9 +877,7 @@ function SettingScreen() {
                   style={{
                     height: 12,
                     borderRadius: 4,
-                    backgroundColor:
-                      theme.mode === "dark"
-                        theme.shimmer,
+                    backgroundColor: theme.shimmer,
                     width: "40%",
                     marginBottom: 8,
                     opacity: shimmerAnim.interpolate({
@@ -894,9 +890,7 @@ function SettingScreen() {
                   style={{
                     height: 14,
                     borderRadius: 4,
-                    backgroundColor:
-                      theme.mode === "dark"
-                        theme.shimmer,
+                    backgroundColor: theme.shimmer,
                     width: "50%",
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
