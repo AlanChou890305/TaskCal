@@ -40,6 +40,7 @@ import AdBanner from "../components/AdBanner";
 import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
+import LiquidGlassFABButton from "../components/LiquidGlassFABButton";
 
 function getToday() {
   const today = new Date();
@@ -1599,46 +1600,19 @@ function CalendarScreen({ navigation, route }) {
 
           {/* Floating Add Button - 玻璃效果 */}
           {isIOS26Plus ? (
-            <BlurView
-              intensity={70}
-              tint={
-                theme.mode === "dark"
-                  ? "systemUltraThinMaterialDark"
-                  : "systemUltraThinMaterialLight"
-              }
+            <LiquidGlassFABButton
               style={[
                 styles.fabAddButton,
                 {
-                  backgroundColor:
-                    theme.mode === "dark"
-                      ? "rgba(80, 80, 85, 0.25)"
-                      : "rgba(255, 255, 255, 0.25)",
-                  shadowColor: "#000",
-                  shadowOpacity: 0.2,
-                  shadowRadius: 12,
                   bottom: 88,
-                  overflow: "hidden",
-                  borderWidth: 0.5,
-                  borderTopColor: "rgba(255, 255, 255, 0.4)",
-                  borderLeftColor: "rgba(255, 255, 255, 0.4)",
-                  borderBottomColor: "rgba(255, 255, 255, 0.15)",
-                  borderRightColor: "rgba(255, 255, 255, 0.15)",
+                  backgroundColor: 'transparent',
+                  shadowOpacity: 0,
+                  elevation: 0,
                 },
               ]}
-            >
-              <TouchableOpacity
-                style={{ width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}
-                onPress={() => openAddTask(selectedDate)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.addButtonIcon}>
-                  <Svg width={32} height={32} viewBox="0 0 32 32" style={{ display: "flex", alignSelf: "center" }}>
-                    <Line x1="16" y1="6" x2="16" y2="26" stroke={theme.mode === "dark" ? "#ffffff" : theme.primary} strokeWidth="3" strokeLinecap="round" />
-                    <Line x1="6" y1="16" x2="26" y2="16" stroke={theme.mode === "dark" ? "#ffffff" : theme.primary} strokeWidth="3" strokeLinecap="round" />
-                  </Svg>
-                </View>
-              </TouchableOpacity>
-            </BlurView>
+              onPress={() => openAddTask(selectedDate)}
+              primaryColor={theme.primary}
+            />
           ) : (
             <TouchableOpacity
               style={[

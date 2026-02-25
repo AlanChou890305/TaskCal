@@ -3085,7 +3085,6 @@ export default function App() {
     const { theme } = useContext(ThemeContext);
     const [tabIndex, setTabIndex] = React.useState(0);
     const insets = useSafeAreaInsets();
-    const colorScheme = useColorScheme();
 
     React.useEffect(() => {
       if (typeof document !== "undefined") {
@@ -3095,40 +3094,43 @@ export default function App() {
       }
     });
 
+    // iOS 26+: stable references to prevent native tab bar appearance flicker
+    const ios26Routes = React.useMemo(() => [
+      {
+        key: "calendar",
+        title: t.tasks || "Tasks",
+        focusedIcon: { sfSymbol: "checkmark.square.fill" },
+        unfocusedIcon: { sfSymbol: "checkmark.square" },
+      },
+      {
+        key: "settings",
+        title: t.settings || "Settings",
+        focusedIcon: { sfSymbol: "gearshape.fill" },
+        unfocusedIcon: { sfSymbol: "gearshape" },
+      },
+    ], [t.tasks, t.settings]);
+
+    const ios26RenderScene = React.useCallback(({ route }) => {
+      switch (route.key) {
+        case "calendar":
+          return <CalendarScreen />;
+        case "settings":
+          return <SettingScreen />;
+        default:
+          return null;
+      }
+    }, []);
+
     // iOS 26+: native UITabBar with Liquid Glass
     if (isIOS26Plus) {
-      const routes = [
-        {
-          key: "calendar",
-          title: t.tasks || "Tasks",
-          focusedIcon: { sfSymbol: "checkmark.square.fill" },
-          unfocusedIcon: { sfSymbol: "checkmark.square" },
-        },
-        {
-          key: "settings",
-          title: t.settings || "Settings",
-          focusedIcon: { sfSymbol: "gearshape.fill" },
-          unfocusedIcon: { sfSymbol: "gearshape" },
-        },
-      ];
-
-      const renderScene = ({ route }) => {
-        switch (route.key) {
-          case "calendar":
-            return <CalendarScreen />;
-          case "settings":
-            return <SettingScreen />;
-          default:
-            return null;
-        }
-      };
-
       return (
         <TabView
-          navigationState={{ index: tabIndex, routes }}
+          navigationState={{ index: tabIndex, routes: ios26Routes }}
           onIndexChange={setTabIndex}
-          renderScene={renderScene}
+          renderScene={ios26RenderScene}
           scrollEdgeAppearance="transparent"
+          tabBarActiveTintColor={theme?.tabBarActive}
+          tabBarInactiveTintColor={theme?.tabBarInactive}
           tabBarStyle={{ backgroundColor: "transparent" }}
         />
       );
@@ -3137,9 +3139,9 @@ export default function App() {
     // iOS < 26: standard React Navigation bottom tabs (proper centering)
     const verticalPad = Math.round(insets.bottom * 0.5);
     const isDark = theme?.mode === "dark";
-    const tabBgColor = isDark ? "#1c1c1e" : "#f9f9f9";
-    const tabActiveColor = isDark ? "#60A5FA" : "#3B82F6";
-    const tabInactiveColor = isDark ? "#636366" : "#999999";
+    const tabBgColor = theme?.tabBarBackground || (isDark ? "#1c1c1e" : "#f9f9f9");
+    const tabActiveColor = theme?.tabBarActive || (isDark ? "#60A5FA" : "#3B82F6");
+    const tabInactiveColor = theme?.tabBarInactive || (isDark ? "#636366" : "#999999");
 
     return (
       <Tab.Navigator

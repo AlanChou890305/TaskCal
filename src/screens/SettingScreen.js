@@ -2270,7 +2270,7 @@ function SettingScreen() {
                         {t.version}{" "}
                         {effectiveVersionInfo?.version ||
                           Application.nativeApplicationVersion ||
-                          "1.2.2"}
+                          "1.2.9"}
                       </Text>
                     </View>
                     <View
@@ -2338,7 +2338,7 @@ function SettingScreen() {
                         {t.version}{" "}
                         {effectiveVersionInfo?.version ||
                           Application.nativeApplicationVersion ||
-                          "1.2.2"}
+                          "1.2.9"}
                       </Text>
                     </View>
                     <Text

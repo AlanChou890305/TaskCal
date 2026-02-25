@@ -72,7 +72,7 @@
 ### 設定
 
 - **切換語言：** 在英文、繁體中文與西班牙文之間切換
-- **查看版本：** 確認目前應用程式版本 (v1.2.8)
+- **查看版本：** 確認目前應用程式版本 (v1.2.9)
 - **法律資訊：** 查看使用條款與隱私權政策
 - **登出：** 安全登出並立即返回登入畫面
 
@@ -97,12 +97,24 @@
 
 ### 版本管理
 
-- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.2.8)
+- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.2.9)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 版本資訊
 
-### v1.2.8 (最新版本) - 2026-02-09
+### v1.2.9 (最新版本) - 2026-02-25
+
+**主題色統一與程式碼品質改進**
+
+- 🎨 **修正主題色**：所有 UI 統一使用應用程式標誌性紫色 (#6c63ff)
+- 📱 **修正 Widget 主色**：iOS Widget 主色與應用程式主題完全一致
+- 🔧 **主題色常數化**：新增 PRIMARY 常數作為品牌色單一來源
+- ✨ **改善程式碼品質**：消除散落各處的硬編碼顏色值
+- ⚡ **效能提升**：減少不必要的除錯日誌
+
+---
+
+### v1.2.8 - 2026-02-09
 
 **自動主題模式修正與改進**
 
@@ -218,7 +230,7 @@ A cross-platform React Native task management application with calendar view, Go
 ### Settings
 
 - **Switch Language:** Toggle between English, Traditional Chinese, and Spanish
-- **View Version:** Check current application version (v1.2.8)
+- **View Version:** Check current application version (v1.2.9)
 - **Legal Information:** View terms of use and privacy policy
 - **Sign Out:** Securely sign out and return to login screen
 
@@ -243,12 +255,24 @@ A cross-platform React Native task management application with calendar view, Go
 
 ### Version Management
 
-- **Semantic Versioning** - Major.Minor.Patch (Current: v1.2.8)
+- **Semantic Versioning** - Major.Minor.Patch (Current: v1.2.9)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Version Information
 
-### v1.2.8 (Latest) - 2026-02-09
+### v1.2.9 (Latest) - 2026-02-25
+
+**Theme Color Unification & Code Quality**
+
+- 🎨 **Fixed Theme Color**: All UI now consistently uses the app's signature purple (#6c63ff)
+- 📱 **Fixed Widget Color**: iOS Widget primary color now matches the app theme
+- 🔧 **Theme Color Constants**: Introduced PRIMARY constant as single source of truth for brand color
+- ✨ **Improved Code Quality**: Eliminated hardcoded color values scattered across the codebase
+- ⚡ **Performance**: Reduced unnecessary debug logs
+
+---
+
+### v1.2.8 - 2026-02-09
 
 **Auto Theme Mode Fix & Improvements**
 
@@ -350,7 +374,7 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 ### Configuración
 
 - **Cambiar Idioma:** Alterna entre Inglés, Chino Tradicional y Español
-- **Ver Versión:** Verifica la versión actual de la aplicación (v1.2.8)
+- **Ver Versión:** Verifica la versión actual de la aplicación (v1.2.9)
 - **Información Legal:** Ver términos de uso y política de privacidad
 - **Cerrar Sesión:** Cierra sesión de forma segura y regresa a la pantalla de inicio de sesión
 
@@ -375,12 +399,24 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 
 ### Gestión de Versiones
 
-- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.2.8)
+- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.2.9)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Información de Versión
 
-### v1.2.8 (Última) - 2026-02-09
+### v1.2.9 (Última) - 2026-02-25
+
+**Unificación de Color del Tema y Calidad de Código**
+
+- 🎨 **Corregido Color del Tema**: Toda la interfaz usa ahora el morado característico de la app (#6c63ff)
+- 📱 **Corregido Color del Widget**: El color del widget de iOS ahora coincide con el tema de la app
+- 🔧 **Constantes de Color**: Introducida constante PRIMARY como fuente única del color de marca
+- ✨ **Mejora de Código**: Eliminados valores de color hardcodeados dispersos en el código
+- ⚡ **Rendimiento**: Reducidos logs de depuración innecesarios
+
+---
+
+### v1.2.8 - 2026-02-09
 
 **Corrección y Mejoras del Modo de Tema Automático**
 

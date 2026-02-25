@@ -18,7 +18,7 @@ const getEnvironmentConfig = () => {
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "17",
+    iosBuildNumber: "25",
   };
 };
 
@@ -129,7 +129,7 @@ module.exports = {
 
     // Splash screen configuration
     splash: {
-      image: "./assets/splash.png",
+      image: "./assets/splash-light.jpg",
       resizeMode: "contain",
       backgroundColor: "#ffffff",
     },
