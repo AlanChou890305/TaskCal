@@ -6,6 +6,8 @@ import {
   SafeAreaView,
   Platform,
 } from "react-native";
+
+const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 import { LanguageContext, ThemeContext } from "../contexts";
 
 function SupportScreen() {
@@ -22,7 +24,7 @@ function SupportScreen() {
         style={{
           flex: 1,
           paddingHorizontal: 20,
-          paddingTop: 40,
+          paddingTop: isIOS26Plus ? 16 : 40,
           alignItems: "center",
         }}
       >

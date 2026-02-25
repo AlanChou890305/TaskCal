@@ -5,7 +5,10 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  Platform,
 } from "react-native";
+
+const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
@@ -21,73 +24,75 @@ function TermsScreen() {
       accessibilityViewIsModal={true}
       accessibilityLabel="Terms of Use Screen"
     >
-      {/* Custom Header with Back Chevron, Title and Date */}
-      <View
-        style={{
-          backgroundColor: theme.backgroundSecondary,
-          paddingTop: 8,
-          paddingBottom: 16,
-          paddingHorizontal: 20,
-        }}
-      >
-        <View style={{ position: "relative" }}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{
-              position: "absolute",
-              left: -10,
-              top: 0,
-              padding: 10,
-              zIndex: 1,
-            }}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Svg width={18} height={28}>
-              <Line
-                x1={12}
-                y1={6}
-                x2={4}
-                y2={14}
-                stroke={theme.text}
-                strokeWidth={2.2}
-                strokeLinecap="round"
-              />
-              <Line
-                x1={4}
-                y1={14}
-                x2={12}
-                y2={22}
-                stroke={theme.text}
-                strokeWidth={2.2}
-                strokeLinecap="round"
-              />
-            </Svg>
-          </TouchableOpacity>
-          <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
-            <Text
+      {/* Custom Header with Back Chevron, Title and Date (non-iOS 26 only) */}
+      {!isIOS26Plus && (
+        <View
+          style={{
+            backgroundColor: theme.backgroundSecondary,
+            paddingTop: 8,
+            paddingBottom: 16,
+            paddingHorizontal: 20,
+          }}
+        >
+          <View style={{ position: "relative" }}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
               style={{
-                fontSize: 24,
-                color: theme.text,
-                fontWeight: "bold",
-                letterSpacing: -0.5,
-                textAlign: "center",
+                position: "absolute",
+                left: -10,
+                top: 0,
+                padding: 10,
+                zIndex: 1,
               }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              {t.termsTitle}
-            </Text>
-            <Text
-              style={{
-                fontSize: 13,
-                color: theme.textSecondary,
-                marginTop: 4,
-                textAlign: "center",
-              }}
-            >
-              {t.termsLastUpdated} {new Date().toLocaleDateString()}
-            </Text>
+              <Svg width={18} height={28}>
+                <Line
+                  x1={12}
+                  y1={6}
+                  x2={4}
+                  y2={14}
+                  stroke={theme.text}
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                />
+                <Line
+                  x1={4}
+                  y1={14}
+                  x2={12}
+                  y2={22}
+                  stroke={theme.text}
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                />
+              </Svg>
+            </TouchableOpacity>
+            <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
+              <Text
+                style={{
+                  fontSize: 24,
+                  color: theme.text,
+                  fontWeight: "bold",
+                  letterSpacing: -0.5,
+                  textAlign: "center",
+                }}
+              >
+                {t.termsTitle}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: theme.textSecondary,
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
+                {t.termsLastUpdated} {new Date().toLocaleDateString()}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
+      )}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
