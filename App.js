@@ -3193,6 +3193,7 @@ export default function App() {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <ThemeContext.Provider
       value={{ theme, themeMode, setThemeMode, toggleTheme, loadTheme }}
     >
@@ -3293,6 +3294,7 @@ export default function App() {
         </LanguageContext.Provider>
       </UserContext.Provider>
     </ThemeContext.Provider>
+    </GestureHandlerRootView>
   );
 }
 
