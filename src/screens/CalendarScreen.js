@@ -1730,6 +1730,7 @@ function CalendarScreen({ navigation, route }) {
     <Modal
       animationType="slide"
       transparent={false}
+      presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
       accessibilityViewIsModal={true}
