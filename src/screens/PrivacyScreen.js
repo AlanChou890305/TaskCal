@@ -6,7 +6,7 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
@@ -19,15 +19,31 @@ function PrivacyScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
   return (
     <SafeAreaView
+      edges={["bottom"]}
       style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Privacy Policy Screen"
     >
-      {/* Header */}
-      {isIOS26Plus ? null : (
+      {Platform.OS === "ios" && (
+        <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
+        </View>
+      )}
+      {isIOS26Plus ? (
+        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+          <LiquidGlassButton
+            style={{ position: "absolute", left: 16, width: 44, height: 44 }}
+            buttonIcon="chevron.left"
+            primaryColor={theme.text}
+            onPress={() => navigation.goBack()}
+          />
+          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+            {t.privacyTitle}
+          </Text>
+        </View>
+      ) : (
         <View
           style={{
             backgroundColor: theme.backgroundSecondary,
@@ -49,59 +65,20 @@ function PrivacyScreen() {
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Svg width={18} height={28}>
-                <Line
-                  x1={12}
-                  y1={6}
-                  x2={4}
-                  y2={14}
-                  stroke={theme.text}
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                />
-                <Line
-                  x1={4}
-                  y1={14}
-                  x2={12}
-                  y2={22}
-                  stroke={theme.text}
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                />
+                <Line x1={12} y1={6} x2={4} y2={14} stroke={theme.text} strokeWidth={2.2} strokeLinecap="round" />
+                <Line x1={4} y1={14} x2={12} y2={22} stroke={theme.text} strokeWidth={2.2} strokeLinecap="round" />
               </Svg>
             </TouchableOpacity>
             <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
-              <Text
-                style={{
-                  fontSize: 24,
-                  color: theme.text,
-                  fontWeight: "bold",
-                  letterSpacing: -0.5,
-                  textAlign: "center",
-                }}
-              >
+              <Text style={{ fontSize: 24, color: theme.text, fontWeight: "bold", letterSpacing: -0.5, textAlign: "center" }}>
                 {t.privacyTitle}
               </Text>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: theme.textSecondary,
-                  marginTop: 4,
-                  textAlign: "center",
-                }}
-              >
+              <Text style={{ fontSize: 13, color: theme.textSecondary, marginTop: 4, textAlign: "center" }}>
                 {t.privacyLastUpdated} {new Date().toLocaleDateString()}
               </Text>
             </View>
           </View>
         </View>
-      )}
-      {isIOS26Plus && (
-        <LiquidGlassButton
-          style={{ position: "absolute", top: insets.top + 12, left: 16, width: 44, height: 44, zIndex: 10 }}
-          buttonIcon="chevron.left"
-          primaryColor={theme.text}
-          onPress={() => navigation.goBack()}
-        />
       )}
       <ScrollView
         style={{ flex: 1 }}
@@ -113,11 +90,6 @@ function PrivacyScreen() {
         showsVerticalScrollIndicator={true}
         bounces={true}
       >
-        {isIOS26Plus && (
-          <Text style={{ fontSize: 20, fontWeight: "bold", color: theme.text, letterSpacing: -0.3, textAlign: "center", marginBottom: 32 }}>
-            {t.privacyTitle}
-          </Text>
-        )}
         {/* One big card with all sections */}
         <View
           style={{

@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
 import LiquidGlassButton from "../components/LiquidGlassButton";
@@ -16,41 +16,46 @@ function SupportScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView
+      edges={["bottom"]}
       style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Support Screen"
     >
-      {isIOS26Plus && (
-        <LiquidGlassButton
-          style={{ position: "absolute", top: insets.top + 12, left: 16, width: 44, height: 44, zIndex: 10 }}
-          buttonIcon="chevron.left"
-          primaryColor={theme.text}
-          onPress={() => navigation.goBack()}
-        />
+      {Platform.OS === "ios" && (
+        <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
+          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
+        </View>
+      )}
+      {isIOS26Plus ? (
+        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+          <LiquidGlassButton
+            style={{ position: "absolute", left: 16, width: 44, height: 44 }}
+            buttonIcon="chevron.left"
+            primaryColor={theme.text}
+            onPress={() => navigation.goBack()}
+          />
+          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+            {t.supportTitle}
+          </Text>
+        </View>
+      ) : (
+        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+            {t.supportTitle}
+          </Text>
+        </View>
       )}
       <View
         style={{
           flex: 1,
           paddingHorizontal: 20,
-          paddingTop: 40,
+          paddingTop: 20,
           alignItems: "center",
         }}
       >
-        <Text
-          style={{
-            fontSize: 28,
-            color: theme.text,
-            fontWeight: "bold",
-            marginBottom: 16,
-            textAlign: "center",
-          }}
-        >
-          {t.supportTitle}
-        </Text>
 
         <Text
           style={{

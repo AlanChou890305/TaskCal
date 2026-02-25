@@ -35,6 +35,9 @@ import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
+import LiquidGlassButton from "../components/LiquidGlassButton";
+
+const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -105,6 +108,54 @@ function SettingScreen() {
   const [feedbackText, setFeedbackText] = useState("");
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const navigation = useNavigation();
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackText.trim()) {
+      Alert.alert(t.confirm, t.pleaseEnterFeedback);
+      return;
+    }
+    setIsSubmittingFeedback(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert(t.confirm, t.pleaseLoginFirst);
+        setIsSubmittingFeedback(false);
+        return;
+      }
+      const { error } = await supabase.from("user_feedback").insert({
+        user_id: user.id,
+        email: user.email,
+        category: feedbackCategory,
+        title: feedbackTitle.trim() || null,
+        feedback: feedbackText.trim(),
+        app_version: Application.nativeApplicationVersion,
+        build_number: Application.nativeBuildVersion,
+        os_version: Platform.Version,
+        platform: Platform.OS,
+      });
+      if (error) throw error;
+      mixpanelService.track("Feedback Submitted", {
+        category: feedbackCategory,
+        feedback_length: feedbackText.trim().length,
+        app_version: Application.nativeApplicationVersion,
+        platform: Platform.OS,
+      });
+      Alert.alert(t.submitSuccess, t.thanksFeedback, [{
+        text: t.done,
+        onPress: () => {
+          setFeedbackModalVisible(false);
+          setFeedbackTitle("");
+          setFeedbackText("");
+          setFeedbackCategory("suggestion");
+        },
+      }]);
+    } catch (err) {
+      console.error("Error submitting feedback:", err);
+      Alert.alert(t.submitFailed, t.pleaseTryAgainLater);
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
   const userProfileCache = useRef(null); // Cache user profile to avoid redundant API calls
 
   // 使用者類型切換處理 (僅限開發模式)
@@ -1832,63 +1883,63 @@ function SettingScreen() {
         {/* Feedback Form Modal */}
         <Modal
           visible={feedbackModalVisible}
-          transparent={true}
+          transparent={false}
           animationType="slide"
+          presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
           onRequestClose={() => {
             if (!isSubmittingFeedback) setFeedbackModalVisible(false);
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              justifyContent: "flex-end",
-            }}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1, backgroundColor: theme.card }}
           >
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              style={{ width: "100%" }}
-            >
-              <View
-                style={{
-                  backgroundColor: theme.card,
-                  borderTopLeftRadius: 24,
-                  borderTopRightRadius: 24,
-                  padding: 24,
-                  maxHeight: Dimensions.get("window").height * 0.85,
-                }}
-              >
-                {/* Header */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 20,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontSize: 20,
-                      fontWeight: "700",
-                    }}
-                  >
-                    {t.feedback || "Send Feedback"}
-                  </Text>
+              {/* Drag indicator */}
+              {Platform.OS === "ios" && (
+                <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
+                  <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
+                </View>
+              )}
+              {/* Header row */}
+              <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+                {isIOS26Plus ? (
+                  <LiquidGlassButton
+                    style={{ position: "absolute", left: 16, width: 44, height: 44 }}
+                    buttonIcon="xmark"
+                    primaryColor={theme.textSecondary}
+                    onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
+                  />
+                ) : (
                   <TouchableOpacity
+                    style={{ position: "absolute", left: 16, padding: 8 }}
                     onPress={() => setFeedbackModalVisible(false)}
                     disabled={isSubmittingFeedback}
                   >
-                    <MaterialIcons
-                      name="close"
-                      size={24}
-                      color={theme.textSecondary}
-                    />
+                    <MaterialIcons name="close" size={24} color={theme.textSecondary} />
                   </TouchableOpacity>
-                </View>
+                )}
+                <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+                  {t.feedback || "Send Feedback"}
+                </Text>
+                {isIOS26Plus ? (
+                  <LiquidGlassButton
+                    style={{ position: "absolute", right: 16, width: 44, height: 44 }}
+                    buttonIcon="checkmark"
+                    primaryColor={theme.primary}
+                    onPress={handleSubmitFeedback}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={{ position: "absolute", right: 16, padding: 8 }}
+                    onPress={handleSubmitFeedback}
+                    disabled={isSubmittingFeedback || !feedbackText.trim()}
+                  >
+                    <MaterialIcons name="check" size={24} color={feedbackText.trim() ? theme.primary : theme.textTertiary} />
+                  </TouchableOpacity>
+                )}
+              </View>
 
-                <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24 }}>
                   {/* Category Selection */}
                   <Text
                     style={{
@@ -2043,91 +2094,6 @@ function SettingScreen() {
                     {feedbackText.length} / 1000
                   </Text>
 
-                  {/* Submit Button */}
-                  <TouchableOpacity
-                    onPress={async () => {
-                      if (!feedbackText.trim()) {
-                        Alert.alert(t.confirm, t.pleaseEnterFeedback);
-                        return;
-                      }
-
-                      setIsSubmittingFeedback(true);
-                      try {
-                        const {
-                          data: { user },
-                        } = await supabase.auth.getUser();
-
-                        if (!user) {
-                          Alert.alert(t.confirm, t.pleaseLoginFirst);
-                          setIsSubmittingFeedback(false);
-                          return;
-                        }
-
-                        const { error } = await supabase
-                          .from("user_feedback")
-                          .insert({
-                            user_id: user.id,
-                            email: user.email,
-                            category: feedbackCategory,
-                            title: feedbackTitle.trim() || null,
-                            feedback: feedbackText.trim(),
-                            app_version: Application.nativeApplicationVersion,
-                            build_number: Application.nativeBuildVersion,
-                            os_version: Platform.Version,
-                            platform: Platform.OS,
-                          });
-
-                        if (error) throw error;
-
-                        // Mixpanel: Track feedback submission
-                        mixpanelService.track("Feedback Submitted", {
-                          category: feedbackCategory,
-                          feedback_length: feedbackText.trim().length,
-                          app_version: Application.nativeApplicationVersion,
-                          platform: Platform.OS,
-                        });
-
-                        Alert.alert(t.submitSuccess, t.thanksFeedback, [
-                          {
-                            text: t.done,
-                            onPress: () => {
-                              setFeedbackModalVisible(false);
-                              setFeedbackTitle("");
-                              setFeedbackText("");
-                              setFeedbackCategory("suggestion");
-                            },
-                          },
-                        ]);
-                      } catch (err) {
-                        console.error("Error submitting feedback:", err);
-                        Alert.alert(t.submitFailed, t.pleaseTryAgainLater);
-                      } finally {
-                        setIsSubmittingFeedback(false);
-                      }
-                    }}
-                    disabled={isSubmittingFeedback || !feedbackText.trim()}
-                    style={{
-                      backgroundColor:
-                        isSubmittingFeedback || !feedbackText.trim()
-                          ? theme.textTertiary
-                          : theme.primary,
-                      borderRadius: 12,
-                      paddingVertical: 16,
-                      alignItems: "center",
-                      marginBottom: 12,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#fff",
-                        fontSize: 16,
-                        fontWeight: "700",
-                      }}
-                    >
-                      {isSubmittingFeedback ? t.submitting : t.submitFeedback}
-                    </Text>
-                  </TouchableOpacity>
-
                   <Text
                     style={{
                       color: theme.textTertiary,
@@ -2140,9 +2106,7 @@ function SettingScreen() {
                     {t.feedbackMotivation}
                   </Text>
                 </ScrollView>
-              </View>
-            </KeyboardAvoidingView>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
 
         {/* Legal & Support Section */}

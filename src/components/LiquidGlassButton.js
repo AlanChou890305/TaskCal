@@ -16,6 +16,8 @@ if (Platform.OS === 'ios') {
 
 const SF_SYMBOL_TO_ICON = {
   'chevron.left': 'chevron-left',
+  'checkmark': 'check',
+  'xmark': 'close',
 };
 
 export default function LiquidGlassButton({ style, buttonIcon, buttonLabel, primaryColor, onPress }) {

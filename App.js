@@ -3256,9 +3256,9 @@ export default function App() {
                 component={TermsScreen}
                 options={{
                   headerShown: false,
-                  presentation: "card",
+                  presentation: "modal",
                   gestureEnabled: true,
-                  gestureDirection: "horizontal",
+                  gestureDirection: "vertical",
                 }}
               />
               <Stack.Screen
@@ -3266,9 +3266,9 @@ export default function App() {
                 component={PrivacyScreen}
                 options={{
                   headerShown: false,
-                  presentation: "card",
+                  presentation: "modal",
                   gestureEnabled: true,
-                  gestureDirection: "horizontal",
+                  gestureDirection: "vertical",
                 }}
               />
               <Stack.Screen
@@ -3276,9 +3276,9 @@ export default function App() {
                 component={SupportScreen}
                 options={{
                   headerShown: false,
-                  presentation: "card",
+                  presentation: "modal",
                   gestureEnabled: true,
-                  gestureDirection: "horizontal",
+                  gestureDirection: "vertical",
                 }}
               />
             </Stack.Navigator>
