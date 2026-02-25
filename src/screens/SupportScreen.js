@@ -8,11 +8,14 @@ import {
 } from "react-native";
 
 const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
+import LiquidGlassButton from "../components/LiquidGlassButton";
 
 function SupportScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
+  const navigation = useNavigation();
 
   return (
     <SafeAreaView
@@ -20,11 +23,19 @@ function SupportScreen() {
       accessibilityViewIsModal={true}
       accessibilityLabel="Support Screen"
     >
+      {isIOS26Plus && (
+        <LiquidGlassButton
+          style={{ position: "absolute", top: 8, left: 16, width: 44, height: 44, zIndex: 10 }}
+          buttonIcon="chevron.left"
+          primaryColor={theme.text}
+          onPress={() => navigation.goBack()}
+        />
+      )}
       <View
         style={{
           flex: 1,
           paddingHorizontal: 20,
-          paddingTop: isIOS26Plus ? 16 : 40,
+          paddingTop: 40,
           alignItems: "center",
         }}
       >

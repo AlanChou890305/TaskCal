@@ -41,6 +41,7 @@ import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
 import LiquidGlassFABButton from "../components/LiquidGlassFABButton";
+import LiquidGlassButton from "../components/LiquidGlassButton";
 
 function getToday() {
   const today = new Date();
@@ -312,6 +313,8 @@ function CalendarScreen({ navigation, route }) {
   useEffect(() => {
     if (!modalVisible) {
       setTaskDate(selectedDate);
+    } else {
+      modalScrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [selectedDate, modalVisible]);
 
@@ -1764,75 +1767,23 @@ function CalendarScreen({ navigation, route }) {
                 : null,
             ]}
           >
-            {isIOS26Plus ? (
-              <View
-                style={[
-                  styles.modalHeader,
-                  {
-                    paddingTop: insets.top + 12,
-                    backgroundColor:
-                      theme.mode === "dark"
-                        ? theme.background
-                        : theme.modalBackground,
-                    borderBottomWidth: 0,
-                  },
-                ]}
-              >
-                <TouchableOpacity
-                  style={[
-                    styles.modalBackButton,
-                    {
-                      backgroundColor:
-                        theme.mode === "dark"
-                          ? "rgba(255, 255, 255, 0.12)"
-                          : "rgba(0, 0, 0, 0.06)",
-                      borderRadius: 22,
-                      width: 44,
-                      height: 44,
-                    },
-                  ]}
+            {isIOS26Plus && (
+              <>
+                <LiquidGlassButton
+                  style={{ position: "absolute", top: insets.top + 8, left: 16, width: 44, height: 44, zIndex: 10 }}
+                  buttonIcon="chevron.left"
+                  primaryColor={theme.text}
                   onPress={() => setModalVisible(false)}
-                  accessibilityLabel="Go back"
-                  accessibilityHint="Close the task creation/editing modal"
-                >
-                  <MaterialIcons name="arrow-back" size={20} color={theme.text} />
-                </TouchableOpacity>
-                <Text
-                  style={[
-                    styles.modalTitle,
-                    { color: theme.text },
-                  ]}
-                >
-                  {editingTask ? t.editTask : t.createTask}
-                </Text>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  <TouchableOpacity
-                    style={{
-                      backgroundColor:
-                        theme.mode === "dark"
-                          ? "rgba(255, 255, 255, 0.12)"
-                          : "rgba(0, 0, 0, 0.06)",
-                      borderRadius: 22,
-                      paddingHorizontal: 16,
-                      height: 44,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onPress={saveTask}
-                  >
-                    <Text
-                      style={{
-                        color: theme.primary,
-                        fontWeight: "600",
-                        fontSize: 15,
-                      }}
-                    >
-                      {editingTask ? t.update : t.save}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ) : (
+                />
+                <LiquidGlassButton
+                  style={{ position: "absolute", top: insets.top + 8, right: 16, width: editingTask ? 100 : 75, height: 44, zIndex: 10 }}
+                  buttonLabel={editingTask ? t.update : t.save}
+                  primaryColor={theme.primary}
+                  onPress={saveTask}
+                />
+              </>
+            )}
+            {!isIOS26Plus && (
               <View
                 style={[
                   styles.modalHeader,
@@ -1865,11 +1816,16 @@ function CalendarScreen({ navigation, route }) {
               ref={modalScrollViewRef}
               style={styles.modalScrollView}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingBottom: 100 }}
+              contentContainerStyle={{ paddingBottom: 100, paddingTop: isIOS26Plus ? insets.top + 20 : 0 }}
               nestedScrollEnabled={true}
               scrollEnabled={true}
             >
-              <View style={{ marginBottom: 24, marginTop: 24 }}>
+              {isIOS26Plus && (
+                <Text style={{ fontSize: 20, fontWeight: "bold", color: theme.text, letterSpacing: -0.3, textAlign: "center", marginBottom: 32 }}>
+                  {editingTask ? t.editTask : t.createTask}
+                </Text>
+              )}
+              <View style={{ marginBottom: 24, marginTop: isIOS26Plus ? 0 : 24 }}>
                 {/* Task Text Input */}
                 <View style={{ marginBottom: 20 }}>
                   <Text style={[styles.label, { color: theme.text }]}>

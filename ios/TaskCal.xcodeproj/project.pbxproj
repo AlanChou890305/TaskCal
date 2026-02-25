@@ -19,6 +19,9 @@
 		7B5BF7C42F4ED10300431C72 /* LiquidGlassFABViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7B5BF7C22F4ED10200431C72 /* LiquidGlassFABViewManager.m */; };
 		7B5BF7C52F4ED10300431C72 /* LiquidGlassFABView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5BF7C12F4ED10200431C72 /* LiquidGlassFABView.swift */; };
 		7B5BF7C62F4ED10300431C72 /* LiquidGlassFABViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B5BF7C32F4ED10200431C72 /* LiquidGlassFABViewManager.swift */; };
+		7BA86EBC2F4F025100ED2BAD /* LiquidGlassButtonViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86EBA2F4F025100ED2BAD /* LiquidGlassButtonViewManager.m */; };
+		7BA86EBD2F4F025100ED2BAD /* LiquidGlassButtonViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86EBB2F4F025100ED2BAD /* LiquidGlassButtonViewManager.swift */; };
+		7BA86EBE2F4F025100ED2BAD /* LiquidGlassButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA86EB92F4F025100ED2BAD /* LiquidGlassButtonView.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		C4716972FE26B2354741EE79 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13C609B44182B87EEA7F912 /* ExpoModulesProvider.swift */; };
 		DEA250DF04CFEDF614F98EB7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CF17C5093DFE979747CA30FE /* PrivacyInfo.xcprivacy */; };
@@ -65,6 +68,9 @@
 		7B5BF7C12F4ED10200431C72 /* LiquidGlassFABView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiquidGlassFABView.swift; path = TaskCal/LiquidGlassFABView.swift; sourceTree = "<group>"; };
 		7B5BF7C22F4ED10200431C72 /* LiquidGlassFABViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = LiquidGlassFABViewManager.m; path = TaskCal/LiquidGlassFABViewManager.m; sourceTree = "<group>"; };
 		7B5BF7C32F4ED10200431C72 /* LiquidGlassFABViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiquidGlassFABViewManager.swift; path = TaskCal/LiquidGlassFABViewManager.swift; sourceTree = "<group>"; };
+		7BA86EB92F4F025100ED2BAD /* LiquidGlassButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiquidGlassButtonView.swift; path = TaskCal/LiquidGlassButtonView.swift; sourceTree = "<group>"; };
+		7BA86EBA2F4F025100ED2BAD /* LiquidGlassButtonViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = LiquidGlassButtonViewManager.m; path = TaskCal/LiquidGlassButtonViewManager.m; sourceTree = "<group>"; };
+		7BA86EBB2F4F025100ED2BAD /* LiquidGlassButtonViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LiquidGlassButtonViewManager.swift; path = TaskCal/LiquidGlassButtonViewManager.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = TaskCal/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		CF17C5093DFE979747CA30FE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = TaskCal/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -91,6 +97,9 @@
 		13B07FAE1A68108700A75B9A /* TaskCal */ = {
 			isa = PBXGroup;
 			children = (
+				7BA86EB92F4F025100ED2BAD /* LiquidGlassButtonView.swift */,
+				7BA86EBA2F4F025100ED2BAD /* LiquidGlassButtonViewManager.m */,
+				7BA86EBB2F4F025100ED2BAD /* LiquidGlassButtonViewManager.swift */,
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				F11748442D0722820044C1D9 /* TaskCal-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
@@ -454,6 +463,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				7BA86EBC2F4F025100ED2BAD /* LiquidGlassButtonViewManager.m in Sources */,
+				7BA86EBD2F4F025100ED2BAD /* LiquidGlassButtonViewManager.swift in Sources */,
+				7BA86EBE2F4F025100ED2BAD /* LiquidGlassButtonView.swift in Sources */,
 				7B5BF7C42F4ED10300431C72 /* LiquidGlassFABViewManager.m in Sources */,
 				7B5BF7C52F4ED10300431C72 /* LiquidGlassFABView.swift in Sources */,
 				7B5BF7C62F4ED10300431C72 /* LiquidGlassFABViewManager.swift in Sources */,

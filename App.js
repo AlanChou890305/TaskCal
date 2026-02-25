@@ -3254,9 +3254,7 @@ export default function App() {
                 name="Terms"
                 component={TermsScreen}
                 options={{
-                  headerShown: isIOS26Plus,
-                  headerTitle: "",
-                  headerTintColor: theme.primary,
+                  headerShown: false,
                   presentation: "card",
                   gestureEnabled: true,
                   gestureDirection: "horizontal",
@@ -3266,9 +3264,7 @@ export default function App() {
                 name="Privacy"
                 component={PrivacyScreen}
                 options={{
-                  headerShown: isIOS26Plus,
-                  headerTitle: "",
-                  headerTintColor: theme.primary,
+                  headerShown: false,
                   presentation: "card",
                   gestureEnabled: true,
                   gestureDirection: "horizontal",
@@ -3278,9 +3274,7 @@ export default function App() {
                 name="Support"
                 component={SupportScreen}
                 options={{
-                  headerShown: isIOS26Plus,
-                  headerTitle: "",
-                  headerTintColor: theme.primary,
+                  headerShown: false,
                   presentation: "card",
                   gestureEnabled: true,
                   gestureDirection: "horizontal",

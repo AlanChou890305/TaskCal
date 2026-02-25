@@ -4,28 +4,30 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Platform,
 } from "react-native";
-
-const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
 import Section from "../components/Section";
+import LiquidGlassButton from "../components/LiquidGlassButton";
+
+const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 function PrivacyScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Privacy Policy Screen"
     >
-      {/* Custom Header with Back Chevron, Title and Date (non-iOS 26 only) */}
-      {!isIOS26Plus && (
+      {/* Header */}
+      {isIOS26Plus ? null : (
         <View
           style={{
             backgroundColor: theme.backgroundSecondary,
@@ -93,6 +95,14 @@ function PrivacyScreen() {
           </View>
         </View>
       )}
+      {isIOS26Plus && (
+        <LiquidGlassButton
+          style={{ position: "absolute", top: insets.top + 12, left: 16, width: 44, height: 44, zIndex: 10 }}
+          buttonIcon="chevron.left"
+          primaryColor={theme.text}
+          onPress={() => navigation.goBack()}
+        />
+      )}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -103,6 +113,11 @@ function PrivacyScreen() {
         showsVerticalScrollIndicator={true}
         bounces={true}
       >
+        {isIOS26Plus && (
+          <Text style={{ fontSize: 20, fontWeight: "bold", color: theme.text, letterSpacing: -0.3, textAlign: "center", marginBottom: 32 }}>
+            {t.privacyTitle}
+          </Text>
+        )}
         {/* One big card with all sections */}
         <View
           style={{
