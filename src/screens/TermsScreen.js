@@ -107,7 +107,7 @@ function TermsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: isIOS26Plus ? 20 : 20,
+          paddingTop: 20,
           paddingBottom: 48,
         }}
         showsVerticalScrollIndicator={true}

@@ -3,19 +3,20 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   Platform,
 } from "react-native";
-
-const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
 import LiquidGlassButton from "../components/LiquidGlassButton";
+
+const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 function SupportScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView
@@ -25,7 +26,7 @@ function SupportScreen() {
     >
       {isIOS26Plus && (
         <LiquidGlassButton
-          style={{ position: "absolute", top: 8, left: 16, width: 44, height: 44, zIndex: 10 }}
+          style={{ position: "absolute", top: insets.top + 12, left: 16, width: 44, height: 44, zIndex: 10 }}
           buttonIcon="chevron.left"
           primaryColor={theme.text}
           onPress={() => navigation.goBack()}

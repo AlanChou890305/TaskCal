@@ -1,21 +1,16 @@
 import React from 'react';
-import { requireNativeComponent, Platform, View, Text, TouchableOpacity, NativeModules } from 'react-native';
+import { requireNativeComponent, Platform, Text, TouchableOpacity, NativeModules } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 let NativeButton = null;
 
 if (Platform.OS === 'ios') {
-  console.log('[LiquidGlassButton] NativeModules keys:', Object.keys(NativeModules).filter(k => k.includes('Liquid')));
   if (NativeModules.LiquidGlassButtonViewManager) {
     try {
       NativeButton = requireNativeComponent('LiquidGlassButtonView');
-      console.log('[LiquidGlassButton] Native component loaded ✅');
     } catch (e) {
-      console.log('[LiquidGlassButton] requireNativeComponent failed:', e.message);
       NativeButton = null;
     }
-  } else {
-    console.log('[LiquidGlassButton] LiquidGlassButtonViewManager NOT in NativeModules ❌');
   }
 }
 
