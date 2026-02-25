@@ -104,13 +104,12 @@
 
 ### v1.2.9 (最新版本) - 2026-02-25
 
-**主題色統一與程式碼品質改進**
+**UI 修正與體驗優化 (Build 25)**
 
-- 🎨 **修正主題色**：所有 UI 統一使用應用程式標誌性紫色 (#6c63ff)
-- 📱 **修正 Widget 主色**：iOS Widget 主色與應用程式主題完全一致
-- 🔧 **主題色常數化**：新增 PRIMARY 常數作為品牌色單一來源
-- ✨ **改善程式碼品質**：消除散落各處的硬編碼顏色值
-- ⚡ **效能提升**：減少不必要的除錯日誌
+- 🎨 **修正 FAB 圖示顏色**：LiquidGlass FAB 按鈕在 Light Mode 下正確顯示主題色
+- ✨ **修正 Tab 切換閃爍**：切換底部分頁時不再短暫閃現深色外觀
+- 🖼️ **自適應啟動畫面**：新增 Light / Dark 版本啟動畫面
+- 🔧 **修正主題色**：所有 UI 統一使用應用程式標誌性紫色 (#6c63ff)
 
 ---
 
@@ -262,13 +261,12 @@ A cross-platform React Native task management application with calendar view, Go
 
 ### v1.2.9 (Latest) - 2026-02-25
 
-**Theme Color Unification & Code Quality**
+**UI Fixes & Experience Improvements (Build 25)**
 
-- 🎨 **Fixed Theme Color**: All UI now consistently uses the app's signature purple (#6c63ff)
-- 📱 **Fixed Widget Color**: iOS Widget primary color now matches the app theme
-- 🔧 **Theme Color Constants**: Introduced PRIMARY constant as single source of truth for brand color
-- ✨ **Improved Code Quality**: Eliminated hardcoded color values scattered across the codebase
-- ⚡ **Performance**: Reduced unnecessary debug logs
+- 🎨 **Fixed FAB Icon Color**: LiquidGlass FAB button now correctly shows theme color in Light Mode
+- ✨ **Fixed Tab Switching Flicker**: Bottom tab bar no longer briefly flashes dark appearance
+- 🖼️ **Adaptive Splash Screen**: Added Light/Dark splash screen variants
+- 🔧 **Fixed Theme Color**: All UI consistently uses the app's signature purple (#6c63ff)
 
 ---
 
