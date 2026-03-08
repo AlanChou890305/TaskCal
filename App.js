@@ -213,7 +213,7 @@ import {
 } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import TabView from "react-native-bottom-tabs";
+const TabView = Platform.OS !== "web" ? require("react-native-bottom-tabs").default : null;
 
 // UI Components
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
