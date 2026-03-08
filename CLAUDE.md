@@ -1,6 +1,6 @@
-# Too-Doo-List 開發規範
+# TaskCal 開發規範
 
-這是 **Too-Doo-List** 專案的開發指引，適用於 React Native (Expo) + iOS Widget (Swift) 技術棧。
+這是 **TaskCal** 專案的開發指引，適用於 React Native (Expo) + iOS Widget (Swift) 技術棧。
 
 ## 技術棧與架構
 

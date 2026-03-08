@@ -1,6 +1,6 @@
 # Database Migrations
 
-This directory contains SQL migration files for the Too-Doo-List Supabase database.
+This directory contains SQL migration files for the TaskCal Supabase database.
 
 ## Migrations
 

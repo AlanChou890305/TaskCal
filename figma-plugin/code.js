@@ -1,4 +1,4 @@
-// Too-Doo-List Figma Plugin
+// TaskCal Figma Plugin
 // Generates all 6 app screens as editable Figma frames
 // Based on actual app source code + theme.js
 
@@ -572,7 +572,7 @@ async function main() {
   figma.currentPage.selection = screens;
   figma.viewport.scrollAndZoomIntoView(screens);
 
-  figma.closePlugin(`✅ Done! Generated ${screens.length} screens for Too-Doo-List`);
+  figma.closePlugin(`✅ Done! Generated ${screens.length} screens for TaskCal`);
 }
 
 main().catch(err => {

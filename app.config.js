@@ -12,7 +12,7 @@ const getRedirectUrl = () => {
 const getEnvironmentConfig = () => {
   return {
     name: "TaskCal",
-    slug: "too-doo-list",
+    slug: "taskcal",
     version: "1.3.0",
     description: "Simple and intuitive task management app with Google SSO",
     scheme: "taskcal",
@@ -100,7 +100,7 @@ module.exports = {
             "Transform your productivity with TaskCal! A simple and intuitive task management app featuring Google SSO, calendar integration, and clean organization tools. Stay focused, achieve more, and never miss a deadline again.",
         },
         { name: "twitter:image", content: "./assets/logo.png" },
-        { name: "twitter:creator", content: "@TooDooList" },
+        { name: "twitter:creator", content: "@TaskCal" },
         { name: "theme-color", content: "#6c63ff" },
         { name: "apple-mobile-web-app-capable", content: "yes" },
         { name: "apple-mobile-web-app-status-bar-style", content: "default" },

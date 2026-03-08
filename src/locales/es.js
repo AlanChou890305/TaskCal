@@ -232,7 +232,7 @@ export default {
   supportTitle: "Soporte",
   supportIntro: "¿Necesitas ayuda con TaskCal?",
   supportGithub: "Reportar Problemas o Solicitar Funciones",
-  supportGithubUrl: "https://github.com/AlanChou890305/Too-Doo-List/issues",
+  supportGithubUrl: "https://github.com/AlanChou890305/TaskCal/issues",
   supportAppFeedback: "Compartir Comentarios en la App",
   supportVersion: "Versión",
 };
