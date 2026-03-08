@@ -72,7 +72,7 @@
 ### 設定
 
 - **切換語言：** 在英文、繁體中文與西班牙文之間切換
-- **查看版本：** 確認目前應用程式版本 (v1.2.9)
+- **查看版本：** 確認目前應用程式版本 (v1.3.0)
 - **法律資訊：** 查看使用條款與隱私權政策
 - **登出：** 安全登出並立即返回登入畫面
 
@@ -97,19 +97,19 @@
 
 ### 版本管理
 
-- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.2.9)
+- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.3.0)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 版本資訊
 
-### v1.2.9 (最新版本) - 2026-02-25
+### v1.3.0 (最新版本) - 2026-03-06
 
-**UI 修正與體驗優化 (Build 25)**
+**UI 細節優化 (Build 28)**
 
-- 🎨 **修正 FAB 圖示顏色**：LiquidGlass FAB 按鈕在 Light Mode 下正確顯示主題色
-- ✨ **修正 Tab 切換閃爍**：切換底部分頁時不再短暫閃現深色外觀
-- 🖼️ **自適應啟動畫面**：新增 Light / Dark 版本啟動畫面
-- 🔧 **修正主題色**：所有 UI 統一使用應用程式標誌性紫色 (#6c63ff)
+- 📄 **Sheet Modal 呈現**：使用條款與隱私權政策改以滑動 sheet modal 方式開啟
+- ✏️ **任務編輯器改版**：新增關閉（X）按鈕與拖曳指示條，操作更直覺
+- 🎨 **視覺一致性提升**：各 modal sheet 的標題列、背景色、關閉按鈕統一
+- 💬 **回饋提示優化**：「詳細內容」欄位為空時顯示更清楚的提示訊息
 
 ---
 
@@ -229,7 +229,7 @@ A cross-platform React Native task management application with calendar view, Go
 ### Settings
 
 - **Switch Language:** Toggle between English, Traditional Chinese, and Spanish
-- **View Version:** Check current application version (v1.2.9)
+- **View Version:** Check current application version (v1.3.0)
 - **Legal Information:** View terms of use and privacy policy
 - **Sign Out:** Securely sign out and return to login screen
 
@@ -254,12 +254,23 @@ A cross-platform React Native task management application with calendar view, Go
 
 ### Version Management
 
-- **Semantic Versioning** - Major.Minor.Patch (Current: v1.2.9)
+- **Semantic Versioning** - Major.Minor.Patch (Current: v1.3.0)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Version Information
 
-### v1.2.9 (Latest) - 2026-02-25
+### v1.3.0 (Latest) - 2026-03-06
+
+**UI Polish & Modal Experience (Build 28)**
+
+- 📄 **Sheet Modal Presentation**: Terms of Use and Privacy Policy now open as smooth sheet modals
+- ✏️ **Task Editor Revamp**: Added clear close (X) button and drag indicator for a more intuitive experience
+- 🎨 **Improved Visual Consistency**: Unified headers, backgrounds, and close buttons across modal sheets
+- 💬 **Clearer Feedback Validation**: Details field now shows a more helpful validation message when empty
+
+---
+
+### v1.2.9 - 2026-02-25
 
 **UI Fixes & Experience Improvements (Build 25)**
 
@@ -372,7 +383,7 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 ### Configuración
 
 - **Cambiar Idioma:** Alterna entre Inglés, Chino Tradicional y Español
-- **Ver Versión:** Verifica la versión actual de la aplicación (v1.2.9)
+- **Ver Versión:** Verifica la versión actual de la aplicación (v1.3.0)
 - **Información Legal:** Ver términos de uso y política de privacidad
 - **Cerrar Sesión:** Cierra sesión de forma segura y regresa a la pantalla de inicio de sesión
 
@@ -397,12 +408,23 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 
 ### Gestión de Versiones
 
-- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.2.9)
+- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.3.0)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Información de Versión
 
-### v1.2.9 (Última) - 2026-02-25
+### v1.3.0 (Última) - 2026-03-06
+
+**Experiencia Modal y Pulido UI (Build 28)**
+
+- 📄 **Presentación Modal Deslizable**: Términos de Uso y Política de Privacidad ahora se abren como modales deslizables
+- ✏️ **Editor de Tareas Mejorado**: Nuevo botón de cierre (X) e indicador de arrastre para una experiencia más intuitiva
+- 🎨 **Mayor Consistencia Visual**: Cabeceras, fondos y botones de cierre unificados en todos los modales
+- 💬 **Validación de Comentarios Mejorada**: El campo Detalles ahora muestra un mensaje de validación más claro
+
+---
+
+### v1.2.9 - 2026-02-25
 
 **Unificación de Color del Tema y Calidad de Código**
 

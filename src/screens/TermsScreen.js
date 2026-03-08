@@ -6,40 +6,64 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
 import Section from "../components/Section";
 import LiquidGlassButton from "../components/LiquidGlassButton";
 
-const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+const isIOS26Plus =
+  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
-function TermsScreen() {
+function TermsScreen({ onClose }) {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const handleClose = () => (onClose ? onClose() : navigation.goBack());
   return (
     <SafeAreaView
-      edges={["bottom"]}
-      style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
+      edges={[]}
+      style={{ flex: 1, backgroundColor: theme.modalBackground }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Terms of Use Screen"
     >
       {Platform.OS === "ios" && (
-        <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
-          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
+        <View
+          style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}
+        >
+          <View
+            style={{
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor:
+                theme.mode === "dark"
+                  ? "rgba(255,255,255,0.25)"
+                  : "rgba(0,0,0,0.18)",
+            }}
+          />
         </View>
       )}
       {isIOS26Plus ? (
-        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ height: 52, justifyContent: "center", alignItems: "center" }}
+        >
           <LiquidGlassButton
             style={{ position: "absolute", left: 16, width: 44, height: 44 }}
-            buttonIcon="chevron.left"
+            buttonIcon="xmark"
             primaryColor={theme.text}
-            onPress={() => navigation.goBack()}
+            onPress={handleClose}
           />
-          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+          <Text
+            style={{
+              fontSize: 17,
+              fontWeight: "600",
+              color: theme.text,
+              letterSpacing: -0.3,
+            }}
+          >
             {t.termsTitle}
           </Text>
         </View>
@@ -50,11 +74,17 @@ function TermsScreen() {
             paddingTop: 8,
             paddingBottom: 16,
             paddingHorizontal: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
+            shadowRadius: 4,
+            elevation: 4,
+            zIndex: 1,
           }}
         >
           <View style={{ position: "relative" }}>
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={handleClose}
               style={{
                 position: "absolute",
                 left: -10,
@@ -64,16 +94,47 @@ function TermsScreen() {
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Svg width={18} height={28}>
-                <Line x1={12} y1={6} x2={4} y2={14} stroke={theme.text} strokeWidth={2.2} strokeLinecap="round" />
-                <Line x1={4} y1={14} x2={12} y2={22} stroke={theme.text} strokeWidth={2.2} strokeLinecap="round" />
+              <Svg width={18} height={18}>
+                <Line
+                  x1={4}
+                  y1={4}
+                  x2={14}
+                  y2={14}
+                  stroke={theme.text}
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                />
+                <Line
+                  x1={14}
+                  y1={4}
+                  x2={4}
+                  y2={14}
+                  stroke={theme.text}
+                  strokeWidth={2.2}
+                  strokeLinecap="round"
+                />
               </Svg>
             </TouchableOpacity>
             <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
-              <Text style={{ fontSize: 24, color: theme.text, fontWeight: "bold", letterSpacing: -0.5, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontSize: 24,
+                  color: theme.text,
+                  fontWeight: "bold",
+                  letterSpacing: -0.5,
+                  textAlign: "center",
+                }}
+              >
                 {t.termsTitle}
               </Text>
-              <Text style={{ fontSize: 13, color: theme.textSecondary, marginTop: 4, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: theme.textSecondary,
+                  marginTop: 4,
+                  textAlign: "center",
+                }}
+              >
                 {t.termsLastUpdated} {new Date().toLocaleDateString()}
               </Text>
             </View>
@@ -84,9 +145,12 @@ function TermsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingTop: 20,
-          paddingBottom: 48,
+          paddingTop: 16,
+          paddingBottom: 16 + insets.bottom,
         }}
+        contentInset={{ top: 12 }}
+        contentOffset={{ x: 0, y: -12 }}
+        scrollIndicatorInsets={{ top: 12 }}
         showsVerticalScrollIndicator={true}
         bounces={true}
       >

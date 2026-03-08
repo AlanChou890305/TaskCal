@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -17,9 +23,16 @@ import {
   FlatList,
   Animated,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { GestureHandlerRootView, PanGestureHandler, State } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+} from "react-native-gesture-handler";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Svg, { Line, Circle, Rect } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -31,11 +44,17 @@ import { MapPreview } from "../components/MapPreview";
 import { TaskService } from "../services/taskService";
 import { widgetService } from "../services/widgetService";
 import { mixpanelService } from "../services/mixpanelService";
-import { scheduleTaskNotification, cancelTaskNotification } from "../services/notificationService";
+import {
+  scheduleTaskNotification,
+  cancelTaskNotification,
+} from "../services/notificationService";
 import { getActiveReminderMinutes } from "../config/notificationConfig";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { format } from "date-fns";
-import { formatTimestamp, formatTimeDisplay as formatTimeDisplayUtil } from "../utils/dateUtils";
+import {
+  formatTimestamp,
+  formatTimeDisplay as formatTimeDisplayUtil,
+} from "../utils/dateUtils";
 import AdBanner from "../components/AdBanner";
 import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
@@ -108,8 +127,7 @@ const TaskSkeleton = ({ theme }) => {
               width: 24,
               height: 24,
               borderRadius: 4,
-              backgroundColor:
-                theme.shimmer,
+              backgroundColor: theme.shimmer,
             },
             { opacity },
           ]}
@@ -132,8 +150,7 @@ const TaskSkeleton = ({ theme }) => {
               {
                 height: 16,
                 borderRadius: 4,
-                backgroundColor:
-                  theme.shimmer,
+                backgroundColor: theme.shimmer,
                 width: "80%",
               },
               { opacity },
@@ -146,8 +163,7 @@ const TaskSkeleton = ({ theme }) => {
               {
                 height: 14,
                 borderRadius: 4,
-                backgroundColor:
-                  theme.shimmer,
+                backgroundColor: theme.shimmer,
                 width: 50,
               },
               { opacity },
@@ -1047,7 +1063,9 @@ function CalendarScreen({ navigation, route }) {
     const taskAgeMs = editingTask.created_at
       ? Date.now() - new Date(editingTask.created_at).getTime()
       : null;
-    const taskAgeDays = taskAgeMs ? Math.floor(taskAgeMs / (1000 * 60 * 60 * 24)) : null;
+    const taskAgeDays = taskAgeMs
+      ? Math.floor(taskAgeMs / (1000 * 60 * 60 * 24))
+      : null;
 
     mixpanelService.track("Task Deleted", {
       task_id: editingTask.id,
@@ -1574,7 +1592,12 @@ function CalendarScreen({ navigation, route }) {
           { flex: 1, backgroundColor: theme.backgroundSecondary },
         ]}
       >
-        <View style={[styles.taskAreaContent, { flex: 1, backgroundColor: theme.backgroundSecondary }]}>
+        <View
+          style={[
+            styles.taskAreaContent,
+            { flex: 1, backgroundColor: theme.backgroundSecondary },
+          ]}
+        >
           <View
             style={[
               styles.tasksHeaderRow,
@@ -1608,7 +1631,7 @@ function CalendarScreen({ navigation, route }) {
                 styles.fabAddButton,
                 {
                   bottom: 88,
-                  backgroundColor: 'transparent',
+                  backgroundColor: "transparent",
                   shadowOpacity: 0,
                   elevation: 0,
                 },
@@ -1632,16 +1655,39 @@ function CalendarScreen({ navigation, route }) {
               activeOpacity={0.7}
             >
               <View style={styles.addButtonIcon}>
-                <Svg width={32} height={32} viewBox="0 0 32 32" style={{ display: "flex", alignSelf: "center" }}>
-                  <Line x1="16" y1="6" x2="16" y2="26" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
-                  <Line x1="6" y1="16" x2="26" y2="16" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+                <Svg
+                  width={32}
+                  height={32}
+                  viewBox="0 0 32 32"
+                  style={{ display: "flex", alignSelf: "center" }}
+                >
+                  <Line
+                    x1="16"
+                    y1="6"
+                    x2="16"
+                    y2="26"
+                    stroke="#ffffff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  <Line
+                    x1="6"
+                    y1="16"
+                    x2="26"
+                    y2="16"
+                    stroke="#ffffff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
                 </Svg>
               </View>
             </TouchableOpacity>
           )}
 
           {shouldShowSkeleton ? (
-            <View style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}>
+            <View
+              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
+            >
               <FlatList
                 data={[1, 2, 3, 4]} // 顯示 4 個 skeleton
                 keyExtractor={(item) => `skeleton-${item}`}
@@ -1685,7 +1731,9 @@ function CalendarScreen({ navigation, route }) {
               </Text>
             </View>
           ) : (
-            <View style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}>
+            <View
+              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
+            >
               <FlatList
                 data={dayTasks.slice().sort((a, b) => {
                   // 已完成的任務排到最底下
@@ -1768,23 +1816,69 @@ function CalendarScreen({ navigation, route }) {
                 : null,
             ]}
           >
-            {isIOS26Plus && (
-              <>
+            {Platform.OS === "ios" && (
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingTop: 16,
+                  paddingBottom: 4,
+                }}
+              >
+                <View
+                  style={{
+                    width: 36,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor:
+                      theme.mode === "dark"
+                        ? "rgba(255,255,255,0.25)"
+                        : "rgba(0,0,0,0.18)",
+                  }}
+                />
+              </View>
+            )}
+            {isIOS26Plus ? (
+              <View
+                style={{
+                  height: 52,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <LiquidGlassButton
-                  style={{ position: "absolute", top: insets.top + 8, left: 16, width: 44, height: 44, zIndex: 10 }}
-                  buttonIcon="chevron.left"
+                  style={{
+                    position: "absolute",
+                    left: 16,
+                    width: 44,
+                    height: 44,
+                  }}
+                  buttonIcon="xmark"
                   primaryColor={theme.text}
                   onPress={() => setModalVisible(false)}
                 />
+                <Text
+                  style={{
+                    fontSize: 17,
+                    fontWeight: "600",
+                    color: theme.text,
+                    letterSpacing: -0.3,
+                  }}
+                >
+                  {editingTask ? t.editTask : t.createTask}
+                </Text>
                 <LiquidGlassButton
-                  style={{ position: "absolute", top: insets.top + 8, right: 16, width: editingTask ? 100 : 75, height: 44, zIndex: 10 }}
+                  style={{
+                    position: "absolute",
+                    right: 16,
+                    width: editingTask ? 100 : 75,
+                    height: 44,
+                  }}
                   buttonLabel={editingTask ? t.update : t.save}
                   primaryColor={theme.primary}
                   onPress={saveTask}
                 />
-              </>
-            )}
-            {!isIOS26Plus && (
+              </View>
+            ) : (
               <View
                 style={[
                   styles.modalHeader,
@@ -1805,7 +1899,7 @@ function CalendarScreen({ navigation, route }) {
                   focusable={Platform.OS === "web" ? false : undefined}
                   tabIndex={Platform.OS === "web" ? -1 : undefined}
                 >
-                  <MaterialIcons name="arrow-back" size={24} color={theme.text} />
+                  <MaterialIcons name="close" size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={[styles.modalTitle, { color: theme.text }]}>
                   {editingTask ? t.editTask : t.createTask}
@@ -1817,16 +1911,16 @@ function CalendarScreen({ navigation, route }) {
               ref={modalScrollViewRef}
               style={styles.modalScrollView}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingBottom: 100, paddingTop: isIOS26Plus ? insets.top + 20 : 0 }}
+              contentContainerStyle={{
+                paddingBottom: 100,
+                paddingTop: isIOS26Plus ? 20 : 0,
+              }}
               nestedScrollEnabled={true}
               scrollEnabled={true}
             >
-              {isIOS26Plus && (
-                <Text style={{ fontSize: 20, fontWeight: "bold", color: theme.text, letterSpacing: -0.3, textAlign: "center", marginBottom: 32 }}>
-                  {editingTask ? t.editTask : t.createTask}
-                </Text>
-              )}
-              <View style={{ marginBottom: 24, marginTop: isIOS26Plus ? 0 : 24 }}>
+              <View
+                style={{ marginBottom: 24, marginTop: isIOS26Plus ? 0 : 24 }}
+              >
                 {/* Task Text Input */}
                 <View style={{ marginBottom: 20 }}>
                   <Text style={[styles.label, { color: theme.text }]}>
@@ -2203,7 +2297,9 @@ function CalendarScreen({ navigation, route }) {
                     styles.modalButtons,
                     {
                       backgroundColor:
-                        theme.mode === "dark" ? theme.background : theme.modalBackground,
+                        theme.mode === "dark"
+                          ? theme.background
+                          : theme.modalBackground,
                       borderTopColor:
                         theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
                       justifyContent: "flex-start",
@@ -2734,7 +2830,6 @@ function CalendarScreen({ navigation, route }) {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   taskItemRow: {

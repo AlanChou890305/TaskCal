@@ -10,8 +10,6 @@ import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
 import LiquidGlassButton from "../components/LiquidGlassButton";
 
-const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
-
 function SupportScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
@@ -20,34 +18,26 @@ function SupportScreen() {
   return (
     <SafeAreaView
       edges={["bottom"]}
-      style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
+      style={{ flex: 1, backgroundColor: theme.modalBackground }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Support Screen"
     >
       {Platform.OS === "ios" && (
-        <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
+        <View style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}>
           <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
         </View>
       )}
-      {isIOS26Plus ? (
-        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
-          <LiquidGlassButton
-            style={{ position: "absolute", left: 16, width: 44, height: 44 }}
-            buttonIcon="chevron.left"
-            primaryColor={theme.text}
-            onPress={() => navigation.goBack()}
-          />
-          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
-            {t.supportTitle}
-          </Text>
-        </View>
-      ) : (
-        <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
-            {t.supportTitle}
-          </Text>
-        </View>
-      )}
+      <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
+        <LiquidGlassButton
+          style={{ position: "absolute", left: 16, width: 44, height: 44 }}
+          buttonIcon="xmark"
+          primaryColor={theme.text}
+          onPress={() => navigation.goBack()}
+        />
+        <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
+          {t.supportTitle}
+        </Text>
+      </View>
       <View
         style={{
           flex: 1,

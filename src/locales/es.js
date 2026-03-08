@@ -212,7 +212,8 @@ export default {
     "¡Gracias por sus comentarios y sugerencias, \nson la mayor motivación para seguir optimizando TaskCal!",
   submitSuccess: "Enviado con éxito",
   thanksFeedback: "¡Gracias por sus valiosos comentarios!",
-  pleaseEnterFeedback: "Por favor, ingrese el contenido del comentario",
+  detailsRequired: "Detalles requeridos",
+  pleaseEnterFeedback: "Por favor, completa el campo Detalles para ayudarnos a entender tu comentario.",
   submitting: "Enviando...",
   pleaseLoginFirst:
     "Por favor, inicie sesión primero antes de enviar comentarios",

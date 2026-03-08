@@ -36,6 +36,8 @@ import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
 import LiquidGlassButton from "../components/LiquidGlassButton";
+import TermsScreen from "./TermsScreen";
+import PrivacyScreen from "./PrivacyScreen";
 
 const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
@@ -103,6 +105,8 @@ function SettingScreen() {
 
   const [isCheckingVersion, setIsCheckingVersion] = useState(false);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [feedbackCategory, setFeedbackCategory] = useState("suggestion");
   const [feedbackTitle, setFeedbackTitle] = useState("");
   const [feedbackText, setFeedbackText] = useState("");
@@ -111,7 +115,7 @@ function SettingScreen() {
 
   const handleSubmitFeedback = async () => {
     if (!feedbackText.trim()) {
-      Alert.alert(t.confirm, t.pleaseEnterFeedback);
+      Alert.alert(t.detailsRequired, t.pleaseEnterFeedback);
       return;
     }
     setIsSubmittingFeedback(true);
@@ -1892,11 +1896,11 @@ function SettingScreen() {
         >
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: theme.card }}
+            style={{ flex: 1, backgroundColor: theme.modalBackground }}
           >
               {/* Drag indicator */}
               {Platform.OS === "ios" && (
-                <View style={{ alignItems: "center", paddingTop: 8, paddingBottom: 4 }}>
+                <View style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}>
                   <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
                 </View>
               )}
@@ -1911,11 +1915,11 @@ function SettingScreen() {
                   />
                 ) : (
                   <TouchableOpacity
-                    style={{ position: "absolute", left: 16, padding: 8 }}
-                    onPress={() => setFeedbackModalVisible(false)}
+                    style={{ position: "absolute", left: 16, padding: 12, width: 48, height: 48, alignItems: "center", justifyContent: "center" }}
+                    onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
                     disabled={isSubmittingFeedback}
                   >
-                    <MaterialIcons name="close" size={24} color={theme.textSecondary} />
+                    <MaterialIcons name="close" size={24} color={theme.text} />
                   </TouchableOpacity>
                 )}
                 <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
@@ -1930,11 +1934,11 @@ function SettingScreen() {
                   />
                 ) : (
                   <TouchableOpacity
-                    style={{ position: "absolute", right: 16, padding: 8 }}
+                    style={{ position: "absolute", right: 16, padding: 12, width: 48, height: 48, alignItems: "center", justifyContent: "center" }}
                     onPress={handleSubmitFeedback}
-                    disabled={isSubmittingFeedback || !feedbackText.trim()}
+                    disabled={isSubmittingFeedback}
                   >
-                    <MaterialIcons name="check" size={24} color={feedbackText.trim() ? theme.primary : theme.textTertiary} />
+                    <MaterialIcons name="check" size={24} color={theme.primary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -2114,7 +2118,7 @@ function SettingScreen() {
         <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Terms of Use */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("Terms")}
+              onPress={() => setTermsModalVisible(true)}
               activeOpacity={0.6}
               style={{
                 flexDirection: "row",
@@ -2156,7 +2160,7 @@ function SettingScreen() {
 
             {/* Privacy Policy */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("Privacy")}
+              onPress={() => setPrivacyModalVisible(true)}
               activeOpacity={0.6}
               style={{
                 flexDirection: "row",
@@ -2656,6 +2660,28 @@ function SettingScreen() {
             </View>
           </View>
         </TouchableOpacity>
+      </Modal>
+
+      {/* Terms of Use Modal */}
+      <Modal
+        visible={termsModalVisible}
+        transparent={false}
+        animationType="slide"
+        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        onRequestClose={() => setTermsModalVisible(false)}
+      >
+        <TermsScreen onClose={() => setTermsModalVisible(false)} />
+      </Modal>
+
+      {/* Privacy Policy Modal */}
+      <Modal
+        visible={privacyModalVisible}
+        transparent={false}
+        animationType="slide"
+        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        onRequestClose={() => setPrivacyModalVisible(false)}
+      >
+        <PrivacyScreen onClose={() => setPrivacyModalVisible(false)} />
       </Modal>
     </SafeAreaView>
   );

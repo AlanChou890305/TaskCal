@@ -26,9 +26,6 @@ import { BlurView } from "expo-blur";
 
 // Screen imports
 import CalendarScreen from "./src/screens/CalendarScreen";
-import TermsScreen from "./src/screens/TermsScreen";
-import PrivacyScreen from "./src/screens/PrivacyScreen";
-import SupportScreen from "./src/screens/SupportScreen";
 import SettingScreen from "./src/screens/SettingScreen";
 
 // 獲取重定向 URL
@@ -3249,36 +3246,6 @@ export default function App() {
                   headerShown: false,
                   gestureEnabled: false,
                   animationEnabled: false,
-                }}
-              />
-              <Stack.Screen
-                name="Terms"
-                component={TermsScreen}
-                options={{
-                  headerShown: false,
-                  presentation: "modal",
-                  gestureEnabled: true,
-                  gestureDirection: "vertical",
-                }}
-              />
-              <Stack.Screen
-                name="Privacy"
-                component={PrivacyScreen}
-                options={{
-                  headerShown: false,
-                  presentation: "modal",
-                  gestureEnabled: true,
-                  gestureDirection: "vertical",
-                }}
-              />
-              <Stack.Screen
-                name="Support"
-                component={SupportScreen}
-                options={{
-                  headerShown: false,
-                  presentation: "modal",
-                  gestureEnabled: true,
-                  gestureDirection: "vertical",
                 }}
               />
             </Stack.Navigator>
