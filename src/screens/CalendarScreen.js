@@ -2324,6 +2324,7 @@ function CalendarScreen({ navigation, route }) {
                       theme.mode === "dark" ? theme.background : "#fff",
                     borderTopColor:
                       theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
+                    justifyContent: editingTask ? "space-between" : "flex-end",
                   },
                 ]}
               >
