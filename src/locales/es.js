@@ -235,4 +235,12 @@ export default {
   supportGithubUrl: "https://github.com/AlanChou890305/TaskCal/issues",
   supportAppFeedback: "Compartir Comentarios en la App",
   supportVersion: "Versión",
+  // Map Preview
+  viewMap: "Ver mapa",
+  map: "Mapa",
+  mapLoading: "Cargando mapa...",
+  mapPreviewRequiresBuild: "La vista previa del mapa requiere reconstruir la app",
+  mapOpenInBrowserHint: "Por favor, toca el botón de abajo para ver el mapa en tu navegador",
+  openInBrowser: "Abrir en navegador",
+  mapLoadFailed: "Error al cargar el mapa",
 };

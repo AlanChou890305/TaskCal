@@ -80,8 +80,14 @@ export class UserService {
         // If user_settings doesn't exist, create it with defaults
         if (error.code === "PGRST116") {
           console.log("📝 Creating default user settings for new user");
+          const deviceLocale = Localization.getLocales()[0]?.languageCode;
+          const defaultLanguage =
+            deviceLocale === "zh" || deviceLocale === "es" ? deviceLocale : "en";
+          console.log(
+            `🌐 Device locale: ${deviceLocale}, defaulting to: ${defaultLanguage}`,
+          );
           const defaultSettings = {
-            language: "en",
+            language: defaultLanguage,
             theme: "light",
             notifications_enabled: true,
             reminder_settings: { enabled: true, times: [30, 10, 5] },

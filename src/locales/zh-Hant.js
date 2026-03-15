@@ -237,4 +237,12 @@ export default {
   error: "錯誤",
   ok: "確定",
   failedToUpdateUserType: "無法更新使用者類型",
+  // Map Preview
+  viewMap: "查看地圖",
+  map: "地圖",
+  mapLoading: "載入地圖中...",
+  mapPreviewRequiresBuild: "地圖預覽需要重新建置應用",
+  mapOpenInBrowserHint: "請點擊下方按鈕在瀏覽器中查看地圖",
+  openInBrowser: "在瀏覽器中打開",
+  mapLoadFailed: "無法載入地圖",
 };

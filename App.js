@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { Platform } from "react-native";
 import * as Application from "expo-application";
+import * as Localization from "expo-localization";
 import * as Constants from "expo-constants";
 import { getCurrentEnvironment } from "./src/config/environment";
 import appConfig from "./app.config";
@@ -2928,7 +2929,13 @@ export default function App() {
           console.log(`✅ Language loaded: ${userSettings.language}`);
           setLanguageState(userSettings.language);
         } else {
-          console.log("⚠️ No language setting found, using default: en");
+          const deviceLocale = Localization.getLocales()[0]?.languageCode;
+          const fallbackLanguage =
+            deviceLocale === "zh" || deviceLocale === "es" ? deviceLocale : "en";
+          console.log(
+            `⚠️ No language setting found, using device locale: ${fallbackLanguage}`,
+          );
+          setLanguageState(fallbackLanguage);
         }
       } catch (error) {
         console.error("❌ Error loading language settings:", error);

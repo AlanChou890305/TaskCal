@@ -2025,6 +2025,7 @@ function CalendarScreen({ navigation, route }) {
                     <MapPreview
                       url={taskLink}
                       theme={theme}
+                      t={t}
                       onOpenInBrowser={() => {
                         const url = taskLink.startsWith("http")
                           ? taskLink

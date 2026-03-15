@@ -26,7 +26,7 @@ try {
  * Google Maps 預覽組件
  * 當任務連結是 Google Maps URL 時，顯示一個可以打開地圖預覽的按鈕
  */
-export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
+export const MapPreview = ({ url, theme, t, onOpenInBrowser }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   if (!url || !isGoogleMapsUrl(url)) {
@@ -75,7 +75,7 @@ export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
       >
         <MaterialIcons name="map" size={20} color={theme.primary} />
         <Text style={[styles.mapPreviewText, { color: theme.text }]}>
-          查看地圖
+          {t?.viewMap || "View Map"}
         </Text>
       </TouchableOpacity>
 
@@ -88,7 +88,7 @@ export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
         <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
           {/* Header */}
           <View style={[styles.modalHeader, { borderBottomColor: theme.inputBorder }]}>
-            <Text style={[styles.modalTitle, { color: theme.text }]}>地圖</Text>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>{t?.map || "Map"}</Text>
             <View style={styles.modalHeaderButtons}>
               {onOpenInBrowser && (
                 <TouchableOpacity
@@ -117,7 +117,7 @@ export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color={theme.primary} />
                   <Text style={[styles.loadingText, { color: theme.textPlaceholder }]}>
-                    載入地圖中...
+                    {t?.mapLoading || "Loading map..."}
                   </Text>
                 </View>
               )}
@@ -159,17 +159,17 @@ export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
             <View style={styles.errorContainer}>
               <MaterialIcons name="info-outline" size={48} color={theme.primary} />
               <Text style={[styles.errorText, { color: theme.text }]}>
-                地圖預覽需要重新建置應用
+                {t?.mapPreviewRequiresBuild || "Map preview requires rebuilding the app"}
               </Text>
               <Text style={[styles.errorText, { color: theme.textPlaceholder, marginTop: 8, fontSize: 14 }]}>
-                請點擊下方按鈕在瀏覽器中查看地圖
+                {t?.mapOpenInBrowserHint || "Please tap the button below to view the map in your browser"}
               </Text>
               <TouchableOpacity
                 style={[styles.retryButton, { backgroundColor: theme.primary }]}
                 onPress={handleOpenInBrowser}
               >
                 <Text style={[styles.retryButtonText, { color: theme.background }]}>
-                  在瀏覽器中打開
+                  {t?.openInBrowser || "Open in Browser"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -177,14 +177,14 @@ export const MapPreview = ({ url, theme, onOpenInBrowser }) => {
             <View style={styles.errorContainer}>
               <MaterialIcons name="error-outline" size={48} color={theme.error} />
               <Text style={[styles.errorText, { color: theme.text }]}>
-                無法載入地圖
+                {t?.mapLoadFailed || "Failed to load map"}
               </Text>
               <TouchableOpacity
                 style={[styles.retryButton, { backgroundColor: theme.primary }]}
                 onPress={handleOpenInBrowser}
               >
                 <Text style={[styles.retryButtonText, { color: theme.background }]}>
-                  在瀏覽器中打開
+                  {t?.openInBrowser || "Open in Browser"}
                 </Text>
               </TouchableOpacity>
             </View>

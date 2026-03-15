@@ -27,16 +27,6 @@ const VersionUpdateModal = ({
   theme,
   t, // translations
 }) => {
-  // Web 版本會自動更新，不需要顯示版本更新 modal
-  if (Platform.OS === "web") {
-    return null;
-  }
-
-  // 如果沒有 updateInfo 或不可見，不渲染
-  if (!visible || !updateInfo) {
-    return null;
-  }
-
   const isDarkMode = theme?.mode === "dark";
 
   // Mixpanel: 追蹤版本更新提示顯示
@@ -50,6 +40,16 @@ const VersionUpdateModal = ({
       });
     }
   }, [visible, updateInfo, forceUpdate]);
+
+  // Web 版本會自動更新，不需要顯示版本更新 modal
+  if (Platform.OS === "web") {
+    return null;
+  }
+
+  // 如果沒有 updateInfo 或不可見，不渲染
+  if (!visible || !updateInfo) {
+    return null;
+  }
 
   const handleUpdate = async () => {
     // Mixpanel: 追蹤用戶點擊更新

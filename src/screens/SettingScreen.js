@@ -773,11 +773,11 @@ function SettingScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
+      style={{ flex: 1, backgroundColor: theme.modalBackground }}
     >
       <View
         style={{
-          backgroundColor: theme.backgroundSecondary,
+          backgroundColor: theme.modalBackground,
           height: 64,
           justifyContent: "center",
         }}
@@ -798,7 +798,7 @@ function SettingScreen() {
         style={{
           flex: 1,
           paddingHorizontal: 0,
-          backgroundColor: theme.backgroundSecondary,
+          backgroundColor: theme.modalBackground,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -961,56 +961,6 @@ function SettingScreen() {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginBottom: 12,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: theme.primary,
-                      fontSize: 12,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {t.accountType}
-                  </Text>
-                  <View
-                    style={{
-                      backgroundColor:
-                        userType === "member"
-                          ? theme.primary
-                          : theme.mode === "dark"
-                            ? "rgba(255,255,255,0.1)"
-                            : "rgba(0,0,0,0.05)",
-                      paddingHorizontal: 12,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: userType === "member" ? "#FFFFFF" : theme.text,
-                        fontSize: 12,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {userType === "member" ? t.memberUser : t.generalUser}
-                    </Text>
-                  </View>
-                </View>
-
-                <View
-                  style={{
-                    height: 1,
-                    backgroundColor: theme.divider,
-                    marginBottom: 12,
-                  }}
-                />
-
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
                   }}
                 >
                   <Text
@@ -1148,13 +1098,13 @@ function SettingScreen() {
               />
 
               <TouchableOpacity
-                onPress={() => {
+                onPress={async () => {
+                  const result = await versionService.checkForUpdates(true, language);
                   setUpdateInfo({
-                    latestVersion: "1.3.0",
-                    releaseNotes:
-                      "新版本功能：\n• 支援 iOS 原生風格更新彈窗\n• 優化深色模式顯示效果\n• 提升應用程式啟動速度\n• 修復已知的小錯誤",
-                    forceUpdate: false,
-                    updateUrl: "https://apps.apple.com/app/id6753785239",
+                    latestVersion: result.latestVersion,
+                    releaseNotes: result.releaseNotes,
+                    forceUpdate: result.forceUpdate,
+                    updateUrl: result.updateUrl,
                   });
                   setIsUpdateModalVisible(true);
                 }}

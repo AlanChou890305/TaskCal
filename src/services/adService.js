@@ -80,29 +80,6 @@ class AdService {
 
     try {
       if (Platform.OS !== "web") {
-        // #region agent log
-        fetch(
-          "http://127.0.0.1:7242/ingest/d4de50d0-d314-43f2-8773-bf5020596639",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              location: "adService.js:72",
-              message: "AdMob initialization starting",
-              data: {
-                platform: Platform.OS,
-                appId: ADMOB_APP_ID,
-                mobileAdsAvailable: !!mobileAds,
-              },
-              timestamp: Date.now(),
-              sessionId: "debug-session",
-              runId: "run1",
-              hypothesisId: "A",
-            }),
-          },
-        ).catch(() => {});
-        // #endregion
-
         // 明確傳入 application ID 以確保 SDK 能找到
         const initOptions = ADMOB_APP_ID
           ? {
@@ -112,45 +89,7 @@ class AdService {
             }
           : undefined;
 
-        // #region agent log
-        fetch(
-          "http://127.0.0.1:7242/ingest/d4de50d0-d314-43f2-8773-bf5020596639",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              location: "adService.js:79",
-              message: "Before mobileAds().initialize()",
-              data: { hasInitOptions: !!initOptions, appId: ADMOB_APP_ID },
-              timestamp: Date.now(),
-              sessionId: "debug-session",
-              runId: "run1",
-              hypothesisId: "B",
-            }),
-          },
-        ).catch(() => {});
-        // #endregion
-
         await mobileAds().initialize(initOptions);
-
-        // #region agent log
-        fetch(
-          "http://127.0.0.1:7242/ingest/d4de50d0-d314-43f2-8773-bf5020596639",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              location: "adService.js:85",
-              message: "AdMob initialized successfully",
-              data: { platform: Platform.OS },
-              timestamp: Date.now(),
-              sessionId: "debug-session",
-              runId: "run1",
-              hypothesisId: "C",
-            }),
-          },
-        ).catch(() => {});
-        // #endregion
 
         this.initialized = true;
         console.log("AdMob initialized successfully");
@@ -160,30 +99,6 @@ class AdService {
         console.log("AdMob initialized for web platform");
       }
     } catch (error) {
-      // #region agent log
-      fetch(
-        "http://127.0.0.1:7242/ingest/d4de50d0-d314-43f2-8773-bf5020596639",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            location: "adService.js:95",
-            message: "AdMob initialization failed",
-            data: {
-              error: error.message,
-              stack: error.stack,
-              platform: Platform.OS,
-              appId: ADMOB_APP_ID,
-            },
-            timestamp: Date.now(),
-            sessionId: "debug-session",
-            runId: "run1",
-            hypothesisId: "D",
-          }),
-        },
-      ).catch(() => {});
-      // #endregion
-
       console.error("Failed to initialize AdMob:", error);
       // 即使初始化失敗，也標記為已初始化，避免重複嘗試
       this.initialized = true;

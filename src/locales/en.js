@@ -237,4 +237,12 @@ export default {
   error: "Error",
   ok: "OK",
   failedToUpdateUserType: "Failed to update user type",
+  // Map Preview
+  viewMap: "View Map",
+  map: "Map",
+  mapLoading: "Loading map...",
+  mapPreviewRequiresBuild: "Map preview requires rebuilding the app",
+  mapOpenInBrowserHint: "Please tap the button below to view the map in your browser",
+  openInBrowser: "Open in Browser",
+  mapLoadFailed: "Failed to load map",
 };

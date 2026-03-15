@@ -24,6 +24,9 @@ if (Platform.OS !== "web") {
   }
 }
 
+// 廣告暫停開關：設為 true 時全部用戶不顯示廣告，架構保留供日後重新啟用
+const ADS_PAUSED = true;
+
 /**
  * AdBanner 組件
  * @param {Object} props
@@ -113,6 +116,11 @@ const AdBanner = ({
   const stillLoading =
     loadingUserType === true ||
     (loadingUserType !== false && isLoadingUserStatus);
+
+  // 廣告暫停時直接不顯示
+  if (ADS_PAUSED) {
+    return null;
+  }
 
   // 如果模組不可用、未啟用、是會員、正在載入用戶狀態、沒有廣告單元 ID 或是 Web 平台，不顯示廣告
   if (
