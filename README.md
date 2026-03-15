@@ -97,19 +97,19 @@
 
 ### 版本管理
 
-- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.3.0)
+- **語意化版本 (Semantic Versioning)** - Major.Minor.Patch (目前 v1.3.1)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 版本資訊
 
-### v1.3.0 (最新版本) - 2026-03-06
+### v1.3.1 (最新版本) - 2026-03-15
 
-**UI 細節優化 (Build 28)**
+**體驗優化與多語系修正 (Build 29)**
 
-- 📄 **Sheet Modal 呈現**：使用條款與隱私權政策改以滑動 sheet modal 方式開啟
-- ✏️ **任務編輯器改版**：新增關閉（X）按鈕與拖曳指示條，操作更直覺
-- 🎨 **視覺一致性提升**：各 modal sheet 的標題列、背景色、關閉按鈕統一
-- 💬 **回饋提示優化**：「詳細內容」欄位為空時顯示更清楚的提示訊息
+- 🚫 **廣告暫停**：所有用戶現可享受無廣告體驗
+- 🎨 **設定頁面優化**：背景色調整，視覺一致性提升
+- 🗺️ **地圖預覽多語系**：地圖相關文字完整支援英文、繁體中文、西班牙文
+- 🔧 **錯誤修正**：清除殘留的 debug 程式碼
 
 ---
 
@@ -254,19 +254,19 @@ A cross-platform React Native task management application with calendar view, Go
 
 ### Version Management
 
-- **Semantic Versioning** - Major.Minor.Patch (Current: v1.3.0)
+- **Semantic Versioning** - Major.Minor.Patch (Current: v1.3.1)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Version Information
 
-### v1.3.0 (Latest) - 2026-03-06
+### v1.3.1 (Latest) - 2026-03-15
 
-**UI Polish & Modal Experience (Build 28)**
+**Experience Polish & i18n Fixes (Build 29)**
 
-- 📄 **Sheet Modal Presentation**: Terms of Use and Privacy Policy now open as smooth sheet modals
-- ✏️ **Task Editor Revamp**: Added clear close (X) button and drag indicator for a more intuitive experience
-- 🎨 **Improved Visual Consistency**: Unified headers, backgrounds, and close buttons across modal sheets
-- 💬 **Clearer Feedback Validation**: Details field now shows a more helpful validation message when empty
+- 🚫 **Ads Paused**: All users now enjoy an ad-free experience
+- 🎨 **Settings Screen Polish**: Background color refined for better visual consistency
+- 🗺️ **Map Preview i18n**: Map-related text fully supports English, Traditional Chinese, and Español
+- 🔧 **Bug Fixes**: Removed leftover debug code
 
 ---
 
@@ -408,19 +408,19 @@ Una aplicación multiplataforma de gestión de tareas React Native con vista de 
 
 ### Gestión de Versiones
 
-- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.3.0)
+- **Versionado Semántico** - Major.Minor.Patch (Actual: v1.3.1)
 - **npm scripts** - version:patch, version:minor, version:major
 
 ## 📝 Información de Versión
 
-### v1.3.0 (Última) - 2026-03-06
+### v1.3.1 (Última) - 2026-03-15
 
-**Experiencia Modal y Pulido UI (Build 28)**
+**Pulido de Experiencia y Correcciones i18n (Build 29)**
 
-- 📄 **Presentación Modal Deslizable**: Términos de Uso y Política de Privacidad ahora se abren como modales deslizables
-- ✏️ **Editor de Tareas Mejorado**: Nuevo botón de cierre (X) e indicador de arrastre para una experiencia más intuitiva
-- 🎨 **Mayor Consistencia Visual**: Cabeceras, fondos y botones de cierre unificados en todos los modales
-- 💬 **Validación de Comentarios Mejorada**: El campo Detalles ahora muestra un mensaje de validación más claro
+- 🚫 **Anuncios Pausados**: Todos los usuarios disfrutan de una experiencia sin anuncios
+- 🎨 **Pantalla de Ajustes Refinada**: Color de fondo ajustado para mayor consistencia visual
+- 🗺️ **Vista Previa del Mapa i18n**: Texto del mapa completamente traducido en inglés, chino tradicional y español
+- 🔧 **Correcciones de Errores**: Eliminación de código de depuración residual
 
 ---
 
