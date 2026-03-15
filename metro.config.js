@@ -16,6 +16,17 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     };
   }
 
+  // Exclude react-native-bottom-tabs on web (native-only module)
+  if (
+    platform === "web" &&
+    (moduleName === "react-native-bottom-tabs" ||
+      moduleName.startsWith("react-native-bottom-tabs/"))
+  ) {
+    return {
+      type: "empty",
+    };
+  }
+
   // Default resolver
   return context.resolveRequest(context, moduleName, platform);
 };
