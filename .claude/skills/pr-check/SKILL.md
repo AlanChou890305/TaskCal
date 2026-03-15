@@ -127,9 +127,10 @@ grep -n 'alert\s*(' [changed_files]
 - [ ] 沒有不安全的 force unwrap (驚嘆號)
 
 ### 5. 功能完整性檢查
-- [ ] 如果改了 UI，是否有更新多語系檔案（`src/locales/`）
+- [ ] 如果改了 UI，是否有更新多語系檔案（`src/locales/` 三個語言：en、zh-Hant、es）
 - [ ] 如果改了資料結構，是否有更新 Widget
 - [ ] 如果改了 service，是否有更新錯誤處理
+- [ ] 如果新增使用者操作（按鈕、流程），是否有在 `mixpanelService.js` 新增對應追蹤事件
 
 ### 6. 版本與文件檢查
 如果是 release（提示使用者可用 `/version-release`）：
@@ -195,7 +196,7 @@ git diff --cached | grep -iE "password|api_key|secret|token|private_key|access_t
 #### 3.3 檢查翻譯檔案
 1. 檢查變更清單中是否包含翻譯檔案
 2. 如果有 UI 變更但沒有翻譯檔案變更，發出警告
-3. 如果翻譯檔案有變更，用 `Read` 讀取並檢查 `translations_en` 和 `translations_zh` 的 key 是否一致
+3. 如果翻譯檔案有變更，用 `Read` 讀取並檢查 `en.js`、`zh-Hant.js`、`es.js` 三個檔案的 key 是否完全一致
 
 ### 步驟 4: 程式碼品質檢查
 
@@ -501,7 +502,7 @@ translations_en 和 translations_zh 的 key 不一致：
 | 敏感檔案 | `.env*`, `*.pem`, `*.key` | 🚫 必須修正 |
 | API Key 外洩 | `grep -i "api_key.*=.*['\"]"` | 🚫 必須修正 |
 | 硬編碼文字 | `<Text>[A-Za-z]`, `title="[^{]"` | ⚠️ 建議修正 |
-| 翻譯不同步 | 比對兩個翻譯物件的 key | 🚫 必須修正 |
+| 翻譯不同步 | 比對三個翻譯物件的 key (en/zh-Hant/es) | 🚫 必須修正 |
 | console.log | `grep "console.log"` | ⚠️ 建議移除 |
 | TODO 註解 | `grep -i "TODO\|FIXME"` | ⚠️ 需追蹤 |
 

@@ -43,6 +43,19 @@ Task 5: 測試與驗證 (npm start 手動測試)
 - 如果涉及 Widget，呼叫 `updateWidget()`
 - 任務完成前，確認沒有語法錯誤
 
+### 4.5 Analytics 埋點
+如果新功能涉及新的使用者操作（按鈕點擊、流程完成、設定變更等）：
+1. 用 `Grep` 在 `mixpanelService.js` 找現有事件命名規範
+2. 根據現有規範建議需要新增的事件
+3. 提醒使用者在對應位置呼叫 `mixpanelService.track(...)`
+
+### 4.6 Supabase Schema 變更
+如果任務涉及資料模型變更（新增欄位、改 Task 結構）：
+- [ ] `taskService.js` CRUD 邏輯已更新
+- [ ] `widgetService.js` 同步資料結構已對應更新
+- [ ] 本地 AsyncStorage cache 的格式相容（考慮舊資料）
+- [ ] 如果是新增欄位，確認 nullable 或有預設值，避免舊版資料出錯
+
 ### 5. Widget 特殊處理
 如果需要更新 Widget：
 1. 確認要傳遞給 Widget 的資料結構
