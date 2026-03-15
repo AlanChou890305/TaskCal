@@ -1870,10 +1870,10 @@ function CalendarScreen({ navigation, route }) {
                   style={{
                     position: "absolute",
                     right: 16,
-                    width: editingTask ? 100 : 75,
+                    width: 44,
                     height: 44,
                   }}
-                  buttonLabel={editingTask ? t.update : t.save}
+                  buttonIcon="checkmark"
                   primaryColor={theme.primary}
                   onPress={saveTask}
                 />
