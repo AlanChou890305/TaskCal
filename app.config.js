@@ -13,12 +13,12 @@ const getEnvironmentConfig = () => {
   return {
     name: "TaskCal",
     slug: "taskcal",
-    version: "1.3.0",
+    version: "1.3.1",
     description: "Simple and intuitive task management app with Google SSO",
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "28",
+    iosBuildNumber: "29",
   };
 };
 
