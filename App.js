@@ -258,8 +258,7 @@ const formatTimeDisplay = formatTimeDisplayUtil;
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-const isIOS26Plus =
-  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { isIOS26Plus } from "./src/utils/platform";
 
 const SplashScreen = ({ navigation }) => {
   const { theme, themeMode, loadTheme: reloadTheme } = useContext(ThemeContext);

@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Platform,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -12,9 +11,7 @@ import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
 import Section from "../components/Section";
 import LiquidGlassButton from "../components/LiquidGlassButton";
-
-const isIOS26Plus =
-  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { isIOS26Plus } from "../utils/platform";
 
 function TermsScreen({ onClose }) {
   const { t } = useContext(LanguageContext);

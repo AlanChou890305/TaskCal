@@ -39,7 +39,7 @@ import LiquidGlassButton from "../components/LiquidGlassButton";
 import TermsScreen from "./TermsScreen";
 import PrivacyScreen from "./PrivacyScreen";
 
-const isIOS26Plus = Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
+import { isIOS26Plus } from "../utils/platform";
 
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
