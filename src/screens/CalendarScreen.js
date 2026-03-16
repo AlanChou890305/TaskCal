@@ -61,6 +61,7 @@ import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
 import LiquidGlassFABButton from "../components/LiquidGlassFABButton";
 import LiquidGlassButton from "../components/LiquidGlassButton";
+import { isIOS26Plus } from "../utils/platform";
 
 function getToday() {
   const today = new Date();
@@ -73,9 +74,6 @@ function getToday() {
 // 格式化時間為 HH:MM（移除秒數）
 // 使用工具文件中的函數，保持向後兼容
 const formatTimeDisplay = formatTimeDisplayUtil;
-
-const isIOS26Plus =
-  Platform.OS === "ios" && parseInt(Platform.Version, 10) >= 26;
 
 const TaskSkeleton = ({ theme }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -2289,33 +2287,18 @@ function CalendarScreen({ navigation, route }) {
                     }}
                   />
                 </View>
-              </View>
-            </ScrollView>
-            {isIOS26Plus ? (
-              editingTask ? (
-                <View
-                  style={[
-                    styles.modalButtons,
-                    {
-                      backgroundColor:
-                        theme.mode === "dark"
-                          ? theme.background
-                          : theme.modalBackground,
-                      borderTopColor:
-                        theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
-                      justifyContent: "flex-start",
-                    },
-                  ]}
-                >
+                {editingTask && (
                   <IOSButton
                     title={t.delete}
                     onPress={showDeleteConfirm}
                     theme={theme}
                     variant="destructive"
+                    style={{ width: "100%", paddingBottom: 0, borderWidth: 1, borderColor: theme.error }}
                   />
-                </View>
-              ) : null
-            ) : (
+                )}
+              </View>
+            </ScrollView>
+            {isIOS26Plus ? null : (
               <View
                 style={[
                   styles.modalButtons,
@@ -2324,33 +2307,16 @@ function CalendarScreen({ navigation, route }) {
                       theme.mode === "dark" ? theme.background : "#fff",
                     borderTopColor:
                       theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
-                    justifyContent: editingTask ? "space-between" : "flex-end",
+                    justifyContent: "flex-end",
                   },
                 ]}
               >
-                {editingTask ? (
-                  <>
-                    <IOSButton
-                      title={t.delete}
-                      onPress={showDeleteConfirm}
-                      theme={theme}
-                      variant="destructive"
-                    />
-                    <IOSButton
-                      title={t.update}
-                      onPress={saveTask}
-                      theme={theme}
-                      variant="primary"
-                    />
-                  </>
-                ) : (
-                  <IOSButton
-                    title={t.save}
-                    onPress={saveTask}
-                    theme={theme}
-                    variant="primary"
-                  />
-                )}
+                <IOSButton
+                  title={editingTask ? t.update : t.save}
+                  onPress={saveTask}
+                  theme={theme}
+                  variant="primary"
+                />
               </View>
             )}
           </View>
