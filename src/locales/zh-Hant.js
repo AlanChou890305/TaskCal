@@ -237,6 +237,16 @@ export default {
   error: "錯誤",
   ok: "確定",
   failedToUpdateUserType: "無法更新使用者類型",
+  // Onboarding
+  onboardingSkip: "跳過",
+  onboardingNext: "下一步",
+  onboardingGetStarted: "開始使用",
+  onboarding1Title: "歡迎使用 TaskCal",
+  onboarding1Desc: "行事曆與任務，全部整合在一個地方。",
+  onboarding2Title: "幾秒鐘內建立任務",
+  onboarding2Desc: "新增任務、設定時間與備註，在任務開始前獲得提醒。",
+  onboarding3Title: "在主畫面查看任務",
+  onboarding3Desc: "新增 TaskCal Widget，不開 App 也能一眼看到今日任務。",
   // Map Preview
   viewMap: "查看地圖",
   map: "地圖",

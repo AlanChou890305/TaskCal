@@ -237,6 +237,16 @@ export default {
   error: "Error",
   ok: "OK",
   failedToUpdateUserType: "Failed to update user type",
+  // Onboarding
+  onboardingSkip: "Skip",
+  onboardingNext: "Next",
+  onboardingGetStarted: "Get Started",
+  onboarding1Title: "Welcome to TaskCal",
+  onboarding1Desc: "Your calendar and tasks, together in one place.",
+  onboarding2Title: "Create Tasks in Seconds",
+  onboarding2Desc: "Add tasks with time and notes — get reminded before they start.",
+  onboarding3Title: "Tasks on Your Home Screen",
+  onboarding3Desc: "Add the TaskCal widget to see today's tasks without opening the app.",
   // Map Preview
   viewMap: "View Map",
   map: "Map",

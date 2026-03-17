@@ -237,6 +237,16 @@ export default {
   supportVersion: "Versión",
   // Map Preview
   viewMap: "Ver mapa",
+  // Onboarding
+  onboardingSkip: "Omitir",
+  onboardingNext: "Siguiente",
+  onboardingGetStarted: "Comenzar",
+  onboarding1Title: "Bienvenido a TaskCal",
+  onboarding1Desc: "Tu calendario y tareas, juntos en un solo lugar.",
+  onboarding2Title: "Crea tareas en segundos",
+  onboarding2Desc: "Agrega tareas con hora y notas — recibe recordatorios antes de que empiecen.",
+  onboarding3Title: "Tareas en tu pantalla de inicio",
+  onboarding3Desc: "Agrega el widget de TaskCal para ver las tareas de hoy sin abrir la app.",
   map: "Mapa",
   mapLoading: "Cargando mapa...",
   mapPreviewRequiresBuild: "La vista previa del mapa requiere reconstruir la app",
