@@ -28,6 +28,7 @@ import { BlurView } from "expo-blur";
 // Screen imports
 import CalendarScreen from "./src/screens/CalendarScreen";
 import SettingScreen from "./src/screens/SettingScreen";
+import OnboardingScreen from "./src/screens/OnboardingScreen";
 
 // 獲取重定向 URL
 // 獲取重定向 URL
@@ -55,6 +56,7 @@ try {
 import {
   View,
   Text,
+  ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
   Modal,
@@ -821,6 +823,12 @@ const SplashScreen = ({ navigation }) => {
     // Check for existing session on mount
     const checkSession = async () => {
       try {
+        const seen = await AsyncStorage.getItem("onboarding_completed");
+        if (!seen) {
+          navigation.replace("Onboarding");
+          return;
+        }
+
         const {
           data: { session },
           error,
@@ -3163,34 +3171,34 @@ export default function App() {
     });
   }, [fontsLoaded, fontTimeout, loadingLang, loadingTheme]);
 
-  // Allow app to start even if fonts aren't loaded (with fallback)
-  if (!fontsLoaded && !fontTimeout) {
-    console.log("Waiting for fonts...");
+  // Show branded loading screen while fonts/language/theme are loading
+  if ((!fontsLoaded || loadingLang || loadingTheme || loadingUserType) && !fontTimeout) {
     return (
       <View
         style={{
           flex: 1,
-          backgroundColor: "#fff",
+          backgroundColor: "#BEBAFF",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
-        <Text style={{ fontSize: 16, color: "#666" }}>Loading...</Text>
-      </View>
-    );
-  }
-  if ((loadingLang || loadingTheme || loadingUserType) && !fontTimeout) {
-    console.log("Waiting for language, theme and user type...");
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#fff",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 16, color: "#666" }}>Loading...</Text>
+        <Image
+          source={require("./assets/logo-login.png")}
+          style={{ width: 100, height: 100, marginBottom: 16 }}
+          resizeMode="contain"
+        />
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: "bold",
+            color: "#ffffff",
+            letterSpacing: 1,
+            marginBottom: 40,
+          }}
+        >
+          TaskCal
+        </Text>
+        <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" />
       </View>
     );
   }
@@ -3244,6 +3252,7 @@ export default function App() {
               }}
               initialRouteName="Splash"
             >
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
               <Stack.Screen name="Splash" component={SplashScreen} />
               <Stack.Screen
                 name="MainTabs"
