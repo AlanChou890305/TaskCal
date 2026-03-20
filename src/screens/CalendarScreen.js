@@ -1791,6 +1791,7 @@ function CalendarScreen({ navigation, route }) {
                 alignItems: "center",
                 justifyContent: "flex-start",
                 backgroundColor: "#f2f2f2",
+                overflow: "hidden",
               }
             : null,
         ]}
@@ -1809,7 +1810,8 @@ function CalendarScreen({ navigation, route }) {
                     width: 375,
                     maxWidth: 375,
                     alignSelf: "center",
-                    minHeight: "100vh",
+                    height: "100vh",
+                    overflow: "hidden",
                   }
                 : null,
             ]}
@@ -1909,6 +1911,7 @@ function CalendarScreen({ navigation, route }) {
               ref={modalScrollViewRef}
               style={styles.modalScrollView}
               keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
               contentContainerStyle={{
                 paddingBottom: 100,
                 paddingTop: isIOS26Plus ? 20 : 0,
