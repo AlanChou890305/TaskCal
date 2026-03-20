@@ -29,6 +29,8 @@ import { BlurView } from "expo-blur";
 import CalendarScreen from "./src/screens/CalendarScreen";
 import SettingScreen from "./src/screens/SettingScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
+import TermsScreen from "./src/screens/TermsScreen";
+import PrivacyScreen from "./src/screens/PrivacyScreen";
 
 // 獲取重定向 URL
 // 獲取重定向 URL
@@ -270,6 +272,8 @@ const SplashScreen = ({ navigation }) => {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isAppleSigningIn, setIsAppleSigningIn] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+  const [termsModalVisible, setTermsModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
 
   // Check if Apple Authentication is available
   useEffect(() => {
@@ -2293,6 +2297,7 @@ const SplashScreen = ({ navigation }) => {
           left: 0,
           right: 0,
           alignItems: "center",
+          paddingHorizontal: 24,
         }}
       >
         <Text
@@ -2305,20 +2310,38 @@ const SplashScreen = ({ navigation }) => {
           {t.byContinuing}{" "}
           <Text
             style={{ color: theme.primary, fontWeight: "bold" }}
-            onPress={() => navigation.navigate("Terms")}
+            onPress={() => setTermsModalVisible(true)}
           >
             {t.terms}
           </Text>{" "}
           {t.and}{" "}
           <Text
             style={{ color: theme.primary, fontWeight: "bold" }}
-            onPress={() => navigation.navigate("Privacy")}
+            onPress={() => setPrivacyModalVisible(true)}
           >
             {t.privacy}
           </Text>
           .
         </Text>
       </View>
+      <Modal
+        visible={termsModalVisible}
+        transparent={false}
+        animationType="slide"
+        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        onRequestClose={() => setTermsModalVisible(false)}
+      >
+        <TermsScreen onClose={() => setTermsModalVisible(false)} />
+      </Modal>
+      <Modal
+        visible={privacyModalVisible}
+        transparent={false}
+        animationType="slide"
+        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        onRequestClose={() => setPrivacyModalVisible(false)}
+      >
+        <PrivacyScreen onClose={() => setPrivacyModalVisible(false)} />
+      </Modal>
     </SafeAreaView>
   );
 };
