@@ -1886,8 +1886,13 @@ function CalendarScreen({ navigation, route }) {
                     paddingTop: insets.top + 16,
                     backgroundColor:
                       theme.mode === "dark" ? theme.background : "#fff",
-                    borderBottomColor:
-                      theme.mode === "dark" ? "#2a2a2a" : theme.divider,
+                    ...(Platform.OS !== "web" && {
+                      borderBottomColor:
+                        theme.mode === "dark" ? "#2a2a2a" : theme.divider,
+                    }),
+                    ...(Platform.OS === "web" && {
+                      shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
+                    }),
                   },
                 ]}
               >
@@ -3879,8 +3884,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    ...(Platform.OS !== "web" && {
+      borderBottomWidth: 1,
+      borderBottomColor: "#f0f0f0",
+    }),
+    ...(Platform.OS === "web" && {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    }),
     backgroundColor: "#fff",
     zIndex: 10,
   },

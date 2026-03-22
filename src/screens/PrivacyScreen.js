@@ -67,18 +67,31 @@ function PrivacyScreen({ onClose }) {
         </View>
       ) : (
         <View
-          style={{
-            backgroundColor: theme.backgroundSecondary,
-            paddingTop: 8,
-            paddingBottom: 16,
-            paddingHorizontal: 20,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
-            shadowRadius: 4,
-            elevation: 4,
-            zIndex: 1,
-          }}
+          style={
+            Platform.OS === "web"
+              ? {
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  paddingTop: 20,
+                  paddingBottom: 16,
+                  paddingHorizontal: 20,
+                  zIndex: 1,
+                }
+              : {
+                  backgroundColor: theme.backgroundSecondary,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
+                  shadowRadius: 4,
+                  elevation: 4,
+                  paddingTop: 8,
+                  paddingBottom: 16,
+                  paddingHorizontal: 20,
+                  zIndex: 1,
+                }
+          }
         >
           <View style={{ position: "relative" }}>
             <TouchableOpacity
