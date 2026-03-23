@@ -49,6 +49,9 @@ iOS Widget changes require an Xcode build of the widget target. See `docs/` for 
 - Fixed theme resetting to light mode after login
 - Fixed login page layout overflow and navigation errors
 - Fixed web create/edit task page vertical scrollbar
+- Save button changed to checkmark icon (fixes Spanish text overflow)
+- Web header updated to shadow style
+- Fixed last task hidden by gradient fade in task list
 - Spanish translation fully synced
 
 ### v1.3.1 — 2026-03-15

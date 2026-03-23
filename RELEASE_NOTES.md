@@ -12,7 +12,10 @@
 - Improved login page layout — text no longer overflows the screen
 - Fixed vertical scrollbar appearing on create/edit task pages (web)
 - Fixed Terms of Use and Privacy Policy navigation errors on login page
-- Translation completeness improved (Spanish locale fully synced)
+- Save button in task editor changed to checkmark icon (fixes text overflow in Spanish)
+- Web header style updated to shadow for visual consistency
+- Fixed last task being partially hidden by gradient fade in task list
+- Spanish locale fully synced
 
 ### 繁體中文
 - 新增 Onboarding 引導頁面，協助新用戶快速了解核心功能
@@ -20,6 +23,9 @@
 - 改善登入頁面排版，底部文字不再超出螢幕
 - 修正網頁版建立/編輯任務頁面出現多餘垂直捲軸的問題
 - 修正登入頁面中使用條款與隱私政策導航錯誤
+- 任務編輯器儲存按鈕改為打勾圖示（修正西文斷行問題）
+- 網頁版 Header 改為陰影樣式，視覺一致性提升
+- 修正任務列表最後一項被漸層效果遮住的問題
 - 西班牙文翻譯補全
 
 ### Español
@@ -28,6 +34,9 @@
 - Mejora en el diseño de la página de inicio de sesión — el texto ya no se desborda de la pantalla
 - Corregida la barra de desplazamiento vertical en las páginas de crear/editar tarea (web)
 - Corregidos errores de navegación en los enlaces de Términos de Uso y Política de Privacidad
+- Botón de guardar en el editor de tareas cambiado a ícono de verificación (soluciona desbordamiento en español)
+- Estilo del encabezado web actualizado a sombra para mayor consistencia visual
+- Corregido el problema donde la última tarea quedaba oculta por el efecto de degradado
 - Traducciones al español completamente sincronizadas
 
 ---
