@@ -540,6 +540,9 @@ const SplashScreen = ({ navigation }) => {
               });
             }
 
+            // 有帳號的 user 不需要 onboarding，確保登入後不會再跳回 Onboarding
+            await AsyncStorage.setItem("onboarding_completed", "true");
+
             // 導向主畫面後才關閉 Signing in，避免按鈕已還原但畫面還卡住
             console.log("🚀 Navigating to main app...");
             if (!hasNavigated) {

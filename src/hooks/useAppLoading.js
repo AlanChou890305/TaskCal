@@ -62,7 +62,13 @@ export function useAppLoading() {
       console.log("🎨 Loading theme settings...");
       await waitForPreload();
 
-      let userSettings = await resolveUserSettings();
+      // Bypass shared promise for theme: it may be stale from an unauthenticated
+      // initial call ({theme:"light"}). Always fetch directly so reloadTheme
+      // after login gets the correct value from Supabase.
+      const cachedData = dataPreloadService.getCachedData();
+      let userSettings = cachedData?.userSettings
+        ? cachedData.userSettings
+        : await UserService.getUserSettings();
 
       if (
         userSettings.theme === "dark" ||
