@@ -92,6 +92,9 @@ export default function OnboardingScreen({ navigation }) {
                 style={styles.screenshot}
                 resizeMode="contain"
               />
+              <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
+                <Text style={styles.skipText}>{t.onboardingSkip}</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.textContainer}>
               <Text style={[styles.title, { color: theme.text }]}>{t[item.titleKey]}</Text>
@@ -128,10 +131,6 @@ export default function OnboardingScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Skip button — top-right of the white content area */}
-      <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
-        <Text style={[styles.skipText, { color: "rgba(50, 40, 120, 0.85)" }]}>{t.onboardingSkip}</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -142,13 +141,16 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     position: "absolute",
-    top: Platform.OS === "android" ? 16 : 8,
-    right: 20,
+    top: 12,
+    right: 16,
     paddingVertical: 8,
-    paddingHorizontal: 4,
+    paddingHorizontal: 12,
+    zIndex: 10,
   },
   skipText: {
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "rgba(50, 40, 120, 0.85)",
   },
   slide: {
     flex: 1,

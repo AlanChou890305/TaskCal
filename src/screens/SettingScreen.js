@@ -25,6 +25,7 @@ import * as StoreReview from "expo-store-review";
 import Svg, { Path, Circle } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LanguageContext, ThemeContext, UserContext } from "../contexts";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../supabaseClient";
 import { UserService } from "../services/userService";
 import { versionService } from "../services/versionService";
@@ -1168,6 +1169,59 @@ function SettingScreen() {
                   </Text>
                   <Text style={{ color: theme.textTertiary, fontSize: 11 }}>
                     {"Force Settings UI to show 'Update Available'"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  height: StyleSheet.hairlineWidth,
+                  backgroundColor: theme.divider,
+                  marginHorizontal: 20,
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={async () => {
+                  try {
+                    await AsyncStorage.removeItem("onboarding_completed");
+                    mixpanelService.track("Dev Force Logout + Onboarding");
+                    mixpanelService.reset();
+                    dataPreloadService.clearCache();
+                    try {
+                      await supabase.auth.signOut({ scope: "local" });
+                    } catch (e) {
+                      console.warn("SignOut error (continuing):", e);
+                    }
+                    navigation.reset({
+                      index: 0,
+                      routes: [{ name: "Onboarding" }],
+                    });
+                  } catch (error) {
+                    console.error("Force logout + onboarding error:", error);
+                    Alert.alert("Error", error.message);
+                  }
+                }}
+                activeOpacity={0.6}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                }}
+              >
+                <MaterialIcons
+                  name="restart-alt"
+                  size={20}
+                  color="#FF3B30"
+                  style={{ marginRight: 12 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#FF3B30", fontSize: 15, fontWeight: "600" }}>
+                    {"Force Logout + Onboarding"}
+                  </Text>
+                  <Text style={{ color: theme.textTertiary, fontSize: 11 }}>
+                    {"Sign out and reset onboarding state"}
                   </Text>
                 </View>
               </TouchableOpacity>
