@@ -159,7 +159,7 @@ export default function App() {
   const theme = getTheme(actualThemeMode);
 
   if (((!fontsLoaded || loadingLang || loadingTheme) && !fontTimeout) ||
-      (Platform.OS === "web" && initialRoute === null)) {
+      initialRoute === null) {
     return (
       <View
         style={{

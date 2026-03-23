@@ -4,12 +4,27 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../services/supabaseClient";
 
 export const useInitialRoute = () => {
-  const [initialRoute, setInitialRoute] = useState(
-    Platform.OS === "web" ? null : "Splash",
-  );
+  const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
-    if (Platform.OS !== "web") return;
+    if (Platform.OS !== "web") {
+      // Native: check session via getSession (reads from keychain, no network)
+      const checkNativeSession = async () => {
+        try {
+          const seen = await AsyncStorage.getItem("onboarding_completed");
+          if (!seen) {
+            setInitialRoute("Onboarding");
+            return;
+          }
+          const { data: { session } } = await supabase.auth.getSession();
+          setInitialRoute(session ? "MainTabs" : "Splash");
+        } catch {
+          setInitialRoute("Splash");
+        }
+      };
+      checkNativeSession();
+      return;
+    }
     let resolved = false;
     let subscription = null;
     let timeout = null;
