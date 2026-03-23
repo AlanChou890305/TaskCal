@@ -88,7 +88,7 @@ export class UserService {
           );
           const defaultSettings = {
             language: defaultLanguage,
-            theme: "light",
+            theme: "auto",
             notifications_enabled: true,
             reminder_settings: { enabled: true, times: [30, 10, 5] },
           };
@@ -112,9 +112,9 @@ export class UserService {
             console.log("✅ Default user settings created");
             // 正確處理 theme
             const newThemeValue =
-              newData.theme === "dark" || newData.theme === "light"
+              newData.theme === "dark" || newData.theme === "light" || newData.theme === "auto"
                 ? newData.theme
-                : "light";
+                : "auto";
 
             return {
               language: newData.language || "en",
@@ -162,15 +162,15 @@ export class UserService {
         // Return default settings if other error
         return {
           language: "en",
-          theme: "light",
+          theme: "auto",
           notifications_enabled: true,
         };
       }
 
       // 正確處理 theme：只有當 theme 是 null 或 undefined 時才使用預設值
-      // 如果 theme 是 "dark" 或 "light" 字串，應該保留
+      // 如果 theme 是 "dark"、"light" 或 "auto" 字串，應該保留
       const themeValue =
-        data.theme === "dark" || data.theme === "light" ? data.theme : "light";
+        data.theme === "dark" || data.theme === "light" || data.theme === "auto" ? data.theme : "auto";
 
       return {
         language: data.language || "en",
