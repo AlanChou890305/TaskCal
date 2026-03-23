@@ -40,11 +40,18 @@ export default function OnboardingScreen({ navigation }) {
 
   const handleNext = () => {
     if (currentIndex < SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      flatListRef.current?.scrollToIndex({ index: newIndex, animated: true });
     } else {
       handleDone();
     }
   };
+
+  const onScroll = useRef((event) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    setCurrentIndex(index);
+  }).current;
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
@@ -54,15 +61,16 @@ export default function OnboardingScreen({ navigation }) {
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
+  const getItemLayout = useRef((_, index) => ({
+    length: SCREEN_WIDTH,
+    offset: SCREEN_WIDTH * index,
+    index,
+  })).current;
+
   const isLast = currentIndex === SLIDES.length - 1;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Skip button */}
-      <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
-        <Text style={[styles.skipText, { color: theme.textSecondary }]}>{t.onboardingSkip}</Text>
-      </TouchableOpacity>
-
       {/* Slides */}
       <FlatList
         ref={flatListRef}
@@ -71,8 +79,11 @@ export default function OnboardingScreen({ navigation }) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
+        getItemLayout={getItemLayout}
         renderItem={({ item, index }) => (
           <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
             <View style={styles.imageContainer}>
@@ -116,6 +127,11 @@ export default function OnboardingScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Skip button — top-right of the white content area */}
+      <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
+        <Text style={[styles.skipText, { color: "rgba(50, 40, 120, 0.85)" }]}>{t.onboardingSkip}</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -125,10 +141,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   skipButton: {
-    alignSelf: "flex-end",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "android" ? 12 : 8,
-    paddingBottom: 8,
+    position: "absolute",
+    top: Platform.OS === "android" ? 16 : 8,
+    right: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
   skipText: {
     fontSize: 16,
