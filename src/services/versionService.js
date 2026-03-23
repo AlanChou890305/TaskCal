@@ -10,7 +10,7 @@ import { getUpdateUrl } from "../config/updateUrls";
 class VersionService {
   constructor() {
     this.currentVersion = Application.nativeApplicationVersion || "1.3.2";
-    this.currentBuildNumber = Application.nativeBuildVersion || "31";
+    this.currentBuildNumber = Application.nativeBuildVersion || "32";
     this.latestVersion = null;
     this.updateUrl = null;
     // 快取機制：快取版本檢查結果 5 分鐘（依語言分別快取）

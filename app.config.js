@@ -18,7 +18,7 @@ const getEnvironmentConfig = () => {
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "31",
+    iosBuildNumber: "32",
   };
 };
 
