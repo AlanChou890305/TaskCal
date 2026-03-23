@@ -7,7 +7,7 @@ import Constants from "expo-constants";
 import {
   getSupabaseConfig,
   getCurrentEnvironment,
-} from "./src/config/environment";
+} from "../config/environment";
 
 // 獲取當前環境的 Supabase 配置
 const supabaseConfig = getSupabaseConfig();

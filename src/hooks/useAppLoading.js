@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Platform } from "react-native";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { UserService } from "../services/userService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";

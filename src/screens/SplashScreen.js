@@ -15,7 +15,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { ThemeContext, LanguageContext, UserContext } from "../contexts";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";

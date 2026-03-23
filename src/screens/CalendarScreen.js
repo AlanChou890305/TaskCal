@@ -36,7 +36,7 @@ import {
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Svg, { Line, Circle, Rect } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { LanguageContext, ThemeContext, UserContext } from "../contexts";
 import { useResponsive } from "../hooks/useResponsive";
 import { ResponsiveContainer } from "../components/ResponsiveContainer";

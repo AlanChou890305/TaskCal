@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import * as Application from "expo-application";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "./supabaseClient";
 import { getUpdateUrl } from "../config/updateUrls";
 
 /**

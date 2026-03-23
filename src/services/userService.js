@@ -1,4 +1,4 @@
-import { supabase } from "../../supabaseClient";
+import { supabase } from "./supabaseClient";
 import { Platform } from "react-native";
 import { getSupabaseConfig } from "../config/environment";
 import { versionService } from "./versionService";

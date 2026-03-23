@@ -26,7 +26,7 @@ import Svg, { Path, Circle } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LanguageContext, ThemeContext, UserContext } from "../contexts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "../services/supabaseClient";
 import { UserService } from "../services/userService";
 import { versionService } from "../services/versionService";
 import { getUpdateUrl } from "../config/updateUrls";
