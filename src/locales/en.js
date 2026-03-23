@@ -5,6 +5,7 @@ export default {
   userName: "User Name",
   account: "Account",
   logout: "Log out",
+  comingSoon: "Coming Soon...",
   terms: "Terms of Use",
   privacy: "Privacy Policy",
   version: "Version",

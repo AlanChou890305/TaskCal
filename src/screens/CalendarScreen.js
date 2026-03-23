@@ -4328,7 +4328,7 @@ const styles = StyleSheet.create({
   tasksScrollContent: {
     flexGrow: 1,
     paddingTop: 8,
-    paddingBottom: 8, // Minimal padding for last item visibility
+    paddingBottom: 80, // Padding so last task is not hidden by gradient
   },
 });
 

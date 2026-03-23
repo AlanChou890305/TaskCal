@@ -253,4 +253,11 @@ export default {
   mapOpenInBrowserHint: "Por favor, toca el botón de abajo para ver el mapa en tu navegador",
   openInBrowser: "Abrir en navegador",
   mapLoadFailed: "Error al cargar el mapa",
+  // Auth messages
+  accountCreatedSuccess: "¡Cuenta creada con éxito! ¡Bienvenido a TaskCal!",
+  accountCreatedPartial: "Cuenta creada, pero no se pudieron guardar algunas configuraciones. Puedes seguir usando la app.",
+  signInError: "Error de inicio de sesión",
+  error: "Error",
+  ok: "Aceptar",
+  failedToUpdateUserType: "No se pudo actualizar el tipo de usuario",
 };
