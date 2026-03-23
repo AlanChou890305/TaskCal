@@ -2,7 +2,7 @@
 
 A React Native (Expo) task management app with calendar view, Google SSO, Supabase backend, and iOS home screen widget. Supports English, Traditional Chinese, and Spanish.
 
-**Current version:** v1.3.2 (Build 30)
+**Current version:** v1.3.2 (Build 31)
 
 ---
 
@@ -44,7 +44,9 @@ iOS Widget changes require an Xcode build of the widget target. See `docs/` for 
 
 ## Version History
 
-### v1.3.2 — 2026-03-23
+### v1.3.2 (Build 31) — 2026-03-23
+- Fixed onboarding incorrectly appearing after login for existing users
+- Fixed theme not loading correctly (stuck on light mode) after login
 - Added Onboarding experience for new users
 - Fixed theme resetting to light mode after login
 - Fixed login page layout overflow and navigation errors

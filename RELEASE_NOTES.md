@@ -1,4 +1,4 @@
-# Release Notes - Version 1.3.2 (Build 30)
+# Release Notes - Version 1.3.2 (Build 31)
 
 **Release Date**: 2026-03-23
 
@@ -7,6 +7,8 @@
 ## What's New
 
 ### English
+- Fixed onboarding incorrectly appearing after login for existing users
+- Fixed theme not loading correctly (stuck on light mode) after login
 - Added Onboarding experience to guide new users through key features
 - Fixed theme incorrectly resetting to light mode after login
 - Improved login page layout — text no longer overflows the screen
@@ -18,6 +20,8 @@
 - Spanish locale fully synced
 
 ### 繁體中文
+- 修正既有用戶登入後誤跳 Onboarding 引導頁的問題
+- 修正登入後 theme 無法正確載入（卡在 light 模式）的問題
 - 新增 Onboarding 引導頁面，協助新用戶快速了解核心功能
 - 修正登入後 theme 被強制切換為 light 模式的問題
 - 改善登入頁面排版，底部文字不再超出螢幕
@@ -29,6 +33,8 @@
 - 西班牙文翻譯補全
 
 ### Español
+- Corregido el problema donde el Onboarding aparecía incorrectamente para usuarios existentes al iniciar sesión
+- Corregido el tema que no se cargaba correctamente (atascado en modo claro) después de iniciar sesión
 - Nueva experiencia de Onboarding para guiar a los nuevos usuarios por las funciones principales
 - Corregido el tema que se restablecía incorrectamente al modo claro después de iniciar sesión
 - Mejora en el diseño de la página de inicio de sesión — el texto ya no se desborda de la pantalla
@@ -65,7 +71,7 @@ task management, todo list, productivity, calendar widget, iOS widget, task orga
 - [x] Version numbers updated in all 9 locations
 - [x] RELEASE_NOTES.md updated
 - [x] README.md version information updated
-- [ ] App tested on simulator
+- [ ] App tested on device
 - [ ] Widget tested and working
 - [ ] Xcode Archive successful
 - [ ] TestFlight build uploaded
