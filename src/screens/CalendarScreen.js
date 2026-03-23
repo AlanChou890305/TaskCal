@@ -323,6 +323,16 @@ function CalendarScreen({ navigation, route }) {
     }
   }, [modalVisible]);
 
+  // Native 平台：modal 開啟時自動將焦點放在任務輸入框
+  useEffect(() => {
+    if (Platform.OS !== "web" && modalVisible) {
+      const timer = setTimeout(() => {
+        taskTitleInputRef.current?.focus?.();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [modalVisible]);
+
   // 同步 taskDate 和 selectedDate
   useEffect(() => {
     if (!modalVisible) {
