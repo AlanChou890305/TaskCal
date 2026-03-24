@@ -6,14 +6,11 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
-  Dimensions,
-  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LanguageContext, ThemeContext } from "../contexts";
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const IMAGES = [
   require("../../assets/screenshots/marketing/en/11_calendar_month.jpg"),
@@ -30,6 +27,10 @@ const SLIDES = [
 export default function OnboardingScreen({ navigation }) {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
+  const { width: windowWidth, height: SCREEN_HEIGHT } = useWindowDimensions();
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [flatListHeight, setFlatListHeight] = useState(0);
+  const SCREEN_WIDTH = containerWidth > 0 ? containerWidth : windowWidth;
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
 
@@ -48,8 +49,11 @@ export default function OnboardingScreen({ navigation }) {
     }
   };
 
+  const screenWidthRef = useRef(SCREEN_WIDTH);
+  screenWidthRef.current = SCREEN_WIDTH;
+
   const onScroll = useRef((event) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    const index = Math.round(event.nativeEvent.contentOffset.x / screenWidthRef.current);
     setCurrentIndex(index);
   }).current;
 
@@ -61,18 +65,23 @@ export default function OnboardingScreen({ navigation }) {
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
-  const getItemLayout = useRef((_, index) => ({
+  const getItemLayout = (_, index) => ({
     length: SCREEN_WIDTH,
     offset: SCREEN_WIDTH * index,
     index,
-  })).current;
+  });
 
   const isLast = currentIndex === SLIDES.length - 1;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
       {/* Slides */}
-      <FlatList
+      {SCREEN_WIDTH === 0 ? null : <FlatList
+        style={{ flex: 1 }}
+        onLayout={(e) => setFlatListHeight(e.nativeEvent.layout.height)}
         ref={flatListRef}
         data={SLIDES}
         keyExtractor={(item) => item.key}
@@ -85,11 +94,11 @@ export default function OnboardingScreen({ navigation }) {
         viewabilityConfig={viewabilityConfig}
         getItemLayout={getItemLayout}
         renderItem={({ item, index }) => (
-          <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-            <View style={styles.imageContainer}>
+          <View style={[styles.slide, { width: SCREEN_WIDTH, height: flatListHeight > 0 ? flatListHeight : undefined }]}>
+            <View style={[styles.imageContainer, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.52 }]}>
               <Image
                 source={IMAGES[index]}
-                style={styles.screenshot}
+                style={[styles.screenshot, { width: SCREEN_WIDTH }]}
                 resizeMode="contain"
               />
               <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
@@ -102,7 +111,7 @@ export default function OnboardingScreen({ navigation }) {
             </View>
           </View>
         )}
-      />
+      />}
 
       {/* Dots + Next/Get Started */}
       <View style={styles.footer}>
@@ -157,13 +166,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
   },
   imageContainer: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.52,
     backgroundColor: "#BEBAFF",
     overflow: "hidden",
   },
   screenshot: {
-    width: SCREEN_WIDTH,
     height: "100%",
   },
   textContainer: {
