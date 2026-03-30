@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../services/supabaseClient";
+import { getSharedSession } from "../services/sessionCache";
 
 export const useInitialRoute = () => {
   const [initialRoute, setInitialRoute] = useState(null);
@@ -16,7 +17,7 @@ export const useInitialRoute = () => {
             setInitialRoute("Onboarding");
             return;
           }
-          const { data: { session } } = await supabase.auth.getSession();
+          const session = await getSharedSession();
           setInitialRoute(session ? "MainTabs" : "Splash");
         } catch {
           setInitialRoute("Splash");
@@ -72,7 +73,7 @@ export const useInitialRoute = () => {
           }
         });
         subscription = data.subscription;
-        timeout = setTimeout(() => resolve("Splash"), 8000);
+        timeout = setTimeout(() => resolve("Splash"), 5000);
       } catch {
         resolve("Splash");
       }

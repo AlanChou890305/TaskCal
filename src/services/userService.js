@@ -53,11 +53,13 @@ export class UserService {
   }
 
   // Get user settings
-  static async getUserSettings() {
+  static async getUserSettings(cachedUser = null) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = cachedUser;
+      if (!user) {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      }
       if (!user) {
         console.warn("No authenticated user found");
         return {
@@ -469,11 +471,13 @@ export class UserService {
   }
 
   // Get user profile information
-  static async getUserProfile() {
+  static async getUserProfile(cachedUser = null) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = cachedUser;
+      if (!user) {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      }
       if (!user) {
         return null;
       }
@@ -588,17 +592,19 @@ export class UserService {
   }
 
   // Update platform info when user opens the app
-  static async updatePlatformInfo() {
+  static async updatePlatformInfo(cachedUser = null) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = cachedUser;
+      if (!user) {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      }
       if (!user) {
         return;
       }
 
       // 先確保 user_settings 記錄存在
-      await this.getUserSettings();
+      await this.getUserSettings(user);
 
       // 從 auth.users 獲取 display_name（用於在 table editor 中顯示）
       const authDisplayName =

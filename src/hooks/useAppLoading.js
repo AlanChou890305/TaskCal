@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../services/supabaseClient";
+import { getSharedSession } from "../services/sessionCache";
 import { UserService } from "../services/userService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";
@@ -10,6 +11,7 @@ import { getCurrentEnvironment } from "../config/environment";
 import ReactGA from "react-ga4";
 
 const LANGUAGE_STORAGE_KEY = "LANGUAGE_STORAGE_KEY";
+const SETTINGS_CACHE_KEY = "APP_SETTINGS_CACHE";
 
 /**
  * 等待 preload 完成（最多 2 秒），統一取代 polling 模式
@@ -46,6 +48,40 @@ const resolveUserSettings = async () => {
 };
 
 /**
+ * 從 AsyncStorage 讀取快取的設定（語言/主題/userType）
+ * 用於在網路載入完成前立即顯示上次的設定
+ */
+const loadCachedSettings = async () => {
+  try {
+    const cached = await AsyncStorage.getItem(SETTINGS_CACHE_KEY);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (error) {
+    console.warn("⚠️ Failed to read cached settings:", error);
+  }
+  return null;
+};
+
+/**
+ * 將設定寫入 AsyncStorage 快取，供下次啟動時立即使用
+ */
+const saveCachedSettings = (settings) => {
+  try {
+    const toCache = {
+      language: settings.language,
+      theme: settings.theme,
+      user_type: settings.user_type,
+    };
+    AsyncStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(toCache)).catch(
+      (error) => console.warn("⚠️ Failed to save settings cache:", error),
+    );
+  } catch (error) {
+    console.warn("⚠️ Failed to save settings cache:", error);
+  }
+};
+
+/**
  * useAppLoading - 統一管理語言、主題、userType 的載入邏輯
  */
 export function useAppLoading() {
@@ -60,8 +96,6 @@ export function useAppLoading() {
   const loadTheme = useCallback(async () => {
     try {
       console.log("🎨 Loading theme settings...");
-      await waitForPreload();
-
       // Bypass shared promise for theme: it may be stale from an unauthenticated
       // initial call ({theme:"light"}). Always fetch directly so reloadTheme
       // after login gets the correct value from Supabase.
@@ -95,8 +129,6 @@ export function useAppLoading() {
   const loadUserType = useCallback(async () => {
     try {
       setLoadingUserType(true);
-      await waitForPreload();
-
       let userSettings = await resolveUserSettings();
 
       if (userSettings && userSettings.user_type) {
@@ -139,12 +171,31 @@ export function useAppLoading() {
       ReactGA.send({ hitType: "pageview", page: window.location.pathname });
     }
 
-    // 在 App 層級提前開始預載入（如果有 session）
+    // 步驟 1：立即從 AsyncStorage 讀取快取設定（回訪用戶秒開）
+    const applyCachedSettings = async () => {
+      const cached = await loadCachedSettings();
+      if (cached) {
+        console.log("⚡ [App] Applying cached settings for instant display");
+        if (cached.language && ["en", "zh", "es"].includes(cached.language)) {
+          setLanguageState(cached.language);
+        }
+        if (cached.theme && ["dark", "light", "auto"].includes(cached.theme)) {
+          setThemeModeState(cached.theme);
+        }
+        if (cached.user_type) {
+          setUserTypeState(cached.user_type);
+        }
+        // 快取已套用，立即解除 loading 狀態
+        setLoadingLang(false);
+        setLoadingTheme(false);
+        setLoadingUserType(false);
+      }
+    };
+
+    // 步驟 2：在 App 層級提前開始預載入（如果有 session）
     const startEarlyPreload = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const session = await getSharedSession();
         if (session) {
           console.log("🚀 [App] Starting early preload...");
           dataPreloadService.preloadAllData().catch((preloadError) => {
@@ -162,20 +213,16 @@ export function useAppLoading() {
       }
     };
 
-    const preloadStartedPromise = startEarlyPreload();
-
-    // Load language from Supabase user settings
+    // 步驟 3：從網路載入最新設定，並更新快取
     const loadLanguage = async () => {
       try {
         console.log("🌐 Loading language settings...");
-
-        const preloadStarted = await preloadStartedPromise;
-
-        if (preloadStarted) {
-          await waitForPreload();
-        }
-
         let userSettings = await resolveUserSettings();
+
+        // 寫入 AsyncStorage 快取供下次啟動使用
+        if (userSettings) {
+          saveCachedSettings(userSettings);
+        }
 
         if (
           userSettings.language &&
@@ -217,7 +264,7 @@ export function useAppLoading() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          await UserService.updatePlatformInfo();
+          await UserService.updatePlatformInfo(user);
           console.log("📱 Platform info updated on app start");
         }
       } catch (error) {
@@ -225,17 +272,30 @@ export function useAppLoading() {
       }
     };
 
-    // 先等待預載入開始，然後再載入 language 和 theme
+    // 先嘗試套用快取，再平行啟動預載入和網路載入
+    const preloadStartedPromise = startEarlyPreload();
+
     (async () => {
-      await preloadStartedPromise;
+      await applyCachedSettings();
+      const preloadStarted = await preloadStartedPromise;
       // 重置共享 promise（每次初始化時重新開始）
       sharedSettingsPromise = null;
+      // 統一等待一次 preload，避免三個 loader 各自 waitForPreload
+      if (preloadStarted) {
+        await waitForPreload();
+      }
+      // 如果快取已套用，網路載入只是靜默更新
       loadLanguage();
       loadTheme();
       loadUserType();
     })();
 
-    updatePlatformOnStart();
+    // 延遲執行 updatePlatformOnStart（遙測資料不需要在啟動關鍵路徑上）
+    const platformUpdateTimer = setTimeout(() => {
+      updatePlatformOnStart();
+    }, 8000);
+
+    return () => clearTimeout(platformUpdateTimer);
   }, [loadTheme, loadUserType]);
 
   return {

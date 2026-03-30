@@ -53,6 +53,7 @@ const Stack = createStackNavigator();
 
 const getRedirectUrl = () => "https://to-do-mvp.vercel.app";
 const getAppDisplayName = () => "TaskCal";
+const APP_START_TIME = Date.now();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -158,8 +159,15 @@ export default function App() {
 
   const theme = getTheme(actualThemeMode);
 
-  if (((!fontsLoaded || loadingLang || loadingTheme) && !fontTimeout) ||
-      initialRoute === null) {
+  const showingSplash = ((!fontsLoaded || loadingLang || loadingTheme) && !fontTimeout) ||
+      initialRoute === null;
+
+  if (!showingSplash && !App._loggedReady) {
+    App._loggedReady = true;
+    console.log(`⏱️ [App] Time to interactive: ${Date.now() - APP_START_TIME}ms`);
+  }
+
+  if (showingSplash) {
     return (
       <View
         style={{

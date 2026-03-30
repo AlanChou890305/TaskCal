@@ -405,7 +405,7 @@ function CalendarScreen({ navigation, route }) {
             try {
               // 等待預載入完成，但設置超時避免無限等待
               const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Preload timeout")), 1000),
+                setTimeout(() => reject(new Error("Preload timeout")), 3000),
               );
               await Promise.race([preloadPromise, timeoutPromise]);
               // 預載入完成後，重新檢查緩存
@@ -414,7 +414,7 @@ function CalendarScreen({ navigation, route }) {
               // 超時或錯誤時，繼續執行後續的 API 請求
               if (error.message === "Preload timeout") {
                 console.log(
-                  "⚠️ [CalendarScreen] Preload timeout after 1s, fetching directly",
+                  "⚠️ [CalendarScreen] Preload timeout after 3s, fetching directly",
                 );
               } else {
                 console.log(
@@ -617,62 +617,77 @@ function CalendarScreen({ navigation, route }) {
     setVisibleMonth(todayMonth);
     setVisibleYear(todayYear);
 
-    // 立即檢查並使用預載入的數據
-    const cachedData = dataPreloadService.getCachedData();
-    if (
-      cachedData &&
-      cachedData.calendarTasks &&
-      Object.keys(cachedData.calendarTasks).length > 0
-    ) {
-      console.log("📦 [CalendarScreen] Using preloaded tasks on mount");
-      const preloadedTasks = cachedData.calendarTasks;
-
-      // 計算當前可見範圍
-      const startDate = new Date(todayYear, todayMonth - 1, 1);
-      const endDate = new Date(todayYear, todayMonth + 2, 0);
-
-      // 過濾出當前範圍的任務
-      const filteredTasks = {};
-      Object.keys(preloadedTasks).forEach((date) => {
-        const taskDate = new Date(date);
-        if (taskDate >= startDate && taskDate <= endDate) {
-          filteredTasks[date] = preloadedTasks[date];
+    // 等待預載入完成後再檢查快取（避免太早檢查導致 cache miss 後重複查詢）
+    const initWithPreload = async () => {
+      // 如果預載入正在進行中，等待它完成（最多 3 秒）
+      if (dataPreloadService.isPreloading && dataPreloadService.preloadPromise) {
+        console.log("⏳ [CalendarScreen] Waiting for preload before init...");
+        try {
+          await Promise.race([
+            dataPreloadService.preloadPromise,
+            new Promise((resolve) => setTimeout(resolve, 3000)),
+          ]);
+        } catch (error) {
+          console.warn("⚠️ [CalendarScreen] Preload wait error during init:", error.message);
         }
-      });
+      }
 
-      if (Object.keys(filteredTasks).length > 0) {
-        console.log(
-          `✅ [CalendarScreen] Loaded ${
-            Object.keys(filteredTasks).length
-          } dates with tasks from cache`,
-        );
-        setTasks(filteredTasks);
-        setIsLoadingTasks(false);
+      const cachedData = dataPreloadService.getCachedData();
+      if (
+        cachedData &&
+        cachedData.calendarTasks &&
+        Object.keys(cachedData.calendarTasks).length > 0
+      ) {
+        console.log("📦 [CalendarScreen] Using preloaded tasks on mount");
+        const preloadedTasks = cachedData.calendarTasks;
 
-        // 標記這個範圍已經獲取
-        const startDateStr = format(startDate, "yyyy-MM-dd");
-        const endDateStr = format(endDate, "yyyy-MM-dd");
-        const rangeKey = `${startDateStr}_${endDateStr}`;
-        fetchedRangesRef.current.add(rangeKey);
+        // 計算當前可見範圍
+        const startDate = new Date(todayYear, todayMonth - 1, 1);
+        const endDate = new Date(todayYear, todayMonth + 2, 0);
 
-        // Sync to widget
-        widgetService.syncTodayTasks(filteredTasks);
+        // 過濾出當前範圍的任務
+        const filteredTasks = {};
+        Object.keys(preloadedTasks).forEach((date) => {
+          const taskDate = new Date(date);
+          if (taskDate >= startDate && taskDate <= endDate) {
+            filteredTasks[date] = preloadedTasks[date];
+          }
+        });
+
+        if (Object.keys(filteredTasks).length > 0) {
+          console.log(
+            `✅ [CalendarScreen] Loaded ${
+              Object.keys(filteredTasks).length
+            } dates with tasks from cache`,
+          );
+          setTasks(filteredTasks);
+          setIsLoadingTasks(false);
+
+          // 標記這個範圍已經獲取
+          const startDateStr = format(startDate, "yyyy-MM-dd");
+          const endDateStr = format(endDate, "yyyy-MM-dd");
+          const rangeKey = `${startDateStr}_${endDateStr}`;
+          fetchedRangesRef.current.add(rangeKey);
+
+          // Sync to widget
+          widgetService.syncTodayTasks(filteredTasks);
+        } else {
+          console.log(
+            "⚠️ [CalendarScreen] Preloaded tasks exist but none in current range, will fetch from API",
+          );
+        }
       } else {
         console.log(
-          "⚠️ [CalendarScreen] Preloaded tasks exist but none in current range, will fetch from API",
+          "📥 [CalendarScreen] No preloaded tasks available, will fetch from API",
         );
-        // 保持 isLoadingTasks 為 true，讓後續的 fetchTasksForVisibleRange 來處理
       }
-    } else {
-      console.log(
-        "📥 [CalendarScreen] No preloaded tasks available, will fetch from API",
-      );
-      // 如果沒有預載入數據，保持 isLoadingTasks 為 true，讓後續的 fetchTasksForVisibleRange 來處理
-    }
 
-    // 標記初始化完成（無論是否有預載入數據）
-    console.log("✅ [CalendarScreen] Initialization complete");
-    setIsInitialized(true);
+      // 標記初始化完成（無論是否有預載入數據）
+      console.log("✅ [CalendarScreen] Initialization complete");
+      setIsInitialized(true);
+    };
+
+    initWithPreload();
 
     // Center calendar to today after state is set
     setTimeout(() => {

@@ -1,6 +1,7 @@
 import { UserService } from "./userService";
 import { TaskService } from "./taskService";
 import { widgetService } from "./widgetService";
+import { supabase } from "./supabaseClient";
 import { format } from "date-fns";
 
 /**
@@ -60,11 +61,19 @@ class DataPreloadService {
           };
         }
 
-        // 並行載入用戶設定和用戶資料
-        // 但 userSettings 載入完成後立即更新緩存，不等待 userProfile
-        const userSettingsPromise = this.preloadUserSettings().then(
+        // 一次性解析 auth user，避免每個子方法各自呼叫 getUser()
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.warn("⚠️ [DataPreload] No authenticated user, skipping preload");
+          this.isPreloading = false;
+          this.preloadPromise = null;
+          return { userSettings: null, userProfile: null, calendarTasks: null };
+        }
+        console.log("✅ [DataPreload] Auth user resolved once, passing to all sub-methods");
+
+        // 並行載入用戶設定和用戶資料（傳入 user 避免重複 getUser 呼叫）
+        const userSettingsPromise = this.preloadUserSettings(user).then(
           (settings) => {
-            // 立即更新緩存，讓 loadLanguage/loadTheme 能立即使用
             if (settings) {
               this.preloadCache.userSettings = settings;
               console.log("📦 [DataPreload] User settings cached immediately");
@@ -73,8 +82,7 @@ class DataPreloadService {
           },
         );
 
-        const userProfilePromise = this.preloadUserProfile().then((profile) => {
-          // 立即更新緩存
+        const userProfilePromise = this.preloadUserProfile(user).then((profile) => {
           if (profile) {
             this.preloadCache.userProfile = profile;
             console.log("📦 [DataPreload] User profile cached immediately");
@@ -88,50 +96,31 @@ class DataPreloadService {
           userProfilePromise,
         ]);
 
-        // 分階段載入日曆任務（優先順序：今天 → 當月 → 前後月 → 其他月）
-        // 階段 0-1：並行載入今天的任務和當月任務（加速載入）
-        // 因為當月任務 API 會返回今天的任務，所以可以並行載入
-        const todayTasksPromise = this.preloadTodayTasks();
-        const currentMonthTasksPromise = this.preloadCurrentMonthTasks();
+        // 載入當月任務（已包含今天的任務，不需要額外查詢今天）
+        const currentMonthTasks = await this.preloadCurrentMonthTasks(user);
 
-        // 使用 Promise.allSettled 並行等待，不因單個失敗而阻塞
-        const [todayResult, monthResult] = await Promise.allSettled([
-          todayTasksPromise,
-          currentMonthTasksPromise,
-        ]);
-
-        // 處理今天的任務（優先使用）
-        let todayTasks = {};
-        if (todayResult.status === "fulfilled" && todayResult.value) {
-          todayTasks = todayResult.value;
-          this.preloadCache.todayTasks = todayTasks;
-          this.preloadCache.preloadTimestamp = Date.now();
-          // 立即同步今天的任務到 widget（最快顯示）
-          widgetService.syncTodayTasks(todayTasks).catch((error) => {
-            console.error(
-              "❌ [DataPreload] Failed to sync today tasks to widget:",
-              error,
-            );
-          });
+        // 從當月結果中提取今天的任務
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        const todayTasks = {};
+        if (currentMonthTasks[todayStr]) {
+          todayTasks[todayStr] = currentMonthTasks[todayStr];
         }
 
-        // 處理當月任務
-        let currentMonthTasks = {};
-        if (monthResult.status === "fulfilled" && monthResult.value) {
-          currentMonthTasks = monthResult.value;
-          // 合併今天的任務和當月任務（當月任務可能已包含今天的任務）
-          const mergedMonthTasks = {
-            ...todayTasks,
-            ...currentMonthTasks,
-          };
-          this.preloadCache.currentMonthTasks = mergedMonthTasks;
-          this.preloadCache.preloadTimestamp = Date.now();
-        }
+        this.preloadCache.todayTasks = todayTasks;
+        this.preloadCache.currentMonthTasks = currentMonthTasks;
+        this.preloadCache.preloadTimestamp = Date.now();
+
+        // 同步今天的任務到 widget
+        widgetService.syncTodayTasks(currentMonthTasks).catch((error) => {
+          console.error(
+            "❌ [DataPreload] Failed to sync today tasks to widget:",
+            error,
+          );
+        });
 
         // 階段 2：在背景載入前後一個月（不阻塞，讓 UI 先顯示）
-        // 使用 Promise.resolve().then() 讓它在背景執行
         const calendarTasksPromise = Promise.resolve().then(async () => {
-          return this.preloadCalendarTasks();
+          return this.preloadCalendarTasks(user);
         });
 
         // 不等待前後月載入完成，讓 UI 先顯示已載入的資料
@@ -158,11 +147,8 @@ class DataPreloadService {
             );
           });
 
-        // 立即返回已載入的資料（今天的任務 + 當月任務）
-        const calendarTasks = {
-          ...todayTasks,
-          ...currentMonthTasks,
-        };
+        // 立即返回已載入的資料（當月任務已包含今天）
+        const calendarTasks = { ...currentMonthTasks };
 
         // 更新緩存（先更新已載入的部分）
         this.preloadCache.calendarTasks = calendarTasks;
@@ -220,10 +206,10 @@ class DataPreloadService {
   /**
    * 預載入用戶設定
    */
-  static async preloadUserSettings() {
+  static async preloadUserSettings(user = null) {
     try {
       console.log("📥 [DataPreload] Loading user settings...");
-      const settings = await UserService.getUserSettings();
+      const settings = await UserService.getUserSettings(user);
       console.log("✅ [DataPreload] User settings loaded");
       return settings;
     } catch (error) {
@@ -235,10 +221,10 @@ class DataPreloadService {
   /**
    * 預載入用戶資料
    */
-  static async preloadUserProfile() {
+  static async preloadUserProfile(user = null) {
     try {
       console.log("📥 [DataPreload] Loading user profile...");
-      const profile = await UserService.getUserProfile();
+      const profile = await UserService.getUserProfile(user);
       console.log("✅ [DataPreload] User profile loaded");
       return profile;
     } catch (error) {
@@ -248,39 +234,9 @@ class DataPreloadService {
   }
 
   /**
-   * 預載入今天的任務（階段 0：最高優先級）
-   */
-  static async preloadTodayTasks() {
-    try {
-      console.log(
-        "🚀 [DataPreload] Stage 0: Loading today's tasks (highest priority)...",
-      );
-      const today = new Date();
-      const todayStr = format(today, "yyyy-MM-dd");
-
-      // 使用 getTasksForDate 取得今天的任務（更精確且快速）
-      const todayTasksArray = await TaskService.getTasksForDate(todayStr);
-
-      // 轉換為與其他方法一致的格式 { date: [tasks] }
-      const todayTasks = {};
-      if (todayTasksArray && todayTasksArray.length > 0) {
-        todayTasks[todayStr] = todayTasksArray;
-      }
-
-      console.log(
-        `✅ [DataPreload] Stage 0 completed: Today (${todayStr}) loaded with ${todayTasksArray.length} tasks`,
-      );
-      return todayTasks;
-    } catch (error) {
-      console.error("❌ [DataPreload] Error loading today's tasks:", error);
-      return {};
-    }
-  }
-
-  /**
    * 預載入當月任務（階段 1：次高優先級）
    */
-  static async preloadCurrentMonthTasks() {
+  static async preloadCurrentMonthTasks(user = null) {
     try {
       console.log("🚀 [DataPreload] Stage 1: Loading current month...");
       const today = new Date();
@@ -295,6 +251,7 @@ class DataPreloadService {
       const tasks = await TaskService.getTasksByDateRange(
         currentMonthStartStr,
         currentMonthEndStr,
+        user,
       );
 
       console.log(
@@ -313,7 +270,7 @@ class DataPreloadService {
   /**
    * 預載入日曆任務（分階段載入：當月 → 前後一個月 → 其他月份）
    */
-  static async preloadCalendarTasks() {
+  static async preloadCalendarTasks(user = null) {
     try {
       console.log(
         "📥 [DataPreload] Starting staged calendar tasks loading (Stage 2)...",
@@ -337,8 +294,8 @@ class DataPreloadService {
       const nextMonthEndStr = format(nextMonthEnd, "yyyy-MM-dd");
 
       const [prevMonthTasks, nextMonthTasks] = await Promise.all([
-        TaskService.getTasksByDateRange(prevMonthStartStr, prevMonthEndStr),
-        TaskService.getTasksByDateRange(nextMonthStartStr, nextMonthEndStr),
+        TaskService.getTasksByDateRange(prevMonthStartStr, prevMonthEndStr, user),
+        TaskService.getTasksByDateRange(nextMonthStartStr, nextMonthEndStr, user),
       ]);
 
       // 合併所有任務（今天的任務和當月任務已經在緩存中）

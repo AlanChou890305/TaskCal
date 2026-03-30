@@ -77,14 +77,16 @@ export class TaskService {
   }
 
   // Get tasks for a specific date range
-  static async getTasksByDateRange(startDate, endDate) {
+  static async getTasksByDateRange(startDate, endDate, cachedUser = null) {
     // Store dates in variables accessible in catch block
     const dateRange = { startDate, endDate };
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = cachedUser;
+      if (!user) {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      }
       if (!user) {
         return {};
       }
@@ -179,11 +181,13 @@ export class TaskService {
   }
 
   // Get tasks for a specific date
-  static async getTasksForDate(date) {
+  static async getTasksForDate(date, cachedUser = null) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      let user = cachedUser;
+      if (!user) {
+        const { data } = await supabase.auth.getUser();
+        user = data?.user;
+      }
       if (!user) {
         return [];
       }
