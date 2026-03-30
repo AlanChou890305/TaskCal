@@ -32,6 +32,7 @@ import { versionService } from "../services/versionService";
 import { getUpdateUrl } from "../config/updateUrls";
 import { mixpanelService } from "../services/mixpanelService";
 import { dataPreloadService } from "../services/dataPreloadService";
+import { clearSessionCache } from "../services/sessionCache";
 import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
@@ -699,8 +700,10 @@ function SettingScreen() {
       });
       mixpanelService.reset();
 
-      // 清除預載入緩存
+      // 清除預載入緩存和啟動快取
       dataPreloadService.clearCache();
+      clearSessionCache();
+      AsyncStorage.removeItem("APP_SETTINGS_CACHE").catch(() => {});
 
       // Try to log out (using Supabase's signOut API)
       // Even if this fails (e.g., network error), we should still navigate to splash
