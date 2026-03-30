@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Modal,
   TextInput,
   Alert,
@@ -17,6 +16,7 @@ import {
   Linking,
   StyleSheet,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import * as Application from "expo-application";
 import * as Constants from "expo-constants";
