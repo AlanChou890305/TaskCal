@@ -92,7 +92,7 @@ export class TaskService {
       }
 
       // 只選擇需要的欄位，減少數據傳輸量
-      console.log(
+      if (__DEV__) console.log(
         `📥 [TaskService] Fetching tasks for range: ${startDate} to ${endDate}`
       );
 
@@ -105,7 +105,7 @@ export class TaskService {
         .order("date", { ascending: true })
         .order("created_at", { ascending: true });
 
-      if (data) {
+      if (__DEV__ && data) {
         console.log(
           `✅ [TaskService] Received ${data.length} tasks from database`
         );

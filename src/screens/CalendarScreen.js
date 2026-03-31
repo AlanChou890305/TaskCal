@@ -561,11 +561,7 @@ function CalendarScreen({ navigation, route }) {
         }
       });
       if (Object.keys(filtered).length > 0) {
-        setTasks((prev) => {
-          const updated = { ...prev, ...filtered };
-          widgetService.syncTodayTasks(updated);
-          return updated;
-        });
+        setTasks((prev) => ({ ...prev, ...filtered }));
       }
     };
     dataPreloadService.addCalendarTasksListener(handleCalendarTasksUpdated);
@@ -669,8 +665,6 @@ function CalendarScreen({ navigation, route }) {
           const rangeKey = `${startDateStr}_${endDateStr}`;
           fetchedRangesRef.current.add(rangeKey);
 
-          // Sync to widget
-          widgetService.syncTodayTasks(filteredTasks);
         } else {
           console.log(
             "⚠️ [CalendarScreen] Preloaded tasks exist but none in current range, will fetch from API",
