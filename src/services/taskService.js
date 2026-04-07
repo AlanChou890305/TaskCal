@@ -14,12 +14,21 @@ import { UserService } from "./userService";
 import { format } from "date-fns";
 
 export class TaskService {
+  // 取得已驗證用戶：優先用記憶體快取，miss 時才呼叫 Supabase 並更新快取
+  static async _getAuthUser(cachedUser = null) {
+    if (cachedUser) return cachedUser;
+    const fromCache = UserService.getCachedAuthUser();
+    if (fromCache) return fromCache;
+    const { data } = await supabase.auth.getUser();
+    const user = data?.user;
+    if (user) UserService.setCachedAuthUser(user);
+    return user || null;
+  }
+
   // Get all tasks for a user
   static async getTasks() {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await TaskService._getAuthUser();
       if (!user) {
         console.warn("No authenticated user found");
         return {};
@@ -37,19 +46,19 @@ export class TaskService {
         return {};
       }
 
+      // 提取用戶顯示名稱（只提取一次）
+      const userDisplayName =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split("@")[0] ||
+        "User";
+
       // Group tasks by date
       const tasksByDate = {};
       data.forEach((task) => {
         if (!tasksByDate[task.date]) {
           tasksByDate[task.date] = [];
         }
-
-        // 提取用戶顯示名稱
-        const userDisplayName =
-          user.user_metadata?.name ||
-          user.user_metadata?.full_name ||
-          user.email?.split("@")[0] ||
-          "User";
 
         tasksByDate[task.date].push({
           id: task.id,
@@ -82,11 +91,7 @@ export class TaskService {
     const dateRange = { startDate, endDate };
 
     try {
-      let user = cachedUser;
-      if (!user) {
-        const { data } = await supabase.auth.getUser();
-        user = data?.user;
-      }
+      const user = await TaskService._getAuthUser(cachedUser);
       if (!user) {
         return {};
       }
@@ -183,11 +188,7 @@ export class TaskService {
   // Get tasks for a specific date
   static async getTasksForDate(date, cachedUser = null) {
     try {
-      let user = cachedUser;
-      if (!user) {
-        const { data } = await supabase.auth.getUser();
-        user = data?.user;
-      }
+      const user = await TaskService._getAuthUser(cachedUser);
       if (!user) {
         return [];
       }
@@ -204,14 +205,14 @@ export class TaskService {
         return [];
       }
 
-      return data.map((task) => {
-        // 提取用戶顯示名稱
-        const userDisplayName =
-          user.user_metadata?.name ||
-          user.user_metadata?.full_name ||
-          user.email?.split("@")[0] ||
-          "User";
+      // 提取用戶顯示名稱（只提取一次）
+      const userDisplayName =
+        user.user_metadata?.name ||
+        user.user_metadata?.full_name ||
+        user.email?.split("@")[0] ||
+        "User";
 
+      return data.map((task) => {
         return {
           id: task.id,
           title: task.title,
@@ -238,11 +239,7 @@ export class TaskService {
   // Add a new task
   static async addTask(task) {
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
+      const user = await TaskService._getAuthUser();
       if (!user) {
         throw new Error("No authenticated user found");
       }
@@ -340,9 +337,7 @@ export class TaskService {
   // Update a task
   static async updateTask(taskId, updates) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await TaskService._getAuthUser();
       if (!user) {
         throw new Error("No authenticated user found");
       }
@@ -444,9 +439,7 @@ export class TaskService {
   // Delete a task
   static async deleteTask(taskId) {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const user = await TaskService._getAuthUser();
       if (!user) {
         throw new Error("No authenticated user found");
       }
