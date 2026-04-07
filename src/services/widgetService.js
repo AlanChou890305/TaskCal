@@ -13,6 +13,8 @@ class WidgetService {
     this.lastSyncTime = 0;
     this.pendingSyncData = null;
     this.SYNC_DEBOUNCE_MS = 300; // 300ms 防抖延遲
+    this._cachedDateKeys = null;
+    this._cachedDateKeysDay = null;
   }
 
   /**
@@ -48,6 +50,27 @@ class WidgetService {
   }
 
   /**
+   * 取得今天起 8 天的日期 key 陣列，結果快取到隔天
+   * @private
+   */
+  _getDateKeys() {
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    if (this._cachedDateKeys && this._cachedDateKeysDay === todayKey) {
+      return this._cachedDateKeys;
+    }
+    const keys = [];
+    for (let i = 0; i < 8; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      keys.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`);
+    }
+    this._cachedDateKeys = keys;
+    this._cachedDateKeysDay = todayKey;
+    return keys;
+  }
+
+  /**
    * 實際執行同步操作
    * @private
    */
@@ -64,18 +87,10 @@ class WidgetService {
 
     try {
       const widgetData = {};
-      const today = new Date();
+      const dateKeys = this._getDateKeys();
 
       // Process Today + Next 7 Days
-      for (let i = 0; i < 8; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const dateKey = `${year}-${month}-${day}`;
-
+      for (const dateKey of dateKeys) {
         const dayTasks = tasks[dateKey] || [];
 
         // Format for widget - include all tasks (completed and uncompleted)
@@ -98,11 +113,7 @@ class WidgetService {
         widgetData[dateKey] = formattedTasks;
       }
 
-      // Debug: Log today's tasks (only log if tasks changed significantly)
-      const todayKey = `${today.getFullYear()}-${String(
-        today.getMonth() + 1
-      ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-      const todayTasks = widgetData[todayKey] || [];
+      const todayTasks = widgetData[dateKeys[0]] || [];
 
       // Convert to JSON string
       const tasksJson = JSON.stringify(widgetData);
