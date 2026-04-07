@@ -56,7 +56,11 @@ struct TaskCalWidgetProvider: TimelineProvider {
   func getTimeline(in context: Context, completion: @escaping (Timeline<TaskCalWidgetEntry>) -> Void) {
     let tasks = loadTodayTasks()
     let entry = TaskCalWidgetEntry(date: Date(), tasks: tasks)
-    let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+    let calendar = Calendar.current
+    let tomorrow = calendar.startOfDay(for: Date().addingTimeInterval(86400))
+    let nextMidnight = calendar.date(byAdding: .minute, value: 1, to: tomorrow) ?? tomorrow
+    let nextHour = calendar.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+    let nextUpdate = min(nextMidnight, nextHour)
     let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
     completion(timeline)
   }

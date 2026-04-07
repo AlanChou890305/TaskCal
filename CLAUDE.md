@@ -184,3 +184,17 @@
 - `/ios-widget-debug` - Widget 除錯專用
 - `/pr-check` - 提交前全面檢查（安全性+多語系+品質）
 - `/version-release` - 版本發布自動化
+
+---
+
+## Skill 自動觸發規則
+
+偵測到以下關鍵字或情境時，**不需使用者明確呼叫**，Claude 應主動執行對應 skill：
+
+| 觸發情境 | 自動執行 |
+|----------|---------|
+| 「做一個功能」、「新增」、「實作」、「我想要」+ 功能描述 | `/rn-ios-feature` |
+| 「widget 壞了」、「widget 沒更新」、「widget 顯示錯誤」、「widget 空白」 | `/ios-widget-debug` |
+| 「commit」、「push」、「PR」、「要提交」 | 先執行 `/pr-check` 再 commit |
+| 「發版」、「release」、「上架」、「更新版本號」 | `/version-release` |
+| bug 找不到原因、錯誤訊息看不懂、行為異常但原因不明 | `/investigate`（global skill）|
