@@ -617,7 +617,10 @@ function CalendarScreen({ navigation, route }) {
     // 等待預載入完成後再檢查快取（避免太早檢查導致 cache miss 後重複查詢）
     const initWithPreload = async () => {
       // 如果預載入正在進行中，等待它完成（最多 3 秒）
-      if (dataPreloadService.isPreloading && dataPreloadService.preloadPromise) {
+      if (
+        dataPreloadService.isPreloading &&
+        dataPreloadService.preloadPromise
+      ) {
         console.log("⏳ [CalendarScreen] Waiting for preload before init...");
         try {
           await Promise.race([
@@ -625,7 +628,10 @@ function CalendarScreen({ navigation, route }) {
             new Promise((resolve) => setTimeout(resolve, 3000)),
           ]);
         } catch (error) {
-          console.warn("⚠️ [CalendarScreen] Preload wait error during init:", error.message);
+          console.warn(
+            "⚠️ [CalendarScreen] Preload wait error during init:",
+            error.message,
+          );
         }
       }
 
@@ -665,7 +671,6 @@ function CalendarScreen({ navigation, route }) {
           const endDateStr = format(endDate, "yyyy-MM-dd");
           const rangeKey = `${startDateStr}_${endDateStr}`;
           fetchedRangesRef.current.add(rangeKey);
-
         } else {
           console.log(
             "⚠️ [CalendarScreen] Preloaded tasks exist but none in current range, will fetch from API",
@@ -1293,48 +1298,57 @@ function CalendarScreen({ navigation, route }) {
                   >
                     <View style={styles.calendarDayContent}>
                       <View style={styles.dateContainer}>
-                        {isToday ? (
+                        {isToday && (
                           <View
-                            style={[
-                              styles.todayCircle,
-                              { backgroundColor: theme.primary },
-                            ]}
+                            style={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              alignItems: "center",
+                              justifyContent: "flex-start",
+                              paddingTop: 5,
+                              zIndex: 0,
+                            }}
                           >
-                            <Text
+                            <View
                               style={[
-                                styles.calendarDayText,
-                                styles.todayText,
-                                { fontFamily: theme.typography?.monoDay?.fontFamily },
+                                styles.todayCircle,
+                                { backgroundColor: theme.primaryTint },
                               ]}
-                            >
-                              {dateObj.getDate()}
-                            </Text>
+                            />
                           </View>
-                        ) : (
-                          <Text
-                            style={[
-                              styles.calendarDayText,
-                              { fontFamily: theme.typography?.monoDay?.fontFamily },
-                              {
-                                color: isCurrentMonth
-                                  ? theme.text
-                                  : theme.textTertiary,
-                              },
-                              isSelected && [
-                                styles.selectedDayText,
-                                { color: theme.calendarTodayText },
-                              ],
-                              !isCurrentMonth && styles.otherMonthText,
-                            ]}
-                          >
-                            {dateObj.getDate()}
-                          </Text>
                         )}
+                        <Text
+                          style={[
+                            styles.calendarDayText,
+                            {
+                              fontFamily: theme.typography?.monoDay?.fontFamily,
+                            },
+                            {
+                              color: isCurrentMonth
+                                ? theme.text
+                                : theme.textTertiary,
+                            },
+                            isSelected && [
+                              styles.selectedDayText,
+                              { color: theme.calendarTodayText },
+                            ],
+                            isToday && { color: theme.primary, zIndex: 1 },
+                          ]}
+                        >
+                          {dateObj.getDate()}
+                        </Text>
                         {taskCount > 0 && (
                           <View
                             style={[
                               styles.taskDot,
-                              { backgroundColor: theme.primary },
+                              {
+                                backgroundColor: isSelected
+                                  ? theme.buttonText || "#F2F1EB"
+                                  : theme.primary,
+                              },
                             ]}
                           />
                         )}
@@ -1488,7 +1502,7 @@ function CalendarScreen({ navigation, route }) {
             backgroundColor: theme.background,
             borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: theme.rule || theme.divider,
-            paddingVertical: 12,
+            paddingVertical: 16,
             paddingHorizontal: 16,
           },
         ]}
@@ -1499,7 +1513,13 @@ function CalendarScreen({ navigation, route }) {
           theme={theme}
         />
         <TouchableOpacity
-          style={{ flex: 1, flexDirection: "row", alignItems: "center", marginLeft: 12, backgroundColor: "transparent" }}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            marginLeft: 12,
+            backgroundColor: "transparent",
+          }}
           onPress={() => openEditTask(item)}
           onLongPress={() => startMoveTask(item)}
           activeOpacity={0.7}
@@ -1522,7 +1542,9 @@ function CalendarScreen({ navigation, route }) {
           {item.time ? (
             <Text
               style={{
-                fontFamily: theme.typography?.monoTime?.fontFamily || "JetBrainsMono_500Medium",
+                fontFamily:
+                  theme.typography?.monoTime?.fontFamily ||
+                  "JetBrainsMono_500Medium",
                 fontSize: 13,
                 fontWeight: "500",
                 letterSpacing: -0.2,
@@ -1582,22 +1604,30 @@ function CalendarScreen({ navigation, route }) {
 
     const [selY, selM, selD] = selectedDate.split("-").map(Number);
     const selDateObj = new Date(selY, selM - 1, selD);
-    const weekDayAbbr = ["SUN","MON","TUE","WED","THU","FRI","SAT"][selDateObj.getDay()];
+    const weekDayAbbr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
+      selDateObj.getDay()
+    ];
     const isSelectedToday = selectedDate === getToday();
-    const completedCount = dayTasks.filter(t => t.is_completed || t.checked).length;
+    const selMonthName = t.months ? t.months[selM - 1] : String(selM);
+    const bannerDateLabel = isSelectedToday
+      ? t.today || "Today"
+      : `${selMonthName} ${selD}`;
+    const completedCount = dayTasks.filter(
+      (t) => t.is_completed || t.checked,
+    ).length;
     const totalCount = dayTasks.length;
 
     const taskAreaContent = (
       <View
         style={[
           styles.taskArea,
-          { flex: 1, backgroundColor: theme.backgroundSecondary },
+          { flex: 1, backgroundColor: theme.background },
         ]}
       >
         <View
           style={[
             styles.taskAreaContent,
-            { flex: 1, backgroundColor: theme.backgroundSecondary },
+            { flex: 1, backgroundColor: theme.background },
           ]}
         >
           {/* Accent date banner */}
@@ -1614,7 +1644,9 @@ function CalendarScreen({ navigation, route }) {
             <View>
               <Text
                 style={{
-                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontFamily:
+                    theme.typography?.monoKicker?.fontFamily ||
+                    "JetBrainsMono_500Medium",
                   fontSize: 10,
                   fontWeight: "500",
                   letterSpacing: 1.5,
@@ -1622,7 +1654,8 @@ function CalendarScreen({ navigation, route }) {
                   marginBottom: 2,
                 }}
               >
-                {weekDayAbbr} / {String(selM).padStart(2,"0")}.{String(selD).padStart(2,"0")}.{String(selY).slice(-2)}
+                {weekDayAbbr} / {String(selY).slice(-2)}.
+                {String(selM).padStart(2, "0")}.{String(selD).padStart(2, "0")}
               </Text>
               <Text
                 style={{
@@ -1633,14 +1666,16 @@ function CalendarScreen({ navigation, route }) {
                   color: theme.buttonText || "#F2F1EB",
                 }}
               >
-                {isSelectedToday ? `${t.today || "Today"}` : selectedDate}
+                {bannerDateLabel}
               </Text>
             </View>
             {totalCount > 0 && (
               <View style={{ alignItems: "flex-end" }}>
                 <Text
                   style={{
-                    fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                    fontFamily:
+                      theme.typography?.monoKicker?.fontFamily ||
+                      "JetBrainsMono_500Medium",
                     fontSize: 9,
                     letterSpacing: 1.2,
                     color: (theme.buttonText || "#F2F1EB") + "80",
@@ -1651,7 +1686,9 @@ function CalendarScreen({ navigation, route }) {
                 </Text>
                 <Text
                   style={{
-                    fontFamily: theme.typography?.monoTime?.fontFamily || "JetBrainsMono_500Medium",
+                    fontFamily:
+                      theme.typography?.monoTime?.fontFamily ||
+                      "JetBrainsMono_500Medium",
                     fontSize: 16,
                     fontWeight: "500",
                     color: theme.buttonText || "#F2F1EB",
@@ -1671,16 +1708,14 @@ function CalendarScreen({ navigation, route }) {
           />
 
           {shouldShowSkeleton ? (
-            <View
-              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
-            >
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
               <FlatList
                 data={[1, 2, 3, 4]} // 顯示 4 個 skeleton
                 keyExtractor={(item) => `skeleton-${item}`}
                 renderItem={() => <TaskSkeleton theme={theme} />}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
-                style={{ backgroundColor: theme.backgroundSecondary }}
+                style={{ backgroundColor: theme.background }}
               />
             </View>
           ) : dayTasks.length === 0 ? (
@@ -1717,9 +1752,7 @@ function CalendarScreen({ navigation, route }) {
               </Text>
             </View>
           ) : (
-            <View
-              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
-            >
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
               <FlatList
                 data={dayTasks.slice().sort((a, b) => {
                   // 已完成的任務排到最底下
@@ -1735,7 +1768,7 @@ function CalendarScreen({ navigation, route }) {
                 renderItem={renderTask}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
-                style={{ backgroundColor: theme.backgroundSecondary }}
+                style={{ backgroundColor: theme.background }}
               />
             </View>
           )}
@@ -2287,7 +2320,12 @@ function CalendarScreen({ navigation, route }) {
                     onPress={showDeleteConfirm}
                     theme={theme}
                     variant="destructive"
-                    style={{ width: "100%", paddingBottom: 0, borderWidth: 1, borderColor: theme.error }}
+                    style={{
+                      width: "100%",
+                      paddingBottom: 0,
+                      borderWidth: 1,
+                      borderColor: theme.error,
+                    }}
                   />
                 )}
               </View>
@@ -2673,13 +2711,25 @@ function CalendarScreen({ navigation, route }) {
   const localMonthName = t.monthsLocal ? t.monthsLocal[visibleMonth] : null;
 
   const header = (
-    <View style={[styles.fixedHeader, { borderBottomWidth: StyleSheet.hairlineWidth * 2, borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}>
-      <View style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 12 }]}>
+    <View
+      style={[
+        styles.fixedHeader,
+        {
+          borderBottomWidth: StyleSheet.hairlineWidth * 2,
+          borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+        },
+      ]}
+    >
+      <View
+        style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 12 }]}
+      >
         <View style={styles.headerLeftContainer}>
           <View>
             <Text
               style={{
-                fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                fontFamily:
+                  theme.typography?.monoKicker?.fontFamily ||
+                  "JetBrainsMono_500Medium",
                 fontSize: 10,
                 fontWeight: "500",
                 letterSpacing: 2,
@@ -2690,10 +2740,14 @@ function CalendarScreen({ navigation, route }) {
             >
               {year} / {String(visibleMonth + 1).padStart(2, "0")}
             </Text>
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}
+            >
               <Text
                 style={{
-                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontFamily:
+                    theme.typography?.largeTitle?.fontFamily ||
+                    "InterTight_600SemiBold",
                   fontSize: 34,
                   fontWeight: "600",
                   letterSpacing: -1.3,
@@ -2719,21 +2773,48 @@ function CalendarScreen({ navigation, route }) {
             </View>
           </View>
         </View>
-        <View style={[styles.headerRightContainer, { alignItems: "flex-end", gap: 10 }]}>
+        <View
+          style={[
+            styles.headerRightContainer,
+            { alignSelf: "flex-end", gap: 10 },
+          ]}
+        >
           <View style={{ flexDirection: "row", gap: 4 }}>
             <TouchableOpacity
               onPress={goToPrevMonth}
-              style={[styles.dayNavButton, { width: 28, height: 28, borderRadius: 6, borderWidth: 1, borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}
+              style={[
+                styles.dayNavButton,
+                {
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+                },
+              ]}
               activeOpacity={0.7}
             >
               <MaterialIcons name="chevron-left" size={16} color={theme.text} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={goToNextMonth}
-              style={[styles.dayNavButton, { width: 28, height: 28, borderRadius: 6, borderWidth: 1, borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}
+              style={[
+                styles.dayNavButton,
+                {
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+                },
+              ]}
               activeOpacity={0.7}
             >
-              <MaterialIcons name="chevron-right" size={16} color={theme.text} />
+              <MaterialIcons
+                name="chevron-right"
+                size={16}
+                color={theme.text}
+              />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -2784,7 +2865,7 @@ function CalendarScreen({ navigation, route }) {
         style={[
           styles.taskAreaContainer,
           {
-            backgroundColor: theme.backgroundSecondary,
+            backgroundColor: theme.background,
             paddingBottom: !loadingUserType && userType === "general" ? 58 : 0,
           },
         ]}
@@ -2886,11 +2967,6 @@ const styles = StyleSheet.create({
   taskArea: {
     flex: 1,
     // backgroundColor moved to inline style to use theme
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 16,
   },
   fixedHeader: {
     backgroundColor: "transparent",
@@ -2905,8 +2981,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 16, // 8 (original) + 8 (to compensate for marginHorizontal)
-    paddingBottom: 6, // Reduced from 8
-    marginHorizontal: -8, // Extend border line to edges (matches customCalendar marginHorizontal)
+    paddingBottom: 4, // Reduced from 8
+    marginHorizontal: -12, // Extend border line to edges (matches customCalendar marginHorizontal)
     borderBottomWidth: 1,
   },
   // Scroll container
@@ -2929,18 +3005,15 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   customCalendar: {
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 2,
     padding: 4,
-    paddingBottom: 6, // Extra bottom padding to ensure task dots are visible
+    paddingBottom: 6,
     marginHorizontal: 8,
   },
   weekDayText: {
     flex: 1,
     textAlign: "center",
     color: "#666",
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: "400",
     minWidth: 40,
     maxWidth: 40,
@@ -3006,8 +3079,8 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   selectedDayText: {
-    color: PRIMARY, // Light mode selected text color
-    fontWeight: "700",
+    color: PRIMARY,
+    fontWeight: "600",
     zIndex: 4,
   },
   otherMonthText: {
@@ -3027,11 +3100,9 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   todayCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
   },
   todayText: {
     color: "#F2F1EB",
@@ -3101,32 +3172,15 @@ const styles = StyleSheet.create({
   selectedDate: {
     // No background color, just text color change
   },
-  selectedDayText: {
-    color: PRIMARY, // Same as add button color
-    fontWeight: "600",
-  },
   tasksContainer: {
     flex: 1,
     backgroundColor: "#f7f7fa",
   },
   taskAreaContainer: {
     flex: 1,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-    overflow: "hidden",
   },
   taskArea: {
     flex: 1,
-    backgroundColor: "#f7f7fa",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
   },
   tasksHeaderRow: {
     flexDirection: "row",
@@ -4287,8 +4341,6 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   dayNavButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 2,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -4332,14 +4384,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
   },
   todayButtonText: {
     color: "#fff",
