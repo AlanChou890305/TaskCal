@@ -61,7 +61,7 @@ export default {
     "November",
     "December",
   ],
-  weekDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  weekDays: ["S", "M", "T", "W", "T", "F", "S"],
   logoutSuccess: "Successfully logged out!",
   alreadyLoggedOut: "You are already logged out.",
   logoutError: "Failed to log out. Please try again.",
