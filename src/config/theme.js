@@ -23,23 +23,23 @@ export const FONT_TC   = "NotoSansTC_400Regular";
 // Indigo 字型 scale（editorial，全面負向 tracking）
 // ============================================================
 const typography = {
-  display:     { fontSize: 38, lineHeight: 40, fontWeight: "600", letterSpacing: -1.6 },
-  largeTitle:  { fontSize: 34, lineHeight: 36, fontWeight: "600", letterSpacing: -1.3 },
-  title1:      { fontSize: 28, lineHeight: 32, fontWeight: "600", letterSpacing: -0.8 },
-  title2:      { fontSize: 22, lineHeight: 28, fontWeight: "600", letterSpacing: -0.5 },
-  title3:      { fontSize: 20, lineHeight: 24, fontWeight: "600", letterSpacing: -0.5 },
-  headline:    { fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2 },
-  body:        { fontSize: 15, lineHeight: 22, fontWeight: "400", letterSpacing: -0.15 },
-  callout:     { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.15 },
-  subheadline: { fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.1 },
-  footnote:    { fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0 },
-  caption1:    { fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 0 },
-  caption2:    { fontSize: 10, lineHeight: 13, fontWeight: "500", letterSpacing: 0 },
+  display:     { fontFamily: "InterTight_600SemiBold", fontSize: 38, lineHeight: 40, fontWeight: "600", letterSpacing: -1.6 },
+  largeTitle:  { fontFamily: "InterTight_600SemiBold", fontSize: 34, lineHeight: 36, fontWeight: "600", letterSpacing: -1.3 },
+  title1:      { fontFamily: "InterTight_600SemiBold", fontSize: 28, lineHeight: 32, fontWeight: "600", letterSpacing: -0.8 },
+  title2:      { fontFamily: "InterTight_600SemiBold", fontSize: 22, lineHeight: 28, fontWeight: "600", letterSpacing: -0.5 },
+  title3:      { fontFamily: "InterTight_600SemiBold", fontSize: 20, lineHeight: 24, fontWeight: "600", letterSpacing: -0.5 },
+  headline:    { fontFamily: "InterTight_600SemiBold", fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2 },
+  body:        { fontFamily: "InterTight_400Regular",  fontSize: 15, lineHeight: 22, fontWeight: "400", letterSpacing: -0.15 },
+  callout:     { fontFamily: "InterTight_500Medium",   fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.15 },
+  subheadline: { fontFamily: "InterTight_400Regular",  fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.1 },
+  footnote:    { fontFamily: "InterTight_400Regular",  fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0 },
+  caption1:    { fontFamily: "InterTight_500Medium",   fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 0 },
+  caption2:    { fontFamily: "InterTight_500Medium",   fontSize: 10, lineHeight: 13, fontWeight: "500", letterSpacing: 0 },
   // Mono styles — timestamps, kickers, day numbers, counters, version stamps
-  monoTime:    { fontSize: 13, lineHeight: 16, fontWeight: "500", letterSpacing: -0.2 },
-  monoKicker:  { fontSize: 10, lineHeight: 14, fontWeight: "500", letterSpacing: 2.0 },
-  monoSection: { fontSize: 9,  lineHeight: 13, fontWeight: "500", letterSpacing: 1.5 },
-  monoDay:     { fontSize: 14, lineHeight: 18, fontWeight: "500", letterSpacing: -0.3 },
+  monoTime:    { fontFamily: "JetBrainsMono_500Medium", fontSize: 13, lineHeight: 16, fontWeight: "500", letterSpacing: -0.2 },
+  monoKicker:  { fontFamily: "JetBrainsMono_500Medium", fontSize: 10, lineHeight: 14, fontWeight: "500", letterSpacing: 2.0 },
+  monoSection: { fontFamily: "JetBrainsMono_500Medium", fontSize: 9,  lineHeight: 13, fontWeight: "500", letterSpacing: 1.5 },
+  monoDay:     { fontFamily: "JetBrainsMono_500Medium", fontSize: 14, lineHeight: 18, fontWeight: "500", letterSpacing: -0.3 },
 };
 
 // ============================================================

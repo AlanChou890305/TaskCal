@@ -6,6 +6,16 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import {
+  InterTight_400Regular,
+  InterTight_500Medium,
+  InterTight_600SemiBold,
+  InterTight_700Bold,
+} from "@expo-google-fonts/inter-tight";
+import {
+  JetBrainsMono_400Regular,
+  JetBrainsMono_500Medium,
+} from "@expo-google-fonts/jetbrains-mono";
+import {
   NotoSansTC_400Regular,
   NotoSansTC_500Medium,
   NotoSansTC_700Bold,
@@ -57,6 +67,12 @@ const APP_START_TIME = Date.now();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
+    JetBrainsMono_400Regular,
+    JetBrainsMono_500Medium,
     NotoSansTC_400Regular,
     NotoSansTC_500Medium,
     NotoSansTC_700Bold,
