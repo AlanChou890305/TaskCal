@@ -1304,7 +1304,7 @@ function CalendarScreen({ navigation, route }) {
                               style={[
                                 styles.calendarDayText,
                                 styles.todayText,
-                                // 如果是 today，文字永遠是白色，不受 selectedDayText 影響
+                                { fontFamily: theme.typography?.monoDay?.fontFamily },
                               ]}
                             >
                               {dateObj.getDate()}
@@ -1314,6 +1314,7 @@ function CalendarScreen({ navigation, route }) {
                           <Text
                             style={[
                               styles.calendarDayText,
+                              { fontFamily: theme.typography?.monoDay?.fontFamily },
                               {
                                 color: isCurrentMonth
                                   ? theme.text
@@ -1477,72 +1478,58 @@ function CalendarScreen({ navigation, route }) {
     }
   };
 
-  const renderTask = ({ item }) => (
-    <View
-      style={[
-        styles.taskItemRow,
-        {
-          backgroundColor: theme.card,
-          borderRadius: theme.radius?.lg || 12,
-          marginBottom: theme.spacing?.md || 12,
-          paddingVertical: theme.spacing?.sm || 8,
-          paddingHorizontal: theme.spacing?.md || 12,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: theme.cardBorder,
-          ...theme.shadows?.card,
-        },
-      ]}
-    >
-      <IOSCheckbox
-        checked={!!(item.is_completed || item.checked)}
-        onPress={() => toggleTaskChecked(item)}
-        theme={theme}
-      />
-      <TouchableOpacity
+  const renderTask = ({ item }) => {
+    const done = !!(item.is_completed || item.checked);
+    return (
+      <View
         style={[
-          styles.taskItem,
+          styles.taskItemRow,
           {
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: "transparent",
+            backgroundColor: theme.background,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: theme.rule || theme.divider,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
           },
         ]}
-        onPress={() => openEditTask(item)}
-        onLongPress={() => startMoveTask(item)}
-        activeOpacity={0.7}
       >
-        <View style={styles.taskTextContainer}>
+        <IOSCheckbox
+          checked={done}
+          onPress={() => toggleTaskChecked(item)}
+          theme={theme}
+        />
+        <TouchableOpacity
+          style={{ flex: 1, flexDirection: "row", alignItems: "center", marginLeft: 12, backgroundColor: "transparent" }}
+          onPress={() => openEditTask(item)}
+          onLongPress={() => startMoveTask(item)}
+          activeOpacity={0.7}
+        >
           <Text
-            style={[
-              styles.taskText,
-              {
-                color:
-                  item.is_completed || item.checked
-                    ? theme.textTertiary
-                    : theme.text,
-                fontSize: theme.typography?.body?.fontSize || 17,
-                letterSpacing: theme.typography?.body?.letterSpacing || -0.41,
-              },
-              (item.is_completed || item.checked) && styles.taskTextChecked,
-            ]}
+            style={{
+              flex: 1,
+              fontFamily: theme.typography?.callout?.fontFamily,
+              fontSize: 14,
+              fontWeight: "500",
+              letterSpacing: -0.2,
+              color: done ? theme.textTertiary : theme.text,
+              textDecorationLine: done ? "line-through" : "none",
+            }}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {item.title}
           </Text>
-        </View>
-        <View style={styles.taskTimeContainer}>
           {item.time ? (
             <Text
-              style={[
-                styles.taskTimeRight,
-                {
-                  color: theme.primary,
-                  fontSize: theme.typography?.subheadline?.fontSize || 15,
-                  fontWeight: "600",
-                },
-              ]}
+              style={{
+                fontFamily: theme.typography?.monoTime?.fontFamily || "JetBrainsMono_500Medium",
+                fontSize: 13,
+                fontWeight: "500",
+                letterSpacing: -0.2,
+                color: done ? theme.textTertiary : theme.primary,
+                marginLeft: 8,
+                flexShrink: 0,
+              }}
             >
               {formatTimeDisplay(item.time)}
             </Text>
@@ -1552,10 +1539,10 @@ function CalendarScreen({ navigation, route }) {
               {t.moveHint}
             </Text>
           ) : null}
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   // Helper to get previous/next day in YYYY-MM-DD (local time)
   const getAdjacentDate = (dateStr, diff) => {
@@ -2683,9 +2670,11 @@ function CalendarScreen({ navigation, route }) {
     // User is just browsing different months, not selecting a new date
   };
 
+  const localMonthName = t.monthsLocal ? t.monthsLocal[visibleMonth] : null;
+
   const header = (
-    <View style={styles.fixedHeader}>
-      <View style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 4 }]}>
+    <View style={[styles.fixedHeader, { borderBottomWidth: StyleSheet.hairlineWidth * 2, borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}>
+      <View style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 12 }]}>
         <View style={styles.headerLeftContainer}>
           <View>
             <Text
@@ -2693,51 +2682,66 @@ function CalendarScreen({ navigation, route }) {
                 fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
                 fontSize: 10,
                 fontWeight: "500",
-                letterSpacing: 1.5,
-                color: theme.textTertiary,
-                marginBottom: 2,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                color: theme.primary,
+                marginBottom: 4,
               }}
             >
               {year} / {String(visibleMonth + 1).padStart(2, "0")}
             </Text>
-            <Text
-              style={{
-                fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
-                fontSize: 28,
-                fontWeight: "600",
-                letterSpacing: -1.0,
-                lineHeight: 32,
-                color: theme.text,
-              }}
-            >
-              {monthName}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontSize: 34,
+                  fontWeight: "600",
+                  letterSpacing: -1.3,
+                  lineHeight: 36,
+                  color: theme.text,
+                }}
+              >
+                {monthName}
+              </Text>
+              {localMonthName ? (
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.title3?.fontFamily,
+                    fontSize: 20,
+                    fontWeight: "500",
+                    letterSpacing: -0.5,
+                    color: theme.textSecondary,
+                  }}
+                >
+                  {localMonthName}
+                </Text>
+              ) : null}
+            </View>
           </View>
         </View>
-        <View style={[styles.headerRightContainer, { alignItems: "flex-end", gap: 8 }]}>
+        <View style={[styles.headerRightContainer, { alignItems: "flex-end", gap: 10 }]}>
           <View style={{ flexDirection: "row", gap: 4 }}>
             <TouchableOpacity
               onPress={goToPrevMonth}
-              style={[styles.dayNavButton, { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.dayNavButton, { width: 28, height: 28, borderRadius: 6, borderWidth: 1, borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}
               activeOpacity={0.7}
             >
-              <MaterialIcons name="chevron-left" size={18} color={theme.text} />
+              <MaterialIcons name="chevron-left" size={16} color={theme.text} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={goToNextMonth}
-              style={[styles.dayNavButton, { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.backgroundSecondary }]}
+              style={[styles.dayNavButton, { width: 28, height: 28, borderRadius: 6, borderWidth: 1, borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)" }]}
               activeOpacity={0.7}
             >
-              <MaterialIcons name="chevron-right" size={18} color={theme.text} />
+              <MaterialIcons name="chevron-right" size={16} color={theme.text} />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
             style={[
               styles.todayButton,
               {
-                backgroundColor: "transparent",
-                borderWidth: 1,
-                borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+                backgroundColor: theme.primaryTint || "#E6E9F2",
+                marginLeft: 4,
               },
             ]}
             onPress={() => {
@@ -2747,7 +2751,7 @@ function CalendarScreen({ navigation, route }) {
               setVisibleYear(new Date(today).getFullYear());
             }}
           >
-            <Text style={[styles.todayButtonText, { color: theme.text }]}>
+            <Text style={[styles.todayButtonText, { color: theme.primary }]}>
               {t.today}
             </Text>
           </TouchableOpacity>
@@ -2987,11 +2991,10 @@ const styles = StyleSheet.create({
     overflow: "visible", // Ensure task dots are visible
   },
   calendarDayText: {
-    fontSize: 16,
-    color: "#333",
+    fontSize: 14,
     fontWeight: "500",
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 14,
   },
   selectedDay: {
     backgroundColor: "#e8e7fc", // Light mode selected background
@@ -3031,7 +3034,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   todayText: {
-    color: "#ffffff", // Always white for better contrast on purple background
+    color: "#F2F1EB",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -4348,8 +4351,8 @@ const styles = StyleSheet.create({
   },
   tasksScrollContent: {
     flexGrow: 1,
-    paddingTop: 8,
-    paddingBottom: 80, // Padding so last task is not hidden by gradient
+    paddingTop: 0,
+    paddingBottom: 80,
   },
 });
 

@@ -1942,23 +1942,12 @@ const SplashScreen = ({ navigation }) => {
       style={{
         flex: 1,
         backgroundColor: theme.background,
-        justifyContent: "center",
-        alignItems: "center",
+        flexDirection: "column",
+        width: "100%",
       }}
     >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        <Image
-          source={require("../../assets/logo-login.png")}
-          style={{ width: 108, height: 108, marginBottom: 20 }}
-          resizeMode="contain"
-        />
+      {/* Welcome kicker */}
+      <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
         <Text
           style={{
             fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
@@ -1966,29 +1955,65 @@ const SplashScreen = ({ navigation }) => {
             fontWeight: "500",
             letterSpacing: 2,
             textTransform: "uppercase",
-            color: theme.textTertiary,
-            marginBottom: 8,
+            color: theme.primary,
           }}
         >
           Welcome
         </Text>
-        <Text
-          style={{
-            fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
-            fontSize: 34,
-            fontWeight: "600",
-            letterSpacing: -1.3,
-            lineHeight: 38,
-            marginBottom: 48,
-          }}
-        >
-          <Text style={{ color: theme.text }}>Task</Text>
-          <Text style={{ color: theme.primary }}>Cal</Text>
-        </Text>
-        {isCheckingSession ? (
+      </View>
+
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "flex-start",
+          width: "100%",
+          paddingHorizontal: 22,
+          gap: 26,
+        }}
+      >
+        <Image
+          source={require("../../assets/logo-login.png")}
+          style={{ width: 84, height: 84 }}
+          resizeMode="contain"
+        />
+        <View>
+          <Text
+            style={{
+              fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+              fontSize: 40,
+              fontWeight: "600",
+              letterSpacing: -1.6,
+              lineHeight: 42,
+              marginBottom: 14,
+            }}
+          >
+            <Text style={{ color: theme.text }}>{"Sign in to\nTask"}</Text>
+            <Text style={{ color: theme.primary }}>Cal</Text>
+            <Text style={{ color: theme.text }}>{"."}</Text>
+          </Text>
+          <Text
+            style={{
+              fontFamily: theme.typography?.body?.fontFamily,
+              fontSize: 15,
+              fontWeight: "400",
+              letterSpacing: -0.15,
+              lineHeight: 23,
+              color: theme.textSecondary,
+              maxWidth: 280,
+            }}
+          >
+            {"Pick a way in. We'll sync your tasks across every device you carry."}
+          </Text>
+        </View>
+      </View>
+
+      {isCheckingSession ? (
+        <View style={{ paddingHorizontal: 22, paddingBottom: 18 }}>
           <ActivityIndicator size="small" color={theme.textSecondary} />
-        ) : (
-        <View style={{ width: 280 }}>
+        </View>
+      ) : (
+      <View style={{ width: "100%", paddingHorizontal: 22, paddingBottom: 18 }}>
           <TouchableOpacity
             style={{
               flexDirection: "row",
@@ -2105,42 +2130,61 @@ const SplashScreen = ({ navigation }) => {
           )}
         </View>
         )}
-      </View>
-      <View
-        style={{
-          position: "absolute",
-          bottom: 24,
-          left: 0,
-          right: 0,
-          alignItems: "center",
-          paddingHorizontal: 24,
-        }}
-      >
-        <Text
+      <View style={{ paddingHorizontal: 22, paddingBottom: 32 }}>
+        <View
           style={{
-            fontFamily: theme.typography?.footnote?.fontFamily,
-            color: theme.textTertiary,
-            fontSize: 12,
-            letterSpacing: -0.1,
-            textAlign: "center",
+            height: 1,
+            backgroundColor: theme.divider || "rgba(26,31,46,0.12)",
+            marginBottom: 14,
+          }}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            gap: 14,
           }}
         >
-          {t.byContinuing}{" "}
           <Text
-            style={{ color: theme.primary, fontWeight: "600" }}
-            onPress={() => setTermsModalVisible(true)}
+            style={{
+              fontFamily: theme.typography?.footnote?.fontFamily,
+              fontSize: 11,
+              lineHeight: 17,
+              letterSpacing: -0.05,
+              color: theme.textTertiary,
+              flex: 1,
+            }}
           >
-            {t.terms}
-          </Text>{" "}
-          {t.and}{" "}
-          <Text
-            style={{ color: theme.primary, fontWeight: "600" }}
-            onPress={() => setPrivacyModalVisible(true)}
-          >
-            {t.privacy}
+            {t.byContinuing}{" "}
+            <Text
+              style={{ color: theme.primary }}
+              onPress={() => setTermsModalVisible(true)}
+            >
+              {t.terms}
+            </Text>{" "}
+            {t.and}{" "}
+            <Text
+              style={{ color: theme.primary }}
+              onPress={() => setPrivacyModalVisible(true)}
+            >
+              {t.privacy}
+            </Text>
+            .
           </Text>
-          .
-        </Text>
+          <Text
+            style={{
+              fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+              fontSize: 10,
+              fontWeight: "500",
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+              color: theme.textTertiary,
+            }}
+          >
+            {"v" + (Application.nativeApplicationVersion || "2.0.0")}
+          </Text>
+        </View>
       </View>
       <Modal
         visible={termsModalVisible}

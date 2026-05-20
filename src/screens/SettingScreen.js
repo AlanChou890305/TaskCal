@@ -798,7 +798,7 @@ function SettingScreen() {
             marginBottom: 4,
           }}
         >
-          {t.settingsKicker || "Preferences"}
+          {t.settings}
         </Text>
         <Text
           style={{
@@ -809,7 +809,7 @@ function SettingScreen() {
             color: theme.text,
           }}
         >
-          {t.settings}
+          {"Preferences"}
         </Text>
       </View>
       <ScrollView
