@@ -1,31 +1,50 @@
 /**
- * 主題配置
- * 支援淺色模式（Light）和深色模式（Dark）
+ * 主題配置 — Indigo v2.0.0
+ * 設計方向：ink-blue 墨水色 (#3B4B7A) 搭配暖奶油紙色 (#F2F1EB)
  */
 
 // ============================================================
-// 主題色（改這裡就能同步更新所有顏色）
+// 品牌常數
 // ============================================================
-export const PRIMARY = "#6c63ff";
-export const PRIMARY_LIGHT = "#8b84ff";
-export const PRIMARY_DARK = "#5649d6";
+export const PRIMARY       = "#3B4B7A";  // accent — ink-blue
+export const PRIMARY_LIGHT = "#8B98D0";  // dark-mode accent
+export const PRIMARY_SOFT  = "#D2D7E8";  // chip bg, subtle fills
+export const PRIMARY_TINT  = "#E6E9F2";  // calendar-selected bg, info pill
+export const PRIMARY_WASH  = "#3B4B7A";  // onboarding hero bg (rides on accent)
 
-// iOS Typography Scale (Apple HIG)
+// ============================================================
+// 字型家族常數（Commit 2 安裝字型後生效）
+// ============================================================
+export const FONT_SANS = "InterTight_400Regular";
+export const FONT_MONO = "JetBrainsMono_500Medium";
+export const FONT_TC   = "NotoSansTC_400Regular";
+
+// ============================================================
+// Indigo 字型 scale（editorial，全面負向 tracking）
+// ============================================================
 const typography = {
-  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700", letterSpacing: 0.37 },
-  title1:     { fontSize: 28, lineHeight: 34, fontWeight: "700", letterSpacing: 0.36 },
-  title2:     { fontSize: 22, lineHeight: 28, fontWeight: "700", letterSpacing: 0.35 },
-  title3:     { fontSize: 20, lineHeight: 25, fontWeight: "600", letterSpacing: 0.38 },
-  headline:   { fontSize: 17, lineHeight: 22, fontWeight: "600", letterSpacing: -0.41 },
-  body:       { fontSize: 17, lineHeight: 22, fontWeight: "400", letterSpacing: -0.41 },
-  callout:    { fontSize: 16, lineHeight: 21, fontWeight: "400", letterSpacing: -0.32 },
-  subheadline:{ fontSize: 15, lineHeight: 20, fontWeight: "400", letterSpacing: -0.24 },
-  footnote:   { fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.08 },
-  caption1:   { fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0 },
-  caption2:   { fontSize: 11, lineHeight: 13, fontWeight: "400", letterSpacing: 0.07 },
+  display:     { fontSize: 38, lineHeight: 40, fontWeight: "600", letterSpacing: -1.6 },
+  largeTitle:  { fontSize: 34, lineHeight: 36, fontWeight: "600", letterSpacing: -1.3 },
+  title1:      { fontSize: 28, lineHeight: 32, fontWeight: "600", letterSpacing: -0.8 },
+  title2:      { fontSize: 22, lineHeight: 28, fontWeight: "600", letterSpacing: -0.5 },
+  title3:      { fontSize: 20, lineHeight: 24, fontWeight: "600", letterSpacing: -0.5 },
+  headline:    { fontSize: 15, lineHeight: 20, fontWeight: "600", letterSpacing: -0.2 },
+  body:        { fontSize: 15, lineHeight: 22, fontWeight: "400", letterSpacing: -0.15 },
+  callout:     { fontSize: 14, lineHeight: 20, fontWeight: "500", letterSpacing: -0.15 },
+  subheadline: { fontSize: 13, lineHeight: 18, fontWeight: "400", letterSpacing: -0.1 },
+  footnote:    { fontSize: 12, lineHeight: 16, fontWeight: "400", letterSpacing: 0 },
+  caption1:    { fontSize: 11, lineHeight: 14, fontWeight: "500", letterSpacing: 0 },
+  caption2:    { fontSize: 10, lineHeight: 13, fontWeight: "500", letterSpacing: 0 },
+  // Mono styles — timestamps, kickers, day numbers, counters, version stamps
+  monoTime:    { fontSize: 13, lineHeight: 16, fontWeight: "500", letterSpacing: -0.2 },
+  monoKicker:  { fontSize: 10, lineHeight: 14, fontWeight: "500", letterSpacing: 2.0 },
+  monoSection: { fontSize: 9,  lineHeight: 13, fontWeight: "500", letterSpacing: 1.5 },
+  monoDay:     { fontSize: 14, lineHeight: 18, fontWeight: "500", letterSpacing: -0.3 },
 };
 
-// iOS Spacing Scale
+// ============================================================
+// Spacing — cardPadding 從 16 提升到 20，其餘不變
+// ============================================================
 const spacing = {
   xs: 4,
   sm: 8,
@@ -35,107 +54,117 @@ const spacing = {
   xxl: 24,
   xxxl: 32,
   screenPadding: 16,
-  cardPadding: 16,
+  cardPadding: 20,
   sectionGap: 24,
   listItemHeight: 44,
 };
 
-// iOS Border Radius Scale
+// ============================================================
+// Radius — 全面縮小，lg 預設從 12 降到 8
+// ============================================================
 const radius = {
-  xs: 4,
-  sm: 6,
-  md: 10,
-  lg: 12,
-  xl: 14,
-  xxl: 16,
+  xs: 0,
+  sm: 4,
+  md: 6,
+  lg: 8,
+  xl: 10,
+  xxl: 12,
   pill: 999,
 };
 
+// ============================================================
+// Light theme
+// ============================================================
 export const lightTheme = {
   mode: "light",
 
-  // 主要顏色
+  // 品牌
   primary: PRIMARY,
   primaryLight: PRIMARY_LIGHT,
-  primaryDark: PRIMARY_DARK,
+  primarySoft: PRIMARY_SOFT,
+  primaryTint: PRIMARY_TINT,
+  primaryWash: PRIMARY_WASH,
 
-  // 背景色
-  background: "#ffffff",
-  backgroundSecondary: "#f5f5f5",
-  backgroundTertiary: "#e8e8e8",
+  // 背景 — paper system（兩層）
+  background: "#F2F1EB",
+  backgroundSecondary: "#E9E7DE",
 
-  // 卡片/容器
-  card: "#ffffff",
-  cardBorder: "#e0e0e0",
+  // 卡片
+  card: "#F2F1EB",
+  cardBorder: "rgba(26,31,46,0.12)",
 
-  // 文字顏色
-  text: "#000000",
-  textSecondary: "#666666",
-  textTertiary: "#888888",
-  textPlaceholder: "#888888",
+  // 文字 — ink scale
+  text: "#1A1F2E",
+  textSecondary: "#454C66",
+  textTertiary: "#8E94AA",
+  textPlaceholder: "#8E94AA",
 
   // 輸入框
-  input: "#ffffff",
-  inputBorder: "#ddd",
+  input: "#F2F1EB",
+  inputBorder: "rgba(26,31,46,0.12)",
   inputBorderFocused: PRIMARY,
 
   // 按鈕
   button: PRIMARY,
-  buttonText: "#ffffff",
-  buttonSecondary: "#f0f0f0",
-  buttonSecondaryText: "#333333",
+  buttonText: "#F2F1EB",
+  buttonSecondary: "transparent",
+  buttonSecondaryText: "#1A1F2E",
+  buttonSecondaryBorder: "rgba(26,31,46,0.22)",
 
-  // 狀態顏色
-  success: "#4caf50",
-  error: "#ff4444",
-  warning: "#ff9800",
-  info: "#2196f3",
+  // 狀態顏色 — 紙色友善的靜態色
+  success: "#4F7B5A",
+  error: "#B14A3E",
+  warning: "#B07A2C",
+  info: "#3B4B7A",
 
-  // 分隔線
-  divider: "#e0e0e0",
+  // 分隔線 / 規則線
+  divider: "rgba(26,31,46,0.12)",
+  rule: "rgba(26,31,46,0.12)",
+  ruleStrong: "rgba(26,31,46,0.22)",
 
-  // 陰影
-  shadow: "#000000",
-  shadowOpacity: 0.1,
+  // 陰影 — Indigo 走 flat，只有 elevated/floating/FAB 保留
+  shadow: "#1A1F2E",
+  shadowOpacity: 0.08,
   shadows: {
-    card:     { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 8,  elevation: 1 },
-    elevated: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 12, elevation: 3 },
-    floating: { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 5 },
+    card:        {},  // none — hairline 取代 shadow
+    elevated:    { shadowColor: "#1A1F2E", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8,  elevation: 2 },
+    floating:    { shadowColor: "#1A1F2E", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 24, elevation: 6 },
+    primaryGlow: { shadowColor: "#3B4B7A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.30, shadowRadius: 14, elevation: 4 },
   },
 
-  // Shimmer / skeleton 效果
-  shimmer: "rgba(0,0,0,0.1)",
+  // Shimmer / skeleton
+  shimmer: "rgba(26,31,46,0.06)",
 
   // 複選框
   checkbox: PRIMARY,
-  checkboxUnchecked: "#aaa",
+  checkboxUnchecked: "#8E94AA",
 
   // Modal
-  modalOverlay: "rgba(0, 0, 0, 0.5)",
-  modalBackground: "#ffffff",
+  modalOverlay: "rgba(26,31,46,0.55)",
+  modalBackground: "#F2F1EB",
 
   // Tab Bar
-  tabBarBackground: "#ffffff",
+  tabBarBackground: "#F2F1EB",
   tabBarActive: PRIMARY,
-  tabBarInactive: "#999999",
+  tabBarInactive: "#8E94AA",
 
   // Calendar
-  calendarHeader: PRIMARY,
-  calendarHeaderText: "#ffffff",
+  calendarHeader: "#1A1F2E",
+  calendarHeaderText: "#1A1F2E",
   calendarToday: PRIMARY,
-  calendarTodayText: "#ffffff",
-  calendarWeekend: "#ff5252",
-  calendarSelected: "#ede9ff", // 淡紫色
+  calendarTodayText: "#F2F1EB",
+  calendarWeekend: "#1A1F2E",
+  calendarSelected: "#3B4B7A",
 
-  // Task
-  taskChecked: "#999999",
-  taskUnchecked: "#000000",
-  taskTime: "#666666",
+  // Task rows
+  taskChecked: "#8E94AA",
+  taskUnchecked: "#1A1F2E",
+  taskTime: "#454C66",
 
-  // UI Tokens
-  borderRadius: 12,
-  borderRadiusSmall: 8,
-  borderRadiusLarge: 16,
+  // 向下相容的快捷圓角 token
+  borderRadius: 8,
+  borderRadiusSmall: 4,
+  borderRadiusLarge: 12,
 
   // iOS Design System
   typography,
@@ -143,91 +172,99 @@ export const lightTheme = {
   radius,
 };
 
+// ============================================================
+// Dark theme
+// ============================================================
 export const darkTheme = {
   mode: "dark",
 
-  // 主要顏色
+  // 品牌 — 深色背景上提亮 accent 確保可讀性
   primary: PRIMARY_LIGHT,
-  primaryLight: "#a39dff",
-  primaryDark: PRIMARY,
+  primaryLight: "#9AAEE0",
+  primarySoft: "#2A2F4D",
+  primaryTint: "#1F2440",
+  primaryWash: "#1F2440",
 
-  // 背景色 - 調整為更淺的灰色，避免純黑
-  background: "#1c1c1e",
-  backgroundSecondary: "#2c2c2e",
-  backgroundTertiary: "rgb(58, 58, 60)",
+  // 背景 — deep paper
+  background: "#14182A",
+  backgroundSecondary: "#1E2438",
 
-  // 卡片/容器 - 與背景有明顯對比
-  card: "rgb(58, 58, 60)",
-  cardBorder: "#48484a",
+  // 卡片
+  card: "#1E2438",
+  cardBorder: "rgba(255,255,255,0.08)",
 
-  // 文字顏色 - 更接近白色，提高可讀性
-  text: "#f5f5f5",
-  textSecondary: "#d0d0d0",
-  textTertiary: "#a0a0a0",
-  textPlaceholder: "#808080",
+  // 文字
+  text: "#ECE9E2",
+  textSecondary: "#B4B8CA",
+  textTertiary: "#7C8198",
+  textPlaceholder: "#7C8198",
 
-  // 輸入框 - 調整為更淺的背景
-  input: "#303030",
-  inputBorder: "#505050",
+  // 輸入框
+  input: "#1E2438",
+  inputBorder: "rgba(255,255,255,0.08)",
   inputBorderFocused: PRIMARY_LIGHT,
 
   // 按鈕
   button: PRIMARY_LIGHT,
-  buttonText: "#ffffff",
-  buttonSecondary: "#303030",
-  buttonSecondaryText: "#f5f5f5",
+  buttonText: "#14182A",
+  buttonSecondary: "transparent",
+  buttonSecondaryText: "#ECE9E2",
+  buttonSecondaryBorder: "rgba(255,255,255,0.16)",
 
   // 狀態顏色
-  success: "#66bb6a",
-  error: "#ef5350",
-  warning: "#ffa726",
-  info: "#42a5f5",
+  success: "#6A9B75",
+  error: "#D4736A",
+  warning: "#CFA050",
+  info: PRIMARY_LIGHT,
 
   // 分隔線
-  divider: "#353535",
+  divider: "rgba(255,255,255,0.08)",
+  rule: "rgba(255,255,255,0.08)",
+  ruleStrong: "rgba(255,255,255,0.16)",
 
-  // 陰影
+  // 陰影 — 深色模式 opacity 約 2.5×
   shadow: "#000000",
-  shadowOpacity: 0.3,
+  shadowOpacity: 0.40,
   shadows: {
-    card:     { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 8,  elevation: 1 },
-    elevated: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.30, shadowRadius: 12, elevation: 3 },
-    floating: { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.35, shadowRadius: 16, elevation: 5 },
+    card:        {},
+    elevated:    { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.40, shadowRadius: 8,  elevation: 2 },
+    floating:    { shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.55, shadowRadius: 24, elevation: 6 },
+    primaryGlow: { shadowColor: "#8B98D0", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 14, elevation: 4 },
   },
 
-  // Shimmer / skeleton 效果
-  shimmer: "rgba(255,255,255,0.1)",
+  // Shimmer
+  shimmer: "rgba(255,255,255,0.06)",
 
   // 複選框
   checkbox: PRIMARY_LIGHT,
-  checkboxUnchecked: "#f5f5f5", // 深色模式用白色
+  checkboxUnchecked: "#7C8198",
 
   // Modal
-  modalOverlay: "rgba(0, 0, 0, 0.7)",
-  modalBackground: "#1c1c1e",
+  modalOverlay: "rgba(0,0,0,0.65)",
+  modalBackground: "#14182A",
 
   // Tab Bar
-  tabBarBackground: "#252525",
+  tabBarBackground: "#14182A",
   tabBarActive: PRIMARY_LIGHT,
-  tabBarInactive: "#808080",
+  tabBarInactive: "#7C8198",
 
   // Calendar
-  calendarHeader: PRIMARY_LIGHT,
-  calendarHeaderText: "#ffffff",
+  calendarHeader: "#ECE9E2",
+  calendarHeaderText: "#ECE9E2",
   calendarToday: PRIMARY_LIGHT,
-  calendarTodayText: "#ffffff",
-  calendarWeekend: "#ef5350",
-  calendarSelected: "#353550",
+  calendarTodayText: "#14182A",
+  calendarWeekend: "#ECE9E2",
+  calendarSelected: PRIMARY_LIGHT,
 
-  // Task
-  taskChecked: "#808080",
-  taskUnchecked: "#f5f5f5",
-  taskTime: "#d0d0d0",
+  // Task rows
+  taskChecked: "#7C8198",
+  taskUnchecked: "#ECE9E2",
+  taskTime: "#B4B8CA",
 
-  // UI Tokens
-  borderRadius: 12,
-  borderRadiusSmall: 8,
-  borderRadiusLarge: 16,
+  // 向下相容
+  borderRadius: 8,
+  borderRadiusSmall: 4,
+  borderRadiusLarge: 12,
 
   // iOS Design System
   typography,
