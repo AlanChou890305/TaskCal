@@ -1956,43 +1956,51 @@ const SplashScreen = ({ navigation }) => {
       >
         <Image
           source={require("../../assets/logo-login.png")}
-          style={{ width: 120, height: 120, marginBottom: 16 }}
+          style={{ width: 108, height: 108, marginBottom: 20 }}
           resizeMode="contain"
         />
         <Text
           style={{
-            fontSize: 32,
-            fontWeight: "bold",
-            color: theme.text,
-            marginBottom: 48,
-            letterSpacing: 1,
+            fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+            fontSize: 10,
+            fontWeight: "500",
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            color: theme.textTertiary,
+            marginBottom: 8,
           }}
         >
-          {Platform.OS === "web"
-            ? getAppDisplayName()
-            : Application.applicationName || getAppDisplayName()}
+          Welcome
+        </Text>
+        <Text
+          style={{
+            fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+            fontSize: 34,
+            fontWeight: "600",
+            letterSpacing: -1.3,
+            lineHeight: 38,
+            marginBottom: 48,
+          }}
+        >
+          <Text style={{ color: theme.text }}>Task</Text>
+          <Text style={{ color: theme.primary }}>Cal</Text>
         </Text>
         {isCheckingSession ? (
           <ActivityIndicator size="small" color={theme.textSecondary} />
         ) : (
-        <View style={{ width: 260 }}>
+        <View style={{ width: 280 }}>
           <TouchableOpacity
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: theme.card,
-              borderColor: theme.cardBorder,
+              backgroundColor: theme.background,
+              borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
               borderWidth: 1,
-              borderRadius: 4,
-              paddingVertical: 12,
+              borderRadius: 8,
+              height: 54,
               justifyContent: "center",
               marginBottom: 10,
               width: "100%",
-              shadowColor: theme.shadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: theme.shadowOpacity,
-              shadowRadius: 2,
-              elevation: 1,
               opacity: isSigningIn ? 0.5 : 1,
             }}
             onPress={handleGoogleSignIn}
@@ -2002,14 +2010,16 @@ const SplashScreen = ({ navigation }) => {
               <>
                 <Image
                   source={require("../../assets/google-logo.png")}
-                  style={{ width: 28, height: 28, marginRight: 4 }}
+                  style={{ width: 22, height: 22, marginRight: 8 }}
                   resizeMode="contain"
                 />
                 <Text
                   style={{
-                    color: theme.mode === "dark" ? theme.text : "#4285F4",
-                    fontWeight: "bold",
-                    fontSize: 16,
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    color: theme.text,
+                    fontWeight: "600",
+                    fontSize: 15,
+                    letterSpacing: -0.2,
                   }}
                 >
                   Signing in...
@@ -2019,14 +2029,16 @@ const SplashScreen = ({ navigation }) => {
               <>
                 <Image
                   source={require("../../assets/google-logo.png")}
-                  style={{ width: 28, height: 28, marginRight: 4 }}
+                  style={{ width: 22, height: 22, marginRight: 8 }}
                   resizeMode="contain"
                 />
                 <Text
                   style={{
-                    color: theme.mode === "dark" ? theme.text : "#4285F4",
-                    fontWeight: "bold",
-                    fontSize: 16,
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    color: theme.text,
+                    fontWeight: "600",
+                    fontSize: 15,
+                    letterSpacing: -0.2,
                   }}
                 >
                   {t.signInWithGoogle || "Sign in with Google"}
@@ -2039,19 +2051,12 @@ const SplashScreen = ({ navigation }) => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: theme.card,
-                borderColor: theme.cardBorder,
-                borderWidth: 1,
-                borderRadius: 4,
-                paddingVertical: 12,
+                backgroundColor: theme.text,
+                borderRadius: 8,
+                height: 54,
                 justifyContent: "center",
                 marginBottom: 10,
                 width: "100%",
-                shadowColor: theme.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: theme.shadowOpacity,
-                shadowRadius: 2,
-                elevation: 1,
                 opacity: isAppleSigningIn ? 0.5 : 1,
               }}
               onPress={handleAppleSignIn}
@@ -2060,19 +2065,17 @@ const SplashScreen = ({ navigation }) => {
               {isAppleSigningIn && !isSigningIn ? (
                 <>
                   <Image
-                    source={
-                      theme.mode === "dark"
-                        ? require("../../assets/apple-100(dark).png")
-                        : require("../../assets/apple-90(light).png")
-                    }
-                    style={{ width: 24, height: 24, marginRight: 8 }}
+                    source={require("../../assets/apple-100(dark).png")}
+                    style={{ width: 20, height: 20, marginRight: 8 }}
                     resizeMode="contain"
                   />
                   <Text
                     style={{
-                      color: theme.mode === "dark" ? theme.text : "#000000",
-                      fontWeight: "bold",
-                      fontSize: 16,
+                      fontFamily: theme.typography?.callout?.fontFamily,
+                      color: theme.buttonText || "#F2F1EB",
+                      fontWeight: "600",
+                      fontSize: 15,
+                      letterSpacing: -0.2,
                     }}
                   >
                     Signing in...
@@ -2081,19 +2084,17 @@ const SplashScreen = ({ navigation }) => {
               ) : (
                 <>
                   <Image
-                    source={
-                      theme.mode === "dark"
-                        ? require("../../assets/apple-100(dark).png")
-                        : require("../../assets/apple-90(light).png")
-                    }
-                    style={{ width: 24, height: 24, marginRight: 8 }}
+                    source={require("../../assets/apple-100(dark).png")}
+                    style={{ width: 20, height: 20, marginRight: 8 }}
                     resizeMode="contain"
                   />
                   <Text
                     style={{
-                      color: theme.mode === "dark" ? theme.text : "#000000",
-                      fontWeight: "bold",
-                      fontSize: 16,
+                      fontFamily: theme.typography?.callout?.fontFamily,
+                      color: theme.buttonText || "#F2F1EB",
+                      fontWeight: "600",
+                      fontSize: 15,
+                      letterSpacing: -0.2,
                     }}
                   >
                     {t.signInWithApple || "Sign in with Apple"}
@@ -2117,21 +2118,23 @@ const SplashScreen = ({ navigation }) => {
       >
         <Text
           style={{
-            color: theme.textSecondary,
-            fontSize: 13,
+            fontFamily: theme.typography?.footnote?.fontFamily,
+            color: theme.textTertiary,
+            fontSize: 12,
+            letterSpacing: -0.1,
             textAlign: "center",
           }}
         >
           {t.byContinuing}{" "}
           <Text
-            style={{ color: theme.primary, fontWeight: "bold" }}
+            style={{ color: theme.primary, fontWeight: "600" }}
             onPress={() => setTermsModalVisible(true)}
           >
             {t.terms}
           </Text>{" "}
           {t.and}{" "}
           <Text
-            style={{ color: theme.primary, fontWeight: "bold" }}
+            style={{ color: theme.primary, fontWeight: "600" }}
             onPress={() => setPrivacyModalVisible(true)}
           >
             {t.privacy}

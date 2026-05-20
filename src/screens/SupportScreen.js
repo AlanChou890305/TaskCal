@@ -1,99 +1,243 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
+  ScrollView,
   Platform,
+  StyleSheet,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
-import LiquidGlassButton from "../components/LiquidGlassButton";
+import SheetNav from "../components/SheetNav";
+import IOSChip from "../components/IOSChip";
+
+const TYPES = [
+  { key: "love",     labelKey: "feedbackLove"     },
+  { key: "bug",      labelKey: "feedbackBug"      },
+  { key: "idea",     labelKey: "feedbackIdea"     },
+  { key: "question", labelKey: "feedbackQuestion" },
+];
 
 function SupportScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const [selectedType, setSelectedType] = useState("love");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSend = () => {
+    const url = t.supportGithubUrl;
+    if (Platform.OS === "web") {
+      window.open(url, "_blank");
+    } else {
+      import("expo-web-browser").then((WebBrowser) => {
+        WebBrowser.openBrowserAsync(url);
+      });
+    }
+  };
+
+  const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
+  const sansFamily = theme.typography?.title1?.fontFamily;
+  const bodyFamily = theme.typography?.body?.fontFamily;
 
   return (
     <SafeAreaView
-      edges={["bottom"]}
-      style={{ flex: 1, backgroundColor: theme.modalBackground }}
+      edges={[]}
+      style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
       accessibilityViewIsModal={true}
       accessibilityLabel="Support Screen"
     >
-      {Platform.OS === "ios" && (
-        <View style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}>
-          <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
-        </View>
-      )}
-      <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
-        <LiquidGlassButton
-          style={{ position: "absolute", left: 16, width: 44, height: 44 }}
-          buttonIcon="xmark"
-          primaryColor={theme.text}
-          onPress={() => navigation.goBack()}
-        />
-        <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
-          {t.supportTitle}
-        </Text>
-      </View>
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 20,
-          paddingTop: 20,
-          alignItems: "center",
-        }}
+      <SheetNav
+        title={t.supportTitle}
+        backLabel={t.settingsTitle || "Settings"}
+        onBack={() => navigation.goBack()}
+        actionLabel={t.feedbackSend || "Send"}
+        onAction={handleSend}
+        theme={theme}
+      />
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 16 + insets.bottom }}
+        keyboardShouldPersistTaps="handled"
       >
-
-        <Text
-          style={{
-            fontSize: 16,
-            color: theme.textSecondary,
-            marginBottom: 48,
-            textAlign: "center",
-            lineHeight: 24,
-          }}
-        >
-          {t.supportIntro}
-        </Text>
-
-        {/* GitHub Issues */}
-        <TouchableOpacity
-          onPress={() => {
-            if (Platform.OS === "web") {
-              window.open(t.supportGithubUrl, "_blank");
-            } else {
-              import("expo-web-browser").then((WebBrowser) => {
-                WebBrowser.openBrowserAsync(t.supportGithubUrl);
-              });
-            }
-          }}
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            paddingVertical: 16,
-            paddingHorizontal: 20,
-            backgroundColor: theme.primary,
-            borderRadius: 12,
-            marginBottom: 16,
-            alignItems: "center",
-          }}
+        {/* Hero */}
+        <View
+          style={[
+            styles.heroBlock,
+            {
+              backgroundColor: theme.background,
+              borderBottomWidth: 2,
+              borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+            },
+          ]}
         >
           <Text
             style={{
-              fontSize: 16,
-              color: "#fff",
-              fontWeight: "600",
+              fontFamily: monoFamily,
+              fontSize: 10,
+              fontWeight: "500",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: theme.primary,
+              marginBottom: 4,
             }}
           >
-            {t.supportGithub}
+            {t.supportIntro || "One human reads every message."}
           </Text>
-        </TouchableOpacity>
-      </View>
+          <Text
+            style={{
+              fontFamily: sansFamily,
+              fontSize: 26,
+              fontWeight: "600",
+              letterSpacing: -0.8,
+              lineHeight: 30,
+              color: theme.text,
+              marginBottom: 10,
+            }}
+          >
+            {t.supportTitle}
+          </Text>
+          <Text
+            style={{
+              fontFamily: bodyFamily,
+              fontSize: 13,
+              lineHeight: 21,
+              letterSpacing: -0.1,
+              color: theme.textSecondary,
+            }}
+          >
+            {t.supportGithub || "Replies usually come within two working days."}
+          </Text>
+        </View>
+
+        {/* Type selector */}
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.background,
+              borderBottomColor: theme.divider,
+            },
+          ]}
+        >
+          <Text style={[styles.fieldLabel, { color: theme.textTertiary, fontFamily: monoFamily }]}>
+            {t.feedbackType || "TYPE"}
+          </Text>
+          <View style={styles.chipsRow}>
+            {TYPES.map((type) => (
+              <IOSChip
+                key={type.key}
+                label={t[type.labelKey] || type.key}
+                active={selectedType === type.key}
+                onPress={() => setSelectedType(type.key)}
+                theme={theme}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Subject */}
+        <View
+          style={[
+            styles.section,
+            {
+              backgroundColor: theme.background,
+              borderBottomColor: theme.divider,
+            },
+          ]}
+        >
+          <Text style={[styles.fieldLabel, { color: theme.textTertiary, fontFamily: monoFamily }]}>
+            {t.feedbackSubject || "SUBJECT"}
+          </Text>
+          <TextInput
+            value={subject}
+            onChangeText={setSubject}
+            placeholder={t.feedbackSubjectPlaceholder || "Short summary…"}
+            placeholderTextColor={theme.textPlaceholder}
+            style={{
+              fontFamily: theme.typography?.callout?.fontFamily,
+              fontSize: 15,
+              fontWeight: "500",
+              letterSpacing: -0.2,
+              color: theme.text,
+              paddingVertical: 4,
+            }}
+          />
+        </View>
+
+        {/* Message */}
+        <View
+          style={[
+            styles.sectionFlex,
+            {
+              backgroundColor: theme.background,
+              borderBottomColor: theme.divider,
+            },
+          ]}
+        >
+          <Text style={[styles.fieldLabel, { color: theme.textTertiary, fontFamily: monoFamily }]}>
+            {t.feedbackMessage || "MESSAGE"}
+          </Text>
+          <TextInput
+            value={message}
+            onChangeText={setMessage}
+            placeholder={t.feedbackMessagePlaceholder || "Describe what you'd like to share…"}
+            placeholderTextColor={theme.textPlaceholder}
+            multiline
+            style={{
+              fontFamily: bodyFamily,
+              fontSize: 14,
+              fontWeight: "400",
+              letterSpacing: -0.1,
+              lineHeight: 22,
+              color: theme.text,
+              minHeight: 120,
+              textAlignVertical: "top",
+              paddingVertical: 4,
+            }}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  heroBlock: {
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: 18,
+  },
+  section: {
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  sectionFlex: {
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+  },
+  fieldLabel: {
+    fontSize: 9,
+    fontWeight: "500",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+});
 
 export default SupportScreen;

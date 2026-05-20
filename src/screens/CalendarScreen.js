@@ -59,9 +59,9 @@ import AdBanner from "../components/AdBanner";
 import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
-import LiquidGlassFABButton from "../components/LiquidGlassFABButton";
 import LiquidGlassButton from "../components/LiquidGlassButton";
 import { isIOS26Plus } from "../utils/platform";
+import IndigoFAB from "../components/IndigoFAB";
 
 function getToday() {
   const today = new Date();
@@ -1320,7 +1320,7 @@ function CalendarScreen({ navigation, route }) {
                               },
                               isSelected && [
                                 styles.selectedDayText,
-                                { color: theme.primary },
+                                { color: theme.calendarTodayText },
                               ],
                               !isCurrentMonth && styles.otherMonthText,
                             ]}
@@ -1375,7 +1375,7 @@ function CalendarScreen({ navigation, route }) {
                 { color: theme.text },
                 isSelected && [
                   styles.selectedDayText,
-                  { color: theme.primary },
+                  { color: theme.calendarTodayText },
                 ],
                 isToday && styles.todayTextLarge,
               ]}
@@ -1641,65 +1641,12 @@ function CalendarScreen({ navigation, route }) {
             </Text>
           </View>
 
-          {/* Floating Add Button - 玻璃效果 */}
-          {isIOS26Plus ? (
-            <LiquidGlassFABButton
-              style={[
-                styles.fabAddButton,
-                {
-                  bottom: 88,
-                  backgroundColor: "transparent",
-                  shadowOpacity: 0,
-                  elevation: 0,
-                },
-              ]}
-              onPress={() => openAddTask(selectedDate)}
-              primaryColor={theme.primary}
-            />
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.fabAddButton,
-                {
-                  backgroundColor: theme.primary,
-                  shadowColor: theme.primary,
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
-                  bottom: 0,
-                },
-              ]}
-              onPress={() => openAddTask(selectedDate)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.addButtonIcon}>
-                <Svg
-                  width={32}
-                  height={32}
-                  viewBox="0 0 32 32"
-                  style={{ display: "flex", alignSelf: "center" }}
-                >
-                  <Line
-                    x1="16"
-                    y1="6"
-                    x2="16"
-                    y2="26"
-                    stroke="#ffffff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  <Line
-                    x1="6"
-                    y1="16"
-                    x2="26"
-                    y2="16"
-                    stroke="#ffffff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </Svg>
-              </View>
-            </TouchableOpacity>
-          )}
+          {/* Floating Add Button */}
+          <IndigoFAB
+            onPress={() => openAddTask(selectedDate)}
+            theme={theme}
+            isNative={isIOS26Plus}
+          />
 
           {shouldShowSkeleton ? (
             <View
@@ -1903,11 +1850,9 @@ function CalendarScreen({ navigation, route }) {
                   styles.modalHeader,
                   {
                     paddingTop: insets.top + 16,
-                    backgroundColor:
-                      theme.mode === "dark" ? theme.background : "#fff",
+                    backgroundColor: theme.background,
                     ...(Platform.OS !== "web" && {
-                      borderBottomColor:
-                        theme.mode === "dark" ? "#2a2a2a" : theme.divider,
+                      borderBottomColor: theme.rule || theme.divider,
                     }),
                     ...(Platform.OS === "web" && {
                       shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
@@ -2840,7 +2785,7 @@ const styles = StyleSheet.create({
   },
   taskTextChecked: {
     textDecorationLine: "line-through",
-    color: "#bbb",
+    color: "#8E94AA",
   },
   fabAddButton: {
     position: "absolute",
@@ -3062,7 +3007,7 @@ const styles = StyleSheet.create({
     lineHeight: 56,
   },
   selectedDayLarge: {
-    backgroundColor: "#e8e7fc",
+    backgroundColor: "#3B4B7A",
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -3074,7 +3019,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   todayTextLarge: {
-    color: "white",
+    color: "#F2F1EB",
     fontWeight: "700",
   },
   selectedDateLarge: {
@@ -3904,16 +3849,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...(Platform.OS !== "web" && {
-      borderBottomWidth: 1,
-      borderBottomColor: "#f0f0f0",
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: "rgba(26,31,46,0.12)",
     }),
     ...(Platform.OS === "web" && {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
     }),
-    backgroundColor: "#fff",
+    backgroundColor: "#F2F1EB",
     zIndex: 10,
   },
   modalBackButton: {
@@ -3935,17 +3880,17 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "transparent",
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 16,
     minHeight: 50,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: "rgba(26,31,46,0.22)",
     alignItems: "center",
   },
   deleteButtonText: {
-    color: "#ff5a5f",
+    color: "#B14A3E",
     fontWeight: "500",
     fontSize: 14,
   },

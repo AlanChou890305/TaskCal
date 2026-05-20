@@ -19,9 +19,9 @@ const IMAGES = [
 ];
 
 const SLIDES = [
-  { key: "1", titleKey: "onboarding1Title", descKey: "onboarding1Desc" },
-  { key: "2", titleKey: "onboarding2Title", descKey: "onboarding2Desc" },
-  { key: "3", titleKey: "onboarding3Title", descKey: "onboarding3Desc" },
+  { key: "1", titleKey: "onboarding1Title", descKey: "onboarding1Desc", kicker: "Step · 01 / 03" },
+  { key: "2", titleKey: "onboarding2Title", descKey: "onboarding2Desc", kicker: "Step · 02 / 03" },
+  { key: "3", titleKey: "onboarding3Title", descKey: "onboarding3Desc", kicker: "Step · 03 / 03" },
 ];
 
 export default function OnboardingScreen({ navigation }) {
@@ -72,74 +72,109 @@ export default function OnboardingScreen({ navigation }) {
   });
 
   const isLast = currentIndex === SLIDES.length - 1;
+  const paperColor = theme.buttonText || "#F2F1EB";
+  const washBg = theme.primaryWash || theme.primary;
+  const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
+  const sansFamily = theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold";
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.background }]}
+      style={[styles.container, { backgroundColor: washBg }]}
       onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
     >
       {/* Slides */}
-      {SCREEN_WIDTH === 0 ? null : <FlatList
-        style={{ flex: 1 }}
-        onLayout={(e) => setFlatListHeight(e.nativeEvent.layout.height)}
-        ref={flatListRef}
-        data={SLIDES}
-        keyExtractor={(item) => item.key}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        getItemLayout={getItemLayout}
-        renderItem={({ item, index }) => (
-          <View style={[styles.slide, { width: SCREEN_WIDTH, height: flatListHeight > 0 ? flatListHeight : undefined }]}>
-            <View style={[styles.imageContainer, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.52 }]}>
-              <Image
-                source={IMAGES[index]}
-                style={[styles.screenshot, { width: SCREEN_WIDTH }]}
-                resizeMode="contain"
-              />
-              <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
-                <Text style={styles.skipText}>{t.onboardingSkip}</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={[styles.title, { color: theme.text }]}>{t[item.titleKey]}</Text>
-              <Text style={[styles.desc, { color: theme.textSecondary }]}>{t[item.descKey]}</Text>
-            </View>
-          </View>
-        )}
-      />}
+      {SCREEN_WIDTH === 0 ? null : (
+        <FlatList
+          style={{ flex: 1 }}
+          onLayout={(e) => setFlatListHeight(e.nativeEvent.layout.height)}
+          ref={flatListRef}
+          data={SLIDES}
+          keyExtractor={(item) => item.key}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          getItemLayout={getItemLayout}
+          renderItem={({ item, index }) => (
+            <View style={[styles.slide, { width: SCREEN_WIDTH, height: flatListHeight > 0 ? flatListHeight : undefined }]}>
+              {/* Kicker + Skip row */}
+              <View style={styles.kickerRow}>
+                <Text style={[styles.kicker, { color: paperColor, fontFamily: monoFamily }]}>
+                  {item.kicker}
+                </Text>
+                <TouchableOpacity style={styles.skipButton} onPress={handleDone}>
+                  <Text style={[styles.skipText, { color: paperColor, fontFamily: theme.typography?.body?.fontFamily }]}>
+                    {t.onboardingSkip}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-      {/* Dots + Next/Get Started */}
+              {/* Hero image — paper panel */}
+              <View style={[styles.imageContainer, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.42, backgroundColor: theme.background }]}>
+                <Image
+                  source={IMAGES[index]}
+                  style={[styles.screenshot, { width: SCREEN_WIDTH }]}
+                  resizeMode="contain"
+                />
+              </View>
+
+              {/* Title + body */}
+              <View style={styles.textContainer}>
+                <Text style={[styles.title, { color: paperColor, fontFamily: sansFamily }]}>
+                  {t[item.titleKey]}
+                </Text>
+                <Text style={[styles.desc, { color: `${paperColor}C7`, fontFamily: theme.typography?.body?.fontFamily }]}>
+                  {t[item.descKey]}
+                </Text>
+              </View>
+            </View>
+          )}
+        />
+      )}
+
+      {/* Progress + CTA */}
       <View style={styles.footer}>
-        <View style={styles.dots}>
-          {SLIDES.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor: i === currentIndex ? theme.primary : theme.backgroundTertiary,
-                  width: i === currentIndex ? 20 : 8,
-                },
-              ]}
-            />
-          ))}
+        <View style={styles.progressRow}>
+          {/* Mono counter */}
+          <Text style={[styles.progressCount, { color: paperColor, fontFamily: monoFamily }]}>
+            {String(currentIndex + 1).padStart(2, "0")} / {String(SLIDES.length).padStart(2, "0")}
+          </Text>
+          {/* Expanding dots */}
+          <View style={styles.dots}>
+            {SLIDES.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  {
+                    backgroundColor: paperColor,
+                    opacity: i === currentIndex ? 1 : 0.35,
+                    width: i === currentIndex ? 22 : 6,
+                  },
+                ]}
+              />
+            ))}
+          </View>
         </View>
 
         <TouchableOpacity
-          style={[styles.nextButton, { backgroundColor: theme.primary }]}
+          style={[
+            styles.nextButton,
+            {
+              backgroundColor: theme.background,
+              borderRadius: theme.radius?.lg || 8,
+            },
+          ]}
           onPress={handleNext}
         >
-          <Text style={[styles.nextText, { color: theme.buttonText }]}>
+          <Text style={[styles.nextText, { color: theme.primary, fontFamily: theme.typography?.headline?.fontFamily }]}>
             {isLast ? t.onboardingGetStarted : t.onboardingNext}
           </Text>
         </TouchableOpacity>
       </View>
-
     </SafeAreaView>
   );
 }
@@ -148,25 +183,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  skipButton: {
-    position: "absolute",
-    top: 12,
-    right: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    zIndex: 10,
-  },
-  skipText: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "rgba(50, 40, 120, 0.85)",
-  },
   slide: {
     flex: 1,
     flexDirection: "column",
   },
+  kickerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 14,
+  },
+  kicker: {
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 2.0,
+    textTransform: "uppercase",
+    opacity: 0.85,
+  },
+  skipButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+  },
+  skipText: {
+    fontSize: 13,
+    fontWeight: "500",
+    letterSpacing: -0.1,
+    opacity: 0.8,
+  },
   imageContainer: {
-    backgroundColor: "#BEBAFF",
     overflow: "hidden",
   },
   screenshot: {
@@ -175,45 +221,59 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     justifyContent: "center",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 10,
-    letterSpacing: 0.3,
+    fontSize: 34,
+    fontWeight: "600",
+    letterSpacing: -1.3,
+    lineHeight: 38,
+    marginBottom: 14,
   },
   desc: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
+    fontSize: 14,
+    fontWeight: "400",
+    letterSpacing: -0.05,
+    lineHeight: 22,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: 22,
+    paddingBottom: 28,
+    gap: 18,
+  },
+  progressRow: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 16,
+    gap: 10,
+  },
+  progressCount: {
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 1.5,
+    opacity: 0.78,
   },
   dots: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 5,
   },
   dot: {
-    height: 8,
-    borderRadius: 4,
+    height: 4,
+    borderRadius: 2,
   },
   nextButton: {
     width: "100%",
     height: 52,
-    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 20,
   },
   nextText: {
-    fontSize: 17,
+    fontSize: 13,
     fontWeight: "600",
+    letterSpacing: 0.4,
+    textTransform: "uppercase",
   },
 });

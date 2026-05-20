@@ -782,17 +782,31 @@ function SettingScreen() {
       <View
         style={{
           backgroundColor: theme.modalBackground,
-          height: 64,
-          justifyContent: "center",
+          paddingHorizontal: 22,
+          paddingTop: 16,
+          paddingBottom: 14,
         }}
       >
         <Text
           style={{
-            ...theme.typography.title2,
+            fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+            fontSize: 9,
+            fontWeight: "500",
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            color: theme.textTertiary,
+            marginBottom: 4,
+          }}
+        >
+          {t.settingsKicker || "Preferences"}
+        </Text>
+        <Text
+          style={{
+            fontFamily: theme.typography?.title1?.fontFamily,
+            fontSize: 28,
+            fontWeight: "600",
+            letterSpacing: -0.8,
             color: theme.text,
-            letterSpacing: 0.5,
-            textAlign: "left",
-            paddingLeft: 24,
           }}
         >
           {t.settings}
@@ -888,9 +902,9 @@ function SettingScreen() {
                   >
                     <Text
                       style={{
-                        color: "#FFFFFF",
+                        color: theme.buttonText || "#F2F1EB",
                         fontSize: 20,
-                        fontWeight: "bold",
+                        fontWeight: "600",
                       }}
                     >
                       {(userProfile?.name || userName || "U")
@@ -969,9 +983,12 @@ function SettingScreen() {
                 >
                   <Text
                     style={{
-                      color: theme.primary,
-                      fontSize: 12,
-                      fontWeight: "600",
+                      fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                      color: theme.textTertiary,
+                      fontSize: 9,
+                      fontWeight: "500",
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase",
                     }}
                   >
                     {t.loginMethod}
@@ -1029,7 +1046,7 @@ function SettingScreen() {
                   paddingHorizontal: 20,
                   backgroundColor:
                     userType === "member"
-                      ? theme.calendarSelected
+                      ? theme.primaryTint || theme.backgroundSecondary
                       : "transparent",
                 }}
               >
@@ -1070,7 +1087,7 @@ function SettingScreen() {
                   paddingHorizontal: 20,
                   backgroundColor:
                     userType === "general"
-                      ? theme.calendarSelected
+                      ? theme.primaryTint || theme.backgroundSecondary
                       : "transparent",
                 }}
               >
@@ -1300,7 +1317,7 @@ function SettingScreen() {
                   backgroundColor:
                     themeMode === "light"
                       ? "#f9f9f9"
-                      : theme.backgroundTertiary,
+                      : theme.backgroundSecondary,
                 }}
               >
                 <TouchableOpacity
@@ -1314,7 +1331,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       language === "en"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1340,7 +1357,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       language === "zh"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1366,7 +1383,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       language === "es"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1457,7 +1474,7 @@ function SettingScreen() {
                   backgroundColor:
                     themeMode === "light"
                       ? "#f9f9f9"
-                      : theme.backgroundTertiary,
+                      : theme.backgroundSecondary,
                 }}
               >
                 {/* Auto (第一個選項 - 預設推薦) */}
@@ -1472,7 +1489,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       themeMode === "auto"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1501,7 +1518,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       themeMode === "light"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1530,7 +1547,7 @@ function SettingScreen() {
                     paddingHorizontal: 52,
                     backgroundColor:
                       themeMode === "dark"
-                        ? theme.calendarSelected
+                        ? theme.primaryTint || theme.backgroundSecondary
                         : "transparent",
                   }}
                 >
@@ -1645,7 +1662,7 @@ function SettingScreen() {
                   backgroundColor:
                     themeMode === "light"
                       ? "#f9f9f9"
-                      : theme.backgroundTertiary,
+                      : theme.backgroundSecondary,
                   paddingVertical: 8,
                 }}
               >
