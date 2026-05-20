@@ -1,26 +1,11 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-let LiquidGlassFABButton = null;
-try {
-  LiquidGlassFABButton = require("./LiquidGlassFABButton").default;
-} catch (_) {}
-
-const IndigoFAB = ({ onPress, theme, isNative = false, style }) => {
+const IndigoFAB = ({ onPress, theme, style }) => {
   const glow = theme?.shadows?.primaryGlow || {};
   const accent = theme?.primary || "#3B4B7A";
   const paper = theme?.buttonText || "#F2F1EB";
-
-  if (isNative && LiquidGlassFABButton && Platform.OS === "ios") {
-    return (
-      <LiquidGlassFABButton
-        style={[styles.fab, style]}
-        onPress={onPress}
-        primaryColor={accent}
-      />
-    );
-  }
 
   return (
     <TouchableOpacity
