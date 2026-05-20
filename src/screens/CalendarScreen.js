@@ -62,6 +62,7 @@ import { PRIMARY } from "../config/theme";
 import LiquidGlassButton from "../components/LiquidGlassButton";
 import { isIOS26Plus } from "../utils/platform";
 import IndigoFAB from "../components/IndigoFAB";
+import IOSCheckbox from "../components/IOSCheckbox";
 
 function getToday() {
   const today = new Date();
@@ -1492,21 +1493,11 @@ function CalendarScreen({ navigation, route }) {
         },
       ]}
     >
-      <TouchableOpacity
-        style={styles.checkbox}
+      <IOSCheckbox
+        checked={!!(item.is_completed || item.checked)}
         onPress={() => toggleTaskChecked(item)}
-        activeOpacity={0.7}
-      >
-        {item.is_completed || item.checked ? (
-          <MaterialIcons name="check-box" size={24} color={theme.primary} />
-        ) : (
-          <MaterialIcons
-            name="check-box-outline-blank"
-            size={24}
-            color={theme.textTertiary}
-          />
-        )}
-      </TouchableOpacity>
+        theme={theme}
+      />
       <TouchableOpacity
         style={[
           styles.taskItem,
@@ -1602,6 +1593,13 @@ function CalendarScreen({ navigation, route }) {
     const shouldShowSkeleton =
       isLoadingTasks && Object.keys(tasks).length === 0;
 
+    const [selY, selM, selD] = selectedDate.split("-").map(Number);
+    const selDateObj = new Date(selY, selM - 1, selD);
+    const weekDayAbbr = ["SUN","MON","TUE","WED","THU","FRI","SAT"][selDateObj.getDay()];
+    const isSelectedToday = selectedDate === getToday();
+    const completedCount = dayTasks.filter(t => t.is_completed || t.checked).length;
+    const totalCount = dayTasks.length;
+
     const taskAreaContent = (
       <View
         style={[
@@ -1615,30 +1613,67 @@ function CalendarScreen({ navigation, route }) {
             { flex: 1, backgroundColor: theme.backgroundSecondary },
           ]}
         >
+          {/* Accent date banner */}
           <View
-            style={[
-              styles.tasksHeaderRow,
-              {
-                paddingLeft: 0,
-                paddingHorizontal: 0,
-                marginLeft: 4,
-                backgroundColor: "transparent",
-              },
-            ]}
+            style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <Text
-              style={[
-                styles.tasksHeader,
-                {
-                  textAlign: "left",
-                  paddingLeft: 0,
-                  marginLeft: 4,
-                  color: theme.text,
-                },
-              ]}
-            >
-              {selectedDate}
-            </Text>
+            <View>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontSize: 10,
+                  fontWeight: "500",
+                  letterSpacing: 1.5,
+                  color: (theme.buttonText || "#F2F1EB") + "99",
+                  marginBottom: 2,
+                }}
+              >
+                {weekDayAbbr} / {String(selM).padStart(2,"0")}.{String(selD).padStart(2,"0")}.{String(selY).slice(-2)}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.title3?.fontFamily,
+                  fontSize: 18,
+                  fontWeight: "600",
+                  letterSpacing: -0.4,
+                  color: theme.buttonText || "#F2F1EB",
+                }}
+              >
+                {isSelectedToday ? `${t.today || "Today"}` : selectedDate}
+              </Text>
+            </View>
+            {totalCount > 0 && (
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                    fontSize: 9,
+                    letterSpacing: 1.2,
+                    color: (theme.buttonText || "#F2F1EB") + "80",
+                    marginBottom: 2,
+                  }}
+                >
+                  DONE
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.monoTime?.fontFamily || "JetBrainsMono_500Medium",
+                    fontSize: 16,
+                    fontWeight: "500",
+                    color: theme.buttonText || "#F2F1EB",
+                  }}
+                >
+                  {completedCount} / {totalCount}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Floating Add Button */}
@@ -2650,37 +2685,59 @@ function CalendarScreen({ navigation, route }) {
 
   const header = (
     <View style={styles.fixedHeader}>
-      <View style={styles.headerContainer}>
+      <View style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 4 }]}>
         <View style={styles.headerLeftContainer}>
-          <Text
-            style={[
-              styles.currentMonthTitle,
-              { color: theme.text, marginRight: 4 },
-            ]}
-          >
-            {year} {monthName}
-          </Text>
-          <TouchableOpacity
-            onPress={goToPrevMonth}
-            style={styles.dayNavButton}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="chevron-left" size={24} color={theme.text} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={goToNextMonth}
-            style={styles.dayNavButton}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="chevron-right" size={24} color={theme.text} />
-          </TouchableOpacity>
+          <View>
+            <Text
+              style={{
+                fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                fontSize: 10,
+                fontWeight: "500",
+                letterSpacing: 1.5,
+                color: theme.textTertiary,
+                marginBottom: 2,
+              }}
+            >
+              {year} / {String(visibleMonth + 1).padStart(2, "0")}
+            </Text>
+            <Text
+              style={{
+                fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                fontSize: 28,
+                fontWeight: "600",
+                letterSpacing: -1.0,
+                lineHeight: 32,
+                color: theme.text,
+              }}
+            >
+              {monthName}
+            </Text>
+          </View>
         </View>
-        <View style={styles.headerRightContainer}>
+        <View style={[styles.headerRightContainer, { alignItems: "flex-end", gap: 8 }]}>
+          <View style={{ flexDirection: "row", gap: 4 }}>
+            <TouchableOpacity
+              onPress={goToPrevMonth}
+              style={[styles.dayNavButton, { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.backgroundSecondary }]}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="chevron-left" size={18} color={theme.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={goToNextMonth}
+              style={[styles.dayNavButton, { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.backgroundSecondary }]}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="chevron-right" size={18} color={theme.text} />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={[
               styles.todayButton,
               {
-                backgroundColor: theme.primary,
+                backgroundColor: "transparent",
+                borderWidth: 1,
+                borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
               },
             ]}
             onPress={() => {
@@ -2690,7 +2747,7 @@ function CalendarScreen({ navigation, route }) {
               setVisibleYear(new Date(today).getFullYear());
             }}
           >
-            <Text style={[styles.todayButtonText, { color: "#ffffff" }]}>
+            <Text style={[styles.todayButtonText, { color: theme.text }]}>
               {t.today}
             </Text>
           </TouchableOpacity>
