@@ -34,11 +34,11 @@ const IOSListItem = ({
             styles.iconContainer,
             {
               backgroundColor: iconColor || theme.primary,
-              borderRadius: theme.radius?.sm || 6,
+              borderRadius: theme.radius?.sm || 4,
             },
           ]}
         >
-          <Ionicons name={icon} size={18} color="#fff" />
+          <Ionicons name={icon} size={18} color={theme.buttonText || "#F2F1EB"} />
         </View>
       )}
 
@@ -48,7 +48,10 @@ const IOSListItem = ({
             styles.title,
             {
               color: theme.text,
-              fontSize: theme.typography?.body?.fontSize || 17,
+              fontFamily: theme.typography?.callout?.fontFamily,
+              fontSize: theme.typography?.callout?.fontSize || 14,
+              fontWeight: "500",
+              letterSpacing: -0.2,
             },
           ]}
           numberOfLines={1}
@@ -60,8 +63,11 @@ const IOSListItem = ({
             style={[
               styles.subtitle,
               {
-                color: theme.textSecondary,
-                fontSize: theme.typography?.subheadline?.fontSize || 15,
+                color: theme.textTertiary,
+                fontFamily: theme.typography?.subheadline?.fontFamily,
+                fontSize: theme.typography?.subheadline?.fontSize || 13,
+                fontWeight: "500",
+                letterSpacing: -0.1,
               },
             ]}
             numberOfLines={1}
@@ -76,7 +82,7 @@ const IOSListItem = ({
       {showChevron && onPress && (
         <Ionicons
           name="chevron-forward"
-          size={20}
+          size={14}
           color={theme.textTertiary}
           style={styles.chevron}
         />
@@ -89,13 +95,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconContainer: {
-    width: 29,
-    height: 29,
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -104,12 +110,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
-  title: {
-    letterSpacing: -0.41,
-  },
+  title: {},
   subtitle: {
     marginTop: 2,
-    letterSpacing: -0.24,
   },
   chevron: {
     marginLeft: 8,

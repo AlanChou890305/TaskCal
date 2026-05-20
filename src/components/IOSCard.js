@@ -2,7 +2,7 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 
 const IOSCard = ({ children, theme, shadowStyle = "card", style }) => {
-  const shadow = theme.shadows?.[shadowStyle] || theme.shadows?.card || {};
+  const shadow = theme.shadows?.[shadowStyle] || {};
 
   return (
     <View
@@ -11,7 +11,8 @@ const IOSCard = ({ children, theme, shadowStyle = "card", style }) => {
         {
           backgroundColor: theme.card,
           borderColor: theme.cardBorder,
-          borderRadius: theme.radius?.lg || theme.borderRadius,
+          borderRadius: theme.radius?.lg || 8,
+          padding: theme.spacing?.cardPadding || 20,
         },
         shadow,
         style,
@@ -25,7 +26,6 @@ const IOSCard = ({ children, theme, shadowStyle = "card", style }) => {
 const styles = StyleSheet.create({
   card: {
     borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
   },
 });
 

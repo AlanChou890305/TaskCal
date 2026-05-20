@@ -6,9 +6,10 @@ const IOSSectionHeader = ({ title, theme, style }) => (
     style={[
       styles.header,
       {
-        color: theme.textSecondary,
-        fontSize: theme.typography?.footnote?.fontSize || 13,
-        letterSpacing: theme.typography?.footnote?.letterSpacing || -0.08,
+        color: theme.textTertiary,
+        fontFamily: theme.typography?.monoSection?.fontFamily || "JetBrainsMono_500Medium",
+        fontSize: theme.typography?.monoSection?.fontSize || 9,
+        letterSpacing: theme.typography?.monoSection?.letterSpacing || 1.5,
       },
       style,
     ]}
@@ -19,8 +20,8 @@ const IOSSectionHeader = ({ title, theme, style }) => (
 
 const styles = StyleSheet.create({
   header: {
-    fontWeight: "400",
-    paddingHorizontal: 16,
+    fontWeight: "500",
+    paddingHorizontal: 22,
     paddingTop: 24,
     paddingBottom: 8,
   },
