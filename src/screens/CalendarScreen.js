@@ -1642,9 +1642,7 @@ function CalendarScreen({ navigation, route }) {
                   marginBottom: 2,
                 }}
               >
-                {isSelectedToday
-                  ? `${String(selM).padStart(2, "0")}.${String(selD).padStart(2, "0")}.${String(selY).slice(-2)}`
-                  : weekDayAbbr}
+                {weekDayAbbr}
               </Text>
               <Text
                 style={{
