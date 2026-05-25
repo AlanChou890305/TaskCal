@@ -50,6 +50,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const [tempTime, setTempTime] = useState(null);
   const [noteInputHeight, setNoteInputHeight] = useState(80);
   const saveDebounceRef = useRef(null);
+  const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
 
   const isZH = language === "zh-Hant";
   const isDone = !!(task.is_completed || task.checked);
@@ -62,12 +63,13 @@ export default function TaskDetailScreen({ navigation, route }) {
   };
 
   // ── Persistence ────────────────────────────────────────────────
+  // inline save: update local state only, no navigation
   const persistUpdate = async (fields) => {
     try {
       const result = await TaskService.updateTask(task.id, fields);
       const updated = result || { ...task, ...fields };
+      taskRef.current = updated;
       setTask(updated);
-      navigation.navigate("CalendarMain", { updatedTask: updated });
     } catch (err) {
       console.error("updateTask error:", err);
     }
@@ -108,6 +110,10 @@ export default function TaskDetailScreen({ navigation, route }) {
     } catch (err) {
       console.error("markDone error:", err);
     }
+  };
+
+  const handleGoBack = () => {
+    navigation.navigate("CalendarMain", { updatedTask: taskRef.current });
   };
 
   // ── Meta row ───────────────────────────────────────────────────
@@ -280,7 +286,7 @@ export default function TaskDetailScreen({ navigation, route }) {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 8, backgroundColor: theme.background }]}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={handleGoBack}
           style={{ flexDirection: "row", alignItems: "center", minWidth: 60 }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
