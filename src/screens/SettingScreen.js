@@ -37,11 +37,9 @@ import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
-import LiquidGlassButton from "../components/LiquidGlassButton";
 import TermsScreen from "./TermsScreen";
 import PrivacyScreen from "./PrivacyScreen";
 
-import { isIOS26Plus } from "../utils/platform";
 
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -1808,71 +1806,6 @@ function SettingScreen() {
         {/* Support Section */}
         <IOSSectionHeader title={t.support} theme={theme} style={{ paddingHorizontal: 28 }} />
         <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
-            {/* Rate Us on App Store */}
-            <TouchableOpacity
-              onPress={async () => {
-                // iOS: Try native StoreReview first (shows native iOS rating dialog)
-                // Note: iOS may silently refuse to show the dialog (rate limiting, recently rated, etc.)
-                // So we always show our custom modal as fallback
-                if (
-                  Platform.OS === "ios" &&
-                  StoreReview &&
-                  StoreReview.isAvailableAsync
-                ) {
-                  try {
-                    const isAvailable = await StoreReview.isAvailableAsync();
-                    if (isAvailable) {
-                      await StoreReview.requestReview();
-                      // iOS may or may not show the native dialog (rate limiting)
-                      // We always show our custom modal as user feedback
-                    }
-                  } catch (reviewError) {
-                    console.warn(
-                      "StoreReview not available:",
-                      reviewError.message,
-                    );
-                  }
-                }
-              }}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-              >
-                <MaterialIcons
-                  name="star"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
-                >
-                  {t.rateUs || "Rate Us"}
-                </Text>
-              </View>
-              <MaterialIcons
-                name="open-in-new"
-                size={20}
-                color={theme.textTertiary}
-              />
-            </TouchableOpacity>
-
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: theme.divider,
-                marginHorizontal: 20,
-              }}
-            />
-
             {/* Send Feedback Button */}
             <TouchableOpacity
               onPress={() => setFeedbackModalVisible(true)}
@@ -1920,220 +1853,248 @@ function SettingScreen() {
         >
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: theme.modalBackground }}
+            style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
           >
-              {/* Drag indicator */}
-              {Platform.OS === "ios" && (
-                <View style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}>
-                  <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)" }} />
-                </View>
-              )}
-              {/* Header row */}
-              <View style={{ height: 52, justifyContent: "center", alignItems: "center" }}>
-                {isIOS26Plus ? (
-                  <LiquidGlassButton
-                    style={{ position: "absolute", left: 16, width: 44, height: 44 }}
-                    buttonIcon="xmark"
-                    primaryColor={theme.textSecondary}
-                    onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
-                  />
-                ) : (
-                  <TouchableOpacity
-                    style={{ position: "absolute", left: 16, padding: 12, width: 48, height: 48, alignItems: "center", justifyContent: "center" }}
-                    onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
-                    disabled={isSubmittingFeedback}
-                  >
-                    <MaterialIcons name="close" size={24} color={theme.text} />
-                  </TouchableOpacity>
-                )}
-                <Text style={{ fontSize: 17, fontWeight: "600", color: theme.text, letterSpacing: -0.3 }}>
-                  {t.feedback || "Send Feedback"}
+            {/* Grabber */}
+            {Platform.OS === "ios" && (
+              <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 0 }}>
+                <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
+              </View>
+            )}
+            {/* SheetNav-style header: Cancel | Send feedback | Send */}
+            <View style={{
+              height: 52,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: theme.divider,
+            }}>
+              <TouchableOpacity
+                onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
+                disabled={isSubmittingFeedback}
+                style={{ padding: 6, minWidth: 60 }}
+              >
+                <Text style={{
+                  fontFamily: theme.typography?.callout?.fontFamily,
+                  fontSize: 14,
+                  fontWeight: "500",
+                  letterSpacing: -0.2,
+                  color: theme.textSecondary,
+                }}>
+                  {t.cancel}
                 </Text>
-                {isIOS26Plus ? (
-                  <LiquidGlassButton
-                    style={{ position: "absolute", right: 16, width: 44, height: 44 }}
-                    buttonIcon="checkmark"
-                    primaryColor={theme.primary}
-                    onPress={handleSubmitFeedback}
-                  />
-                ) : (
-                  <TouchableOpacity
-                    style={{ position: "absolute", right: 16, padding: 12, width: 48, height: 48, alignItems: "center", justifyContent: "center" }}
-                    onPress={handleSubmitFeedback}
-                    disabled={isSubmittingFeedback}
-                  >
-                    <MaterialIcons name="check" size={24} color={theme.primary} />
-                  </TouchableOpacity>
-                )}
+              </TouchableOpacity>
+              <Text style={{
+                flex: 1,
+                textAlign: "center",
+                fontFamily: theme.typography?.callout?.fontFamily,
+                fontSize: 14,
+                fontWeight: "600",
+                letterSpacing: -0.2,
+                color: theme.text,
+              }}>
+                {t.feedback || "Send feedback"}
+              </Text>
+              <TouchableOpacity
+                onPress={handleSubmitFeedback}
+                disabled={isSubmittingFeedback}
+                style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
+              >
+                <Text style={{
+                  fontFamily: theme.typography?.callout?.fontFamily,
+                  fontSize: 14,
+                  fontWeight: "600",
+                  letterSpacing: -0.2,
+                  color: isSubmittingFeedback ? theme.textTertiary : theme.primary,
+                }}>
+                  {isSubmittingFeedback ? "..." : (t.send || "Send")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Hero block */}
+              <View style={{
+                padding: 22,
+                paddingBottom: 18,
+                backgroundColor: theme.background,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: theme.ruleStrong || theme.divider,
+              }}>
+                <Text style={{
+                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontSize: 10,
+                  fontWeight: "500",
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: theme.primary,
+                  marginBottom: 4,
+                }}>
+                  {t.feedbackMotivationSmall || "One human reads every message"}
+                </Text>
+                <Text style={{
+                  fontFamily: theme.typography?.title2?.fontFamily,
+                  fontSize: 22,
+                  fontWeight: "600",
+                  letterSpacing: -0.5,
+                  color: theme.text,
+                  lineHeight: 26,
+                }}>
+                  {t.feedbackHero || "Tell us what's\non your mind."}
+                </Text>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 24 }}>
-                  {/* Category Selection */}
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontSize: 16,
-                      fontWeight: "600",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {t.feedbackType}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      flexWrap: "wrap",
-                      gap: 8,
-                      marginBottom: 20,
-                    }}
-                  >
-                    {[
-                      { id: "bug", label: t.bugReport, icon: "bug-report" },
-                      {
-                        id: "suggestion",
-                        label: t.improvementSuggestion,
-                        icon: "auto-fix-high",
-                      },
-                      {
-                        id: "feature",
-                        label: t.featureRequest,
-                        icon: "auto-awesome",
-                      },
-                      {
-                        id: "other",
-                        label: t.feedbackOther,
-                        icon: "more-horiz",
-                      },
-                    ].map((cat) => (
+              {/* Type chips */}
+              <View style={{
+                padding: 18,
+                paddingBottom: 14,
+                backgroundColor: theme.background,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: theme.divider,
+              }}>
+                <Text style={{
+                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontSize: 9,
+                  fontWeight: "500",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: theme.textTertiary,
+                  marginBottom: 10,
+                }}>
+                  {t.feedbackType || "Type"}
+                </Text>
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                  {[
+                    { id: "suggestion", label: t.improvementSuggestion || "Love note", icon: "favorite-border" },
+                    { id: "bug", label: t.bugReport || "Bug", icon: "bug-report" },
+                    { id: "feature", label: t.featureRequest || "Idea", icon: "flag" },
+                    { id: "other", label: t.feedbackOther || "Question", icon: "info-outline" },
+                  ].map((cat) => {
+                    const isOn = feedbackCategory === cat.id;
+                    return (
                       <TouchableOpacity
                         key={cat.id}
                         onPress={() => setFeedbackCategory(cat.id)}
+                        activeOpacity={0.7}
                         style={{
                           flexDirection: "row",
                           alignItems: "center",
-                          paddingVertical: 8,
-                          paddingHorizontal: 16,
-                          borderRadius: 20,
-                          backgroundColor:
-                            feedbackCategory === cat.id
-                              ? theme.primary
-                              : theme.background,
+                          gap: 5,
+                          paddingVertical: 7,
+                          paddingHorizontal: 12,
+                          borderRadius: 999,
+                          backgroundColor: isOn ? theme.primaryTint || theme.primary + "20" : "transparent",
                           borderWidth: 1,
-                          borderColor:
-                            feedbackCategory === cat.id
-                              ? theme.primary
-                              : theme.divider,
+                          borderColor: isOn ? theme.primary : theme.ruleStrong || theme.divider,
                         }}
                       >
                         <MaterialIcons
                           name={cat.icon}
-                          size={16}
-                          color={
-                            feedbackCategory === cat.id ? "#fff" : theme.text
-                          }
-                          style={{ marginRight: 6 }}
+                          size={13}
+                          color={isOn ? theme.primary : theme.textSecondary}
                         />
-                        <Text
-                          style={{
-                            color:
-                              feedbackCategory === cat.id ? "#fff" : theme.text,
-                            fontSize: 14,
-                            fontWeight:
-                              feedbackCategory === cat.id ? "600" : "400",
-                          }}
-                        >
+                        <Text style={{
+                          fontFamily: theme.typography?.callout?.fontFamily,
+                          fontSize: 12,
+                          fontWeight: isOn ? "600" : "500",
+                          letterSpacing: -0.1,
+                          color: isOn ? theme.primary : theme.textSecondary,
+                        }}>
                           {cat.label}
                         </Text>
                       </TouchableOpacity>
-                    ))}
-                  </View>
+                    );
+                  })}
+                </View>
+              </View>
 
-                  {/* Title Field (Optional) */}
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontSize: 16,
-                      fontWeight: "600",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {t.feedbackTitle || "Title"}{" "}
-                    <Text style={{ color: theme.textTertiary, fontWeight: "400" }}>
-                      ({t.optional || "Optional"})
-                    </Text>
-                  </Text>
-                  <TextInput
-                    style={{
-                      backgroundColor: theme.background,
-                      color: theme.text,
-                      borderRadius: 12,
-                      padding: 16,
-                      fontSize: 16,
-                      borderWidth: 1,
-                      borderColor: theme.divider,
-                      marginBottom: 20,
-                    }}
-                    placeholder={t.feedbackTitlePlaceholder || "Brief summary of your feedback"}
-                    placeholderTextColor={theme.textTertiary}
-                    value={feedbackTitle}
-                    onChangeText={setFeedbackTitle}
-                    maxLength={100}
-                  />
+              {/* Subject field */}
+              <View style={{
+                paddingHorizontal: 22,
+                paddingTop: 16,
+                paddingBottom: 14,
+                backgroundColor: theme.background,
+                borderBottomWidth: StyleSheet.hairlineWidth,
+                borderBottomColor: theme.divider,
+              }}>
+                <Text style={{
+                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontSize: 9,
+                  fontWeight: "500",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: theme.textTertiary,
+                  marginBottom: 6,
+                }}>
+                  {t.feedbackTitle || "Subject"}
+                </Text>
+                <TextInput
+                  style={{
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    fontSize: 15,
+                    fontWeight: "500",
+                    letterSpacing: -0.2,
+                    color: theme.text,
+                    padding: 0,
+                  }}
+                  placeholder={t.feedbackTitlePlaceholder || "Brief summary…"}
+                  placeholderTextColor={theme.textTertiary}
+                  value={feedbackTitle}
+                  onChangeText={setFeedbackTitle}
+                  maxLength={100}
+                />
+              </View>
 
-                  {/* Feedback Text Area */}
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontSize: 16,
-                      fontWeight: "600",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {t.feedbackDetails}
-                  </Text>
-                  <TextInput
-                    style={{
-                      backgroundColor: theme.background,
-                      color: theme.text,
-                      borderRadius: 12,
-                      padding: 16,
-                      minHeight: 120,
-                      textAlignVertical: "top",
-                      fontSize: 16,
-                      borderWidth: 1,
-                      borderColor: theme.divider,
-                    }}
-                    placeholder={t.feedbackPlaceholder}
-                    placeholderTextColor={theme.textTertiary}
-                    multiline={true}
-                    value={feedbackText}
-                    onChangeText={setFeedbackText}
-                    maxLength={1000}
-                  />
-                  <Text
-                    style={{
-                      color: theme.textTertiary,
-                      fontSize: 12,
-                      textAlign: "right",
-                      marginTop: 4,
-                      marginBottom: 20,
-                    }}
-                  >
-                    {feedbackText.length} / 1000
-                  </Text>
-
-                  <Text
-                    style={{
-                      color: theme.textTertiary,
-                      fontSize: 13,
-                      textAlign: "center",
-                      marginBottom: 40,
-                      lineHeight: 18,
-                    }}
-                  >
-                    {t.feedbackMotivation}
-                  </Text>
-                </ScrollView>
+              {/* Message field */}
+              <View style={{
+                paddingHorizontal: 22,
+                paddingTop: 16,
+                paddingBottom: 14,
+                backgroundColor: theme.background,
+                flex: 1,
+              }}>
+                <Text style={{
+                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+                  fontSize: 9,
+                  fontWeight: "500",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: theme.textTertiary,
+                  marginBottom: 8,
+                }}>
+                  {t.feedbackDetails || "Message"}
+                </Text>
+                <TextInput
+                  style={{
+                    fontFamily: theme.typography?.body?.fontFamily,
+                    fontSize: 14,
+                    lineHeight: 22,
+                    letterSpacing: -0.1,
+                    color: theme.text,
+                    minHeight: 120,
+                    textAlignVertical: "top",
+                    padding: 0,
+                  }}
+                  placeholder={t.feedbackPlaceholder || ""}
+                  placeholderTextColor={theme.textTertiary}
+                  multiline={true}
+                  value={feedbackText}
+                  onChangeText={setFeedbackText}
+                  maxLength={1000}
+                />
+                <Text style={{
+                  fontFamily: theme.typography?.footnote?.fontFamily,
+                  fontSize: 12,
+                  color: theme.textTertiary,
+                  textAlign: "right",
+                  marginTop: 8,
+                  marginBottom: 40,
+                }}>
+                  {feedbackText.length} / 1000
+                </Text>
+              </View>
+            </ScrollView>
           </KeyboardAvoidingView>
         </Modal>
 

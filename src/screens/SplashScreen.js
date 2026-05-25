@@ -45,6 +45,8 @@ const SplashScreen = ({ navigation }) => {
     // Check if a previous mount already detected OAuth (e.g. after SIGNED_OUT remount)
     return sessionStorage.getItem("oauth_in_progress") === "true";
   });
+  // Show Splash loading screen while doing initial session check (all platforms)
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isAppleSigningIn, setIsAppleSigningIn] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
@@ -463,6 +465,7 @@ const SplashScreen = ({ navigation }) => {
               // INITIAL_SESSION with no session means user is not logged in — show login buttons
               if (event === "INITIAL_SESSION") {
                 setIsCheckingSession(false);
+                setIsInitializing(false);
               }
               return;
             }
@@ -733,11 +736,13 @@ const SplashScreen = ({ navigation }) => {
           );
           // No session confirmed — reveal login buttons
           setIsCheckingSession(false);
+          setIsInitializing(false);
         }
       } catch (error) {
         console.error("[checkSession] Unexpected error:", error);
         console.error("[checkSession] Error stack:", error.stack);
         setIsCheckingSession(false);
+        setIsInitializing(false);
       }
     };
 
@@ -1041,6 +1046,7 @@ const SplashScreen = ({ navigation }) => {
     // Safety fallback: if OAuth exchange takes too long, reveal login buttons
     const oauthCheckingTimeout = setTimeout(() => {
       setIsCheckingSession(false);
+      setIsInitializing(false);
     }, 10000);
 
     const fallbackChecks = [
@@ -1088,6 +1094,7 @@ const SplashScreen = ({ navigation }) => {
         } else {
           // Truly no session — OAuth must have failed, reveal login buttons
           setIsCheckingSession(false);
+          setIsInitializing(false);
           return false;
         }
       } catch (error) {
@@ -1937,6 +1944,77 @@ const SplashScreen = ({ navigation }) => {
     }
   };
 
+  const monoKicker = {
+    fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+  };
+
+  // ── Splash (loading) ────────────────────────────────────────────────────────
+  if (isInitializing) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+        {/* Centred mark */}
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 22 }}>
+          <Image
+            source={require("../../assets/logo-login.png")}
+            style={{ width: 108, height: 108 }}
+            resizeMode="contain"
+          />
+          <View style={{ alignItems: "center", gap: 6 }}>
+            <Text
+              style={{
+                fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                fontSize: 38,
+                fontWeight: "600",
+                letterSpacing: -1.4,
+              }}
+            >
+              <Text style={{ color: theme.text }}>Task</Text>
+              <Text style={{ color: theme.primary }}>Cal</Text>
+            </Text>
+            <Text
+              style={{
+                fontFamily: theme.typography?.body?.fontFamily,
+                fontSize: 13,
+                fontWeight: "400",
+                color: theme.textSecondary,
+                letterSpacing: -0.1,
+              }}
+            >
+              Your day, on one page.
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer: version stamp + 3-dot progress */}
+        <View style={{ paddingHorizontal: 22, paddingBottom: 36 }}>
+          <View style={{ height: 1, backgroundColor: theme.rule || theme.divider, marginBottom: 14 }} />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={[monoKicker, { color: theme.textTertiary }]}>
+              {"v" + (Application.nativeApplicationVersion || "1.5.0")}
+            </Text>
+            <View style={{ flexDirection: "row", gap: 4 }}>
+              {[0, 1, 2].map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 5, height: 5, borderRadius: 2.5,
+                    backgroundColor: theme.primary,
+                    opacity: i === 1 ? 1 : 0.35,
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Login ────────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView
       style={{
@@ -1948,16 +2026,7 @@ const SplashScreen = ({ navigation }) => {
     >
       {/* Welcome kicker */}
       <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
-        <Text
-          style={{
-            fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-            fontSize: 10,
-            fontWeight: "500",
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: theme.primary,
-          }}
-        >
+        <Text style={[monoKicker, { color: theme.primary, letterSpacing: 2 }]}>
           Welcome
         </Text>
       </View>
@@ -2008,128 +2077,82 @@ const SplashScreen = ({ navigation }) => {
         </View>
       </View>
 
-      {isCheckingSession ? (
-        <View style={{ paddingHorizontal: 22, paddingBottom: 18 }}>
-          <ActivityIndicator size="small" color={theme.textSecondary} />
-        </View>
-      ) : (
-      <View style={{ width: "100%", paddingHorizontal: 22, paddingBottom: 18 }}>
+      {/* SSO buttons */}
+      <View style={{ width: "100%", paddingHorizontal: 22, paddingBottom: 18, gap: 10 }}>
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: theme.background,
+            borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+            borderWidth: 1,
+            borderRadius: 10,
+            height: 54,
+            justifyContent: "center",
+            width: "100%",
+            opacity: isSigningIn ? 0.5 : 1,
+          }}
+          onPress={handleGoogleSignIn}
+          disabled={isSigningIn || isAppleSigningIn}
+        >
+          <Image
+            source={require("../../assets/google-logo.png")}
+            style={{ width: 22, height: 22, marginRight: 12 }}
+            resizeMode="contain"
+          />
+          <Text
+            style={{
+              fontFamily: theme.typography?.headline?.fontFamily,
+              color: theme.text,
+              fontWeight: "600",
+              fontSize: 15,
+              letterSpacing: -0.2,
+            }}
+          >
+            {isSigningIn && !isAppleSigningIn
+              ? "Signing in…"
+              : (t.signInWithGoogle || "Continue with Google")}
+          </Text>
+        </TouchableOpacity>
+
+        {isAppleAvailable && (
           <TouchableOpacity
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: theme.background,
-              borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
-              borderWidth: 1,
-              borderRadius: 8,
+              backgroundColor: theme.text,
+              borderRadius: 10,
               height: 54,
               justifyContent: "center",
-              marginBottom: 10,
               width: "100%",
-              opacity: isSigningIn ? 0.5 : 1,
+              opacity: isAppleSigningIn ? 0.5 : 1,
             }}
-            onPress={handleGoogleSignIn}
-            disabled={isSigningIn || isAppleSigningIn}
+            onPress={handleAppleSignIn}
+            disabled={isAppleSigningIn || isSigningIn}
           >
-            {isSigningIn && !isAppleSigningIn ? (
-              <>
-                <Image
-                  source={require("../../assets/google-logo.png")}
-                  style={{ width: 22, height: 22, marginRight: 8 }}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    color: theme.text,
-                    fontWeight: "600",
-                    fontSize: 15,
-                    letterSpacing: -0.2,
-                  }}
-                >
-                  Signing in...
-                </Text>
-              </>
-            ) : (
-              <>
-                <Image
-                  source={require("../../assets/google-logo.png")}
-                  style={{ width: 22, height: 22, marginRight: 8 }}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    color: theme.text,
-                    fontWeight: "600",
-                    fontSize: 15,
-                    letterSpacing: -0.2,
-                  }}
-                >
-                  {t.signInWithGoogle || "Sign in with Google"}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-          {isAppleAvailable && (
-            <TouchableOpacity
+            <Image
+              source={require("../../assets/apple-100(dark).png")}
+              style={{ width: 20, height: 20, marginRight: 12 }}
+              resizeMode="contain"
+            />
+            <Text
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: theme.text,
-                borderRadius: 8,
-                height: 54,
-                justifyContent: "center",
-                marginBottom: 10,
-                width: "100%",
-                opacity: isAppleSigningIn ? 0.5 : 1,
+                fontFamily: theme.typography?.headline?.fontFamily,
+                color: theme.buttonText || "#F2F1EB",
+                fontWeight: "600",
+                fontSize: 15,
+                letterSpacing: -0.2,
               }}
-              onPress={handleAppleSignIn}
-              disabled={isAppleSigningIn || isSigningIn}
             >
-              {isAppleSigningIn && !isSigningIn ? (
-                <>
-                  <Image
-                    source={require("../../assets/apple-100(dark).png")}
-                    style={{ width: 20, height: 20, marginRight: 8 }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      fontFamily: theme.typography?.callout?.fontFamily,
-                      color: theme.buttonText || "#F2F1EB",
-                      fontWeight: "600",
-                      fontSize: 15,
-                      letterSpacing: -0.2,
-                    }}
-                  >
-                    Signing in...
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Image
-                    source={require("../../assets/apple-100(dark).png")}
-                    style={{ width: 20, height: 20, marginRight: 8 }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      fontFamily: theme.typography?.callout?.fontFamily,
-                      color: theme.buttonText || "#F2F1EB",
-                      fontWeight: "600",
-                      fontSize: 15,
-                      letterSpacing: -0.2,
-                    }}
-                  >
-                    {t.signInWithApple || "Sign in with Apple"}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+              {isAppleSigningIn && !isSigningIn
+                ? "Signing in…"
+                : (t.signInWithApple || "Continue with Apple")}
+            </Text>
+          </TouchableOpacity>
         )}
+      </View>
+
+      {/* Footer: Terms + version */}
       <View style={{ paddingHorizontal: 22, paddingBottom: 32 }}>
         <View
           style={{
@@ -2158,34 +2181,26 @@ const SplashScreen = ({ navigation }) => {
           >
             {t.byContinuing}{" "}
             <Text
-              style={{ color: theme.primary }}
+              style={{ color: theme.primary, textDecorationLine: "underline" }}
               onPress={() => setTermsModalVisible(true)}
             >
               {t.terms}
             </Text>{" "}
             {t.and}{" "}
             <Text
-              style={{ color: theme.primary }}
+              style={{ color: theme.primary, textDecorationLine: "underline" }}
               onPress={() => setPrivacyModalVisible(true)}
             >
               {t.privacy}
             </Text>
             .
           </Text>
-          <Text
-            style={{
-              fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-              fontSize: 10,
-              fontWeight: "500",
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              color: theme.textTertiary,
-            }}
-          >
-            {"v" + (Application.nativeApplicationVersion || "2.0.0")}
+          <Text style={[monoKicker, { color: theme.textTertiary, letterSpacing: 1.5 }]}>
+            {"v" + (Application.nativeApplicationVersion || "1.5.0")}
           </Text>
         </View>
       </View>
+
       <Modal
         visible={termsModalVisible}
         transparent={false}
