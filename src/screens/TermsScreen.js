@@ -61,12 +61,12 @@ const Clause = ({ index, title, content, theme, isLast }) => {
   );
 };
 
-function TermsScreen({ onClose }) {
+function TermsScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const handleClose = () => (onClose ? onClose() : navigation.goBack());
+  const handleClose = () => navigation.goBack();
 
   const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
   const sansFamily = theme.typography?.title1?.fontFamily;
@@ -89,7 +89,6 @@ function TermsScreen({ onClose }) {
     <SafeAreaView
       edges={[]}
       style={{ flex: 1, backgroundColor: theme.background }}
-      accessibilityViewIsModal={true}
       accessibilityLabel="Terms of Use Screen"
     >
       <SheetNav

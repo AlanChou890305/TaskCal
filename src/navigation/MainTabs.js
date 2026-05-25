@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LanguageContext, ThemeContext } from "../contexts";
 import CalendarStack from "./CalendarStack";
-import SettingScreen from "../screens/SettingScreen";
+import SettingsStack from "./SettingsStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -88,8 +88,18 @@ export default function MainTabs() {
       />
       <Tab.Screen
         name="Settings"
-        component={SettingScreen}
-        options={{ title: t.settings || "Settings" }}
+        component={SettingsStack}
+        options={({ route }) => ({
+          title: t.settings || "Settings",
+          tabBarStyle: ["Terms", "Privacy"].includes(getFocusedRouteNameFromRoute(route))
+            ? { display: "none" }
+            : {
+                backgroundColor: tabBgColor,
+                borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
+                paddingTop: verticalPad,
+                paddingBottom: verticalPad,
+              },
+        })}
       />
     </Tab.Navigator>
   );

@@ -37,8 +37,6 @@ import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
-import TermsScreen from "./TermsScreen";
-import PrivacyScreen from "./PrivacyScreen";
 
 
 function SettingScreen() {
@@ -105,8 +103,6 @@ function SettingScreen() {
 
   const [isCheckingVersion, setIsCheckingVersion] = useState(false);
   const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
-  const [termsModalVisible, setTermsModalVisible] = useState(false);
-  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
   const [feedbackCategory, setFeedbackCategory] = useState("suggestion");
   const [feedbackTitle, setFeedbackTitle] = useState("");
   const [feedbackText, setFeedbackText] = useState("");
@@ -2103,7 +2099,7 @@ function SettingScreen() {
         <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Terms of Use */}
             <TouchableOpacity
-              onPress={() => setTermsModalVisible(true)}
+              onPress={() => navigation.navigate("Terms")}
               activeOpacity={0.6}
               style={{
                 flexDirection: "row",
@@ -2145,7 +2141,7 @@ function SettingScreen() {
 
             {/* Privacy Policy */}
             <TouchableOpacity
-              onPress={() => setPrivacyModalVisible(true)}
+              onPress={() => navigation.navigate("Privacy")}
               activeOpacity={0.6}
               style={{
                 flexDirection: "row",
@@ -2647,27 +2643,6 @@ function SettingScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Terms of Use Modal */}
-      <Modal
-        visible={termsModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setTermsModalVisible(false)}
-      >
-        <TermsScreen onClose={() => setTermsModalVisible(false)} />
-      </Modal>
-
-      {/* Privacy Policy Modal */}
-      <Modal
-        visible={privacyModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setPrivacyModalVisible(false)}
-      >
-        <PrivacyScreen onClose={() => setPrivacyModalVisible(false)} />
-      </Modal>
     </SafeAreaView>
   );
 }

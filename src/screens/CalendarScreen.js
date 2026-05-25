@@ -1837,7 +1837,7 @@ function CalendarScreen({ navigation, route }) {
       <Modal
         animationType="slide"
         transparent={false}
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        presentationStyle="fullScreen"
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
         accessibilityViewIsModal={true}
