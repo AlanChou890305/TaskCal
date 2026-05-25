@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LanguageContext, ThemeContext } from "../contexts";
-import CalendarScreen from "../screens/CalendarScreen";
+import CalendarStack from "./CalendarStack";
 import SettingScreen from "../screens/SettingScreen";
 
 const Tab = createBottomTabNavigator();
@@ -72,8 +73,18 @@ export default function MainTabs() {
     >
       <Tab.Screen
         name="Calendar"
-        component={CalendarScreen}
-        options={{ title: t.tasks || "Tasks" }}
+        component={CalendarStack}
+        options={({ route }) => ({
+          title: t.tasks || "Tasks",
+          tabBarStyle: getFocusedRouteNameFromRoute(route) === "TaskDetail"
+            ? { display: "none" }
+            : {
+                backgroundColor: tabBgColor,
+                borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
+                paddingTop: verticalPad,
+                paddingBottom: verticalPad,
+              },
+        })}
       />
       <Tab.Screen
         name="Settings"
