@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+import React, { useCallback, useContext } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,9 +29,47 @@ export default function MainTabs() {
 
   const verticalPad = Math.round(insets.bottom * 0.5);
   const isDark = theme?.mode === "dark";
-  const tabBgColor = theme?.tabBarBackground || (isDark ? "#1c1c1e" : "#f9f9f9");
+  const tabBgColor = theme?.tabBarBackground || (isDark ? "#14182A" : "#F2F1EB");
   const tabActiveColor = theme?.tabBarActive || (isDark ? "#8B98D0" : "#3B4B7A");
-  const tabInactiveColor = theme?.tabBarInactive || (isDark ? "#636366" : "#999999");
+  const tabInactiveColor = theme?.tabBarInactive || (isDark ? "#7C8198" : "#8E94AA");
+  const tabBorderColor = isDark ? "#48484a" : "rgba(0,0,0,0.12)";
+
+  const TabButton = useCallback(
+    (props) => {
+      const isSelected = props.accessibilityState?.selected;
+      return (
+        <Pressable
+          testID={props.testID}
+          accessibilityLabel={props.accessibilityLabel}
+          accessibilityRole="tab"
+          accessibilityState={props.accessibilityState}
+          onPress={props.onPress}
+          onLongPress={props.onLongPress}
+          style={props.style}
+        >
+          {props.children}
+          <View style={{
+            position: "absolute",
+            bottom: 0,
+            alignSelf: "center",
+            width: 28,
+            height: 3,
+            borderRadius: 1.5,
+            backgroundColor: isSelected ? tabActiveColor : "transparent",
+          }} />
+        </Pressable>
+      );
+    },
+    [tabActiveColor]
+  );
+
+  const tabBarStyleBase = {
+    backgroundColor: tabBgColor,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tabBorderColor,
+    paddingTop: verticalPad,
+    paddingBottom: verticalPad,
+  };
 
   return (
     <Tab.Navigator
@@ -40,7 +79,7 @@ export default function MainTabs() {
           if (route.name === "Calendar") {
             return (
               <MaterialCommunityIcons
-                name="checkbox-marked-outline"
+                name="check"
                 size={size}
                 color={color}
               />
@@ -48,21 +87,17 @@ export default function MainTabs() {
           } else {
             return (
               <MaterialCommunityIcons
-                name={focused ? "cog" : "cog-outline"}
+                name="cog-outline"
                 size={size}
                 color={color}
               />
             );
           }
         },
+        tabBarButton: TabButton,
         tabBarActiveTintColor: tabActiveColor,
         tabBarInactiveTintColor: tabInactiveColor,
-        tabBarStyle: {
-          backgroundColor: tabBgColor,
-          borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
-          paddingTop: verticalPad,
-          paddingBottom: verticalPad,
-        },
+        tabBarStyle: tabBarStyleBase,
         tabBarLabelStyle: {
           textTransform: "uppercase",
           fontSize: 10,
@@ -78,12 +113,7 @@ export default function MainTabs() {
           title: t.tasks || "Tasks",
           tabBarStyle: getFocusedRouteNameFromRoute(route) === "TaskDetail"
             ? { display: "none" }
-            : {
-                backgroundColor: tabBgColor,
-                borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
-                paddingTop: verticalPad,
-                paddingBottom: verticalPad,
-              },
+            : tabBarStyleBase,
         })}
       />
       <Tab.Screen
@@ -93,12 +123,7 @@ export default function MainTabs() {
           title: t.settings || "Settings",
           tabBarStyle: ["Terms", "Privacy"].includes(getFocusedRouteNameFromRoute(route))
             ? { display: "none" }
-            : {
-                backgroundColor: tabBgColor,
-                borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
-                paddingTop: verticalPad,
-                paddingBottom: verticalPad,
-              },
+            : tabBarStyleBase,
         })}
       />
     </Tab.Navigator>

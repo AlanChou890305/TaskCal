@@ -10,6 +10,7 @@ import {
   Linking,
   Platform,
 } from "react-native";
+import Svg, { Path, Rect } from "react-native-svg";
 import * as Application from "expo-application";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -26,6 +27,32 @@ import PrivacyScreen from "./PrivacyScreen";
 const getAppDisplayName = () => {
   return "TaskCal";
 };
+
+// MarkM1: calendar cell + check — matches Indigo design spec exactly
+const MarkM1 = ({ size = 44, color = "#F2F1EB" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={color} strokeWidth="1.7"/>
+    <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+// App icon tile matching design spec MTile
+const LogoTile = ({ size, bg, corner }) => (
+  <View style={{
+    width: size, height: size,
+    borderRadius: corner,
+    backgroundColor: bg,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 4,
+  }}>
+    <MarkM1 size={Math.round(size * 0.52)} color="#F2F1EB" />
+  </View>
+);
 
 const SplashScreen = ({ navigation }) => {
   const { theme, themeMode, loadTheme: reloadTheme } = useContext(ThemeContext);
@@ -1958,11 +1985,7 @@ const SplashScreen = ({ navigation }) => {
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
         {/* Centred mark */}
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 22 }}>
-          <Image
-            source={require("../../assets/logo-login.png")}
-            style={{ width: 108, height: 108 }}
-            resizeMode="contain"
-          />
+          <LogoTile size={108} bg={theme.primary} corner={24} />
           <View style={{ alignItems: "center", gap: 6 }}>
             <Text
               style={{
@@ -2041,11 +2064,7 @@ const SplashScreen = ({ navigation }) => {
           gap: 26,
         }}
       >
-        <Image
-          source={require("../../assets/logo-login.png")}
-          style={{ width: 84, height: 84 }}
-          resizeMode="contain"
-        />
+        <LogoTile size={84} bg={theme.primary} corner={19} />
         <View>
           <Text
             style={{

@@ -784,11 +784,11 @@ function SettingScreen() {
         <Text
           style={{
             fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-            fontSize: 9,
+            fontSize: 10,
             fontWeight: "500",
-            letterSpacing: 1.5,
+            letterSpacing: 2,
             textTransform: "uppercase",
-            color: theme.textTertiary,
+            color: theme.primary,
             marginBottom: 4,
           }}
         >
@@ -797,9 +797,9 @@ function SettingScreen() {
         <Text
           style={{
             fontFamily: theme.typography?.title1?.fontFamily,
-            fontSize: 28,
+            fontSize: 30,
             fontWeight: "600",
-            letterSpacing: -0.8,
+            letterSpacing: -1.1,
             color: theme.text,
           }}
         >
@@ -814,216 +814,128 @@ function SettingScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Account Section Title */}
-        <IOSSectionHeader title={t.account} theme={theme} style={{ paddingHorizontal: 28 }} />
         {/* Account Info Card */}
-        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 20 }} shadowStyle="elevated">
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 15,
-            }}
-          >
-            {isLoadingProfile ? (
-              <>
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginTop: 6,
+            paddingVertical: 16,
+            paddingHorizontal: 18,
+            backgroundColor: theme.background,
+            borderWidth: 1,
+            borderColor: theme.rule,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          {isLoadingProfile ? (
+            <>
+              <Animated.View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  backgroundColor: theme.shimmer,
+                  opacity: shimmerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.3, 0.7],
+                  }),
+                }}
+              />
+              <View style={{ flex: 1 }}>
                 <Animated.View
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    marginRight: 15,
+                    height: 16,
+                    borderRadius: 4,
                     backgroundColor: theme.shimmer,
+                    width: "55%",
+                    marginBottom: 7,
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
                       outputRange: [0.3, 0.7],
                     }),
                   }}
                 />
-                <View style={{ flex: 1 }}>
-                  <Animated.View
-                    style={{
-                      height: 20,
-                      borderRadius: 4,
-                      backgroundColor:
-                        theme.shimmer,
-                      width: "60%",
-                      marginBottom: 8,
-                      opacity: shimmerAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.3, 0.7],
-                      }),
-                    }}
-                  />
-                  <Animated.View
-                    style={{
-                      height: 14,
-                      borderRadius: 4,
-                      backgroundColor:
-                        theme.shimmer,
-                      width: "40%",
-                      opacity: shimmerAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.3, 0.7],
-                      }),
-                    }}
-                  />
-                </View>
-              </>
-            ) : (
-              <>
-                {userProfile?.avatar_url ? (
-                  <Image
-                    source={{ uri: userProfile.avatar_url }}
-                    style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 25,
-                      marginRight: 15,
-                    }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 50,
-                      height: 50,
-                      borderRadius: 25,
-                      marginRight: 15,
-                      backgroundColor: theme.primary,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.buttonText || "#F2F1EB",
-                        fontSize: 20,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {(userProfile?.name || userName || "U")
-                        .charAt(0)
-                        .toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      color: theme.text,
-                      fontSize: 16,
-                      marginBottom: 5,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {userProfile?.name || userName || "User"}
-                  </Text>
-                  <Text
-                    style={{
-                      color: theme.textSecondary,
-                      fontSize: 14,
-                      marginBottom: 0,
-                    }}
-                  >
-                    {userProfile?.email || "No email available"}
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
-          <View
-            style={{
-              borderTopWidth: 1,
-              borderTopColor: theme.divider,
-              paddingTop: 15,
-            }}
-          >
-            {isLoadingProfile ? (
-              <>
                 <Animated.View
                   style={{
                     height: 12,
                     borderRadius: 4,
                     backgroundColor: theme.shimmer,
                     width: "40%",
-                    marginBottom: 8,
                     opacity: shimmerAnim.interpolate({
                       inputRange: [0, 1],
                       outputRange: [0.3, 0.7],
                     }),
                   }}
                 />
-                <Animated.View
-                  style={{
-                    height: 14,
-                    borderRadius: 4,
-                    backgroundColor: theme.shimmer,
-                    width: "50%",
-                    opacity: shimmerAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.3, 0.7],
-                    }),
-                  }}
+              </View>
+            </>
+          ) : (
+            <>
+              {userProfile?.avatar_url ? (
+                <Image
+                  source={{ uri: userProfile.avatar_url }}
+                  style={{ width: 44, height: 44, borderRadius: 22 }}
                 />
-              </>
-            ) : (
-              <>
+              ) : (
                 <View
                   style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: theme.primary,
+                    justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
                   <Text
                     style={{
-                      fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-                      color: theme.textTertiary,
-                      fontSize: 9,
-                      fontWeight: "500",
-                      letterSpacing: 1.5,
-                      textTransform: "uppercase",
+                      fontFamily: theme.typography?.title1?.fontFamily,
+                      color: theme.buttonText || "#F2F1EB",
+                      fontSize: 16,
+                      fontWeight: "600",
+                      letterSpacing: -0.4,
                     }}
                   >
-                    {t.loginMethod}
+                    {(userProfile?.name || userName || "U")
+                      .split(" ")
+                      .map((w) => w.charAt(0))
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
                   </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {userProfile?.provider === "apple" ? (
-                      <Image
-                        source={
-                          theme.mode === "dark"
-                            ? require("../../assets/apple-100(dark).png")
-                            : require("../../assets/apple-90(light).png")
-                        }
-                        style={{ width: 18, height: 18, marginRight: 8 }}
-                        resizeMode="contain"
-                      />
-                    ) : (
-                      <Image
-                        source={require("../../assets/google-logo.png")}
-                        style={{ width: 18, height: 18, marginRight: 8 }}
-                        resizeMode="contain"
-                      />
-                    )}
-                    <Text
-                      style={{
-                        color: theme.text,
-                        fontSize: 14,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {userProfile?.provider === "apple"
-                        ? t.appleAccount
-                        : userProfile?.provider === "google"
-                          ? t.googleAccount
-                          : t.googleAccount}
-                    </Text>
-                  </View>
                 </View>
-              </>
-            )}
-          </View>
-        </IOSCard>
+              )}
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: theme.typography?.title1?.fontFamily,
+                    color: theme.text,
+                    fontSize: 15,
+                    fontWeight: "600",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {userProfile?.name || userName || "User"}
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontFamily: theme.typography?.body?.fontFamily,
+                    color: theme.textSecondary,
+                    fontSize: 12,
+                    letterSpacing: 0,
+                  }}
+                >
+                  {userProfile?.email || "No email available"}
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={14} color={theme.textTertiary} />
+            </>
+          )}
+        </View>
 
         {/* Developer Tools */}
         {__DEV__ && (
@@ -1244,8 +1156,8 @@ function SettingScreen() {
         )}
 
         {/* General Section */}
-        <IOSSectionHeader title={t.general} theme={theme} style={{ paddingHorizontal: 28 }} />
-        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
+        <IOSSectionHeader title={t.general} theme={theme} />
+        <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
             {/* Language Selection */}
             <TouchableOpacity
               onPress={() => {
@@ -1258,8 +1170,10 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
+                borderBottomWidth: 1,
+                borderBottomColor: languageDropdownVisible ? "transparent" : theme.rule,
               }}
             >
               <View
@@ -1267,12 +1181,12 @@ function SettingScreen() {
               >
                 <MaterialIcons
                   name="language"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
+                  size={18}
+                  color={theme.textSecondary}
+                  style={{ marginRight: 14 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
+                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
                 >
                   {t.language}
                 </Text>
@@ -1280,8 +1194,9 @@ function SettingScreen() {
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text
                   style={{
-                    color: theme.textSecondary,
-                    fontSize: 14,
+                    color: theme.textTertiary,
+                    fontSize: 13,
+                    letterSpacing: -0.1,
                     marginRight: 4,
                   }}
                 >
@@ -1295,9 +1210,9 @@ function SettingScreen() {
                   name={
                     languageDropdownVisible
                       ? "keyboard-arrow-up"
-                      : "keyboard-arrow-right"
+                      : "chevron-right"
                   }
-                  size={20}
+                  size={14}
                   color={theme.textTertiary}
                 />
               </View>
@@ -1395,14 +1310,6 @@ function SettingScreen() {
               </View>
             )}
 
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: theme.divider,
-                marginHorizontal: 20,
-              }}
-            />
-
             {/* Theme Selection */}
             <TouchableOpacity
               onPress={() => {
@@ -1415,8 +1322,10 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
+                borderBottomWidth: 1,
+                borderBottomColor: themeDropdownVisible ? "transparent" : theme.rule,
               }}
             >
               <View
@@ -1424,12 +1333,12 @@ function SettingScreen() {
               >
                 <MaterialIcons
                   name="palette"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
+                  size={18}
+                  color={theme.textSecondary}
+                  style={{ marginRight: 14 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
+                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
                 >
                   {t.theme}
                 </Text>
@@ -1437,8 +1346,9 @@ function SettingScreen() {
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Text
                   style={{
-                    color: theme.textSecondary,
-                    fontSize: 14,
+                    color: theme.textTertiary,
+                    fontSize: 13,
+                    letterSpacing: -0.1,
                     marginRight: 4,
                   }}
                 >
@@ -1452,9 +1362,9 @@ function SettingScreen() {
                   name={
                     themeDropdownVisible
                       ? "keyboard-arrow-up"
-                      : "keyboard-arrow-right"
+                      : "chevron-right"
                   }
-                  size={20}
+                  size={14}
                   color={theme.textTertiary}
                 />
               </View>
@@ -1561,14 +1471,6 @@ function SettingScreen() {
               </View>
             )}
 
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: theme.divider,
-                marginHorizontal: 20,
-              }}
-            />
-
             {/* Reminder Settings */}
             <TouchableOpacity
               onPress={() => {
@@ -1581,8 +1483,8 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
               }}
             >
               <View
@@ -1593,8 +1495,7 @@ function SettingScreen() {
                     style={{
                       height: 16,
                       borderRadius: 4,
-                      backgroundColor:
-                        theme.shimmer,
+                      backgroundColor: theme.shimmer,
                       width: "60%",
                       opacity: shimmerAnim.interpolate({
                         inputRange: [0, 1],
@@ -1606,15 +1507,16 @@ function SettingScreen() {
                   <>
                     <MaterialIcons
                       name="notifications"
-                      size={20}
-                      color={theme.primary}
-                      style={{ marginRight: 12 }}
+                      size={18}
+                      color={theme.textSecondary}
+                      style={{ marginRight: 14 }}
                     />
                     <Text
                       style={{
                         color: theme.text,
-                        fontSize: theme.typography.callout.fontSize,
-                        fontWeight: "400",
+                        fontSize: 15,
+                        fontWeight: "500",
+                        letterSpacing: -0.2,
                       }}
                     >
                       {t.reminderSettings}
@@ -1626,8 +1528,9 @@ function SettingScreen() {
                 {!isLoadingSettings && (
                   <Text
                     style={{
-                      color: theme.textSecondary,
-                      fontSize: 14,
+                      color: theme.textTertiary,
+                      fontSize: 13,
+                      letterSpacing: -0.1,
                       marginRight: 4,
                     }}
                   >
@@ -1640,9 +1543,9 @@ function SettingScreen() {
                   name={
                     reminderDropdownVisible
                       ? "keyboard-arrow-up"
-                      : "keyboard-arrow-right"
+                      : "chevron-right"
                   }
-                  size={20}
+                  size={14}
                   color={theme.textTertiary}
                 />
               </View>
@@ -1651,8 +1554,8 @@ function SettingScreen() {
             {reminderDropdownVisible && (
               <View
                 style={{
-                  borderTopWidth: 1,
-                  borderTopColor: theme.divider,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: theme.rule,
                   backgroundColor:
                     themeMode === "light"
                       ? "#f9f9f9"
@@ -1797,11 +1700,11 @@ function SettingScreen() {
                 )}
               </View>
             )}
-        </IOSCard>
+        </View>
 
-        {/* Support Section */}
-        <IOSSectionHeader title={t.support} theme={theme} style={{ paddingHorizontal: 28 }} />
-        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
+        {/* Support & Legal Section */}
+        <IOSSectionHeader title={t.legalAndSupport || "Support & Legal"} theme={theme} />
+        <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
             {/* Send Feedback Button */}
             <TouchableOpacity
               onPress={() => setFeedbackModalVisible(true)}
@@ -1810,8 +1713,10 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
+                borderBottomWidth: 1,
+                borderBottomColor: theme.rule,
               }}
             >
               <View
@@ -1819,23 +1724,22 @@ function SettingScreen() {
               >
                 <MaterialIcons
                   name="feedback"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
+                  size={18}
+                  color={theme.textSecondary}
+                  style={{ marginRight: 14 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
+                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
                 >
                   {t.feedback || "Send Feedback"}
                 </Text>
               </View>
               <MaterialIcons
-                name="keyboard-arrow-right"
-                size={20}
+                name="chevron-right"
+                size={14}
                 color={theme.textTertiary}
               />
             </TouchableOpacity>
-        </IOSCard>
 
         {/* Feedback Form Modal */}
         <Modal
@@ -2094,9 +1998,6 @@ function SettingScreen() {
           </KeyboardAvoidingView>
         </Modal>
 
-        {/* Legal & Support Section */}
-        <IOSSectionHeader title={t.legalAndSupport || "Legal & Support"} theme={theme} style={{ paddingHorizontal: 28 }} />
-        <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
             {/* Terms of Use */}
             <TouchableOpacity
               onPress={() => navigation.navigate("Terms")}
@@ -2105,8 +2006,10 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
+                borderBottomWidth: 1,
+                borderBottomColor: theme.rule,
               }}
             >
               <View
@@ -2114,30 +2017,22 @@ function SettingScreen() {
               >
                 <MaterialIcons
                   name="description"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
+                  size={18}
+                  color={theme.textSecondary}
+                  style={{ marginRight: 14 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
+                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
                 >
                   {t.terms}
                 </Text>
               </View>
               <MaterialIcons
-                name="keyboard-arrow-right"
-                size={20}
+                name="chevron-right"
+                size={14}
                 color={theme.textTertiary}
               />
             </TouchableOpacity>
-
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: theme.divider,
-                marginHorizontal: 20,
-              }}
-            />
 
             {/* Privacy Policy */}
             <TouchableOpacity
@@ -2147,8 +2042,8 @@ function SettingScreen() {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                paddingVertical: 12,
-                paddingHorizontal: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 22,
               }}
             >
               <View
@@ -2156,156 +2051,105 @@ function SettingScreen() {
               >
                 <MaterialIcons
                   name="privacy-tip"
-                  size={20}
-                  color={theme.primary}
-                  style={{ marginRight: 12 }}
+                  size={18}
+                  color={theme.textSecondary}
+                  style={{ marginRight: 14 }}
                 />
                 <Text
-                  style={{ color: theme.text, fontSize: theme.typography.callout.fontSize, fontWeight: "400" }}
+                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
                 >
                   {t.privacy}
                 </Text>
               </View>
               <MaterialIcons
-                name="keyboard-arrow-right"
-                size={20}
+                name="chevron-right"
+                size={14}
                 color={theme.textTertiary}
               />
             </TouchableOpacity>
+        </View>
 
-            <View
-              style={{
-                height: StyleSheet.hairlineWidth,
-                backgroundColor: theme.divider,
-                marginHorizontal: 20,
-              }}
-            />
-
-            {Platform.OS !== "web" && (
-              <>
-                {/* Version Info */}
-                {effectiveHasUpdate ? (
-                  <TouchableOpacity
-                    onPress={handleVersionPress}
-                    activeOpacity={0.6}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 12,
-                      paddingHorizontal: 20,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        flex: 1,
-                      }}
-                    >
-                      <MaterialIcons
-                        name="system-update"
-                        size={20}
-                        color={theme.primary}
-                        style={{ marginRight: 12 }}
-                      />
-                      <Text
-                        style={{
-                          color: theme.text,
-                          fontSize: theme.typography.callout.fontSize,
-                          fontWeight: "400",
-                        }}
-                      >
-                        {t.version}{" "}
-                        {effectiveVersionInfo?.version ||
-                          Application.nativeApplicationVersion ||
-                          "1.2.9"}
-                      </Text>
-                    </View>
-                    <View
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <View
-                        style={{
-                          backgroundColor: theme.primary + "20",
-                          borderRadius: 12,
-                          paddingHorizontal: 8,
-                          paddingVertical: 3,
-                          marginRight: 10,
-                          borderWidth: 1,
-                          borderColor: theme.primary + "60",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: theme.primary,
-                            fontSize: 10,
-                            fontWeight: "700",
-                            letterSpacing: 0.3,
-                          }}
-                        >
-                          {t.updateAvailable || "Download Latest"}
-                        </Text>
-                      </View>
-                      <MaterialIcons
-                        name="open-in-new"
-                        size={18}
-                        color={theme.primary}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                ) : (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 12,
-                      paddingHorizontal: 20,
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        flex: 1,
-                      }}
-                    >
-                      <MaterialIcons
-                        name="info-outline"
-                        size={20}
-                        color={theme.primary}
-                        style={{ marginRight: 12 }}
-                      />
-                      <Text
-                        style={{
-                          color: theme.text,
-                          fontSize: theme.typography.callout.fontSize,
-                          fontWeight: "400",
-                        }}
-                      >
-                        {t.version}{" "}
-                        {effectiveVersionInfo?.version ||
-                          Application.nativeApplicationVersion ||
-                          "1.2.9"}
-                      </Text>
-                    </View>
-                    <Text
-                      style={{
-                        color: theme.textTertiary,
-                        fontSize: 14,
-                      }}
-                    >
-                      {t.latestVersion || "Latest"}
+        {/* About Section */}
+        {Platform.OS !== "web" && (
+          <>
+            <IOSSectionHeader title={t.about || "About"} theme={theme} />
+            <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
+              {effectiveHasUpdate ? (
+                <TouchableOpacity
+                  onPress={handleVersionPress}
+                  activeOpacity={0.6}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: 14,
+                    paddingHorizontal: 22,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                    <MaterialIcons
+                      name="system-update"
+                      size={18}
+                      color={theme.textSecondary}
+                      style={{ marginRight: 14 }}
+                    />
+                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}>
+                      {t.version}{" "}
+                      {effectiveVersionInfo?.version || Application.nativeApplicationVersion || "1.2.9"}
                     </Text>
                   </View>
-                )}
-              </>
-            )}
-        </IOSCard>
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <View
+                      style={{
+                        backgroundColor: theme.primary + "20",
+                        borderRadius: 12,
+                        paddingHorizontal: 8,
+                        paddingVertical: 3,
+                        marginRight: 8,
+                        borderWidth: 1,
+                        borderColor: theme.primary + "60",
+                      }}
+                    >
+                      <Text style={{ color: theme.primary, fontSize: 10, fontWeight: "700", letterSpacing: 0.3 }}>
+                        {t.updateAvailable || "Download Latest"}
+                      </Text>
+                    </View>
+                    <MaterialIcons name="open-in-new" size={14} color={theme.primary} />
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: 14,
+                    paddingHorizontal: 22,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                    <MaterialIcons
+                      name="info-outline"
+                      size={18}
+                      color={theme.textSecondary}
+                      style={{ marginRight: 14 }}
+                    />
+                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}>
+                      {t.version}{" "}
+                      {effectiveVersionInfo?.version || Application.nativeApplicationVersion || "1.2.9"}
+                    </Text>
+                  </View>
+                  <Text style={{ color: theme.textTertiary, fontSize: 13, letterSpacing: -0.1 }}>
+                    {t.latestVersion || "Latest"}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </>
+        )}
 
         {/* Log Out Button */}
-        <IOSCard theme={theme} style={{ marginHorizontal: 20, marginTop: 32, padding: 0, overflow: "hidden" }}>
+        <View style={{ marginHorizontal: 16, marginTop: 32, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
           <TouchableOpacity
             onPress={() => {
               setLogoutModalVisible(true);
@@ -2315,23 +2159,23 @@ function SettingScreen() {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              paddingVertical: 12,
-              paddingHorizontal: 20,
+              paddingVertical: 14,
+              paddingHorizontal: 22,
             }}
           >
             <MaterialIcons
               name="logout"
-              size={20}
+              size={18}
               color={theme.error}
               style={{ marginRight: 8 }}
             />
             <Text
-              style={{ color: theme.error, fontSize: 16, fontWeight: "600" }}
+              style={{ color: theme.error, fontSize: 15, fontWeight: "600", letterSpacing: -0.2 }}
             >
               {t.logout || "Log out"}
             </Text>
           </TouchableOpacity>
-        </IOSCard>
+        </View>
 
         {/* Delete Account */}
         <TouchableOpacity
