@@ -474,10 +474,20 @@ export default function TaskDetailScreen({ navigation, route }) {
       <TouchableOpacity
         onPress={onPress || (() => setIsEditing(true))}
         activeOpacity={0.7}
-        style={styles.metaRow}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingVertical: 16,
+          backgroundColor: theme.background,
+          gap: 14,
+          minHeight: 52,
+        }}
       >
-        <MaterialIcons name={icon} size={18} color={theme.textSecondary} />
-        <View style={{ flex: 1, marginLeft: 12 }}>
+        <View style={{ width: 24, alignItems: "center" }}>
+          <MaterialIcons name={icon} size={18} color={theme.textSecondary} />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={[monoKicker, { color: theme.textTertiary, marginBottom: 1 }]}>
             {labelKey}
           </Text>
@@ -498,7 +508,7 @@ export default function TaskDetailScreen({ navigation, route }) {
     );
 
     const MetaDivider = () => (
-      <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: theme.rule, marginLeft: 16 + 18 + 12 }} />
+      <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: theme.rule }} />
     );
 
     return (
@@ -546,7 +556,13 @@ export default function TaskDetailScreen({ navigation, route }) {
           <TouchableOpacity
             onPress={() => setIsEditing(true)}
             activeOpacity={0.85}
-            style={{ paddingHorizontal: 20, marginTop: 16, marginBottom: 20 }}
+            style={{
+              paddingHorizontal: 22,
+              paddingTop: 14,
+              paddingBottom: 22,
+              borderBottomWidth: StyleSheet.hairlineWidth,
+              borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+            }}
           >
             <Text style={[monoKicker, { color: theme.primary, marginBottom: 6, letterSpacing: 2, fontSize: 10 }]}>
               {isZH ? "標題" : "TITLE"}
@@ -558,53 +574,44 @@ export default function TaskDetailScreen({ navigation, route }) {
                 fontWeight: "600",
                 color: theme.text,
                 letterSpacing: -0.7,
-                lineHeight: 34,
+                lineHeight: 33,
               }}
             >
               {task.title}
             </Text>
           </TouchableOpacity>
 
-          {/* Info card */}
-          <View
-            style={{
-              marginHorizontal: 20,
-              borderWidth: StyleSheet.hairlineWidth,
-              borderColor: theme.rule,
-              borderRadius: theme.radius?.lg || 8,
-              overflow: "hidden",
-            }}
-          >
-            <MetaRow
-              icon="calendar-today"
-              labelKey={isZH ? "日期" : "DATE"}
-              value={formatDetailDate(task.date, language)}
-            />
-            <MetaDivider />
-            <MetaRow
-              icon="access-time"
-              labelKey={isZH ? "時間" : "TIME"}
-              value={formatTimeDisplay(task.time) || "—"}
-            />
-            <MetaDivider />
-            <MetaRow
-              icon="repeat"
-              labelKey={isZH ? "重複" : "REPEAT"}
-              value={isZH ? "不重複" : "Does not repeat"}
-            />
-          </View>
+          {/* Meta rows — full-width, no card border */}
+          <MetaRow
+            icon="calendar-today"
+            labelKey={isZH ? "日期" : "DATE"}
+            value={formatDetailDate(task.date, language)}
+          />
+          <MetaDivider />
+          <MetaRow
+            icon="access-time"
+            labelKey={isZH ? "時間" : "TIME"}
+            value={formatTimeDisplay(task.time) || "—"}
+          />
+          <MetaDivider />
+          <MetaRow
+            icon="repeat"
+            labelKey={isZH ? "重複" : "REPEAT"}
+            value={isZH ? "不重複" : "Does not repeat"}
+          />
 
           {/* Notes band */}
           <TouchableOpacity
             onPress={() => setIsEditing(true)}
             activeOpacity={0.85}
             style={{
-              marginTop: 20,
+              marginTop: 8,
               borderTopWidth: 8,
               borderTopColor: theme.backgroundSecondary || "#E9E7DE",
-              paddingHorizontal: 20,
-              paddingTop: 16,
-              paddingBottom: 16,
+              paddingHorizontal: 22,
+              paddingTop: 18,
+              paddingBottom: 22,
+              flex: 1,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -678,11 +685,11 @@ export default function TaskDetailScreen({ navigation, route }) {
         {/* Bottom action bar */}
         <View
           style={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingBottom: insets.bottom + 12,
             paddingTop: 12,
             borderTopWidth: StyleSheet.hairlineWidth,
-            borderTopColor: theme.rule,
+            borderTopColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
             backgroundColor: theme.background,
           }}
         >
@@ -692,10 +699,16 @@ export default function TaskDetailScreen({ navigation, route }) {
               backgroundColor: isDone ? theme.backgroundSecondary || "#E9E7DE" : theme.primary,
               borderRadius: theme.radius?.lg || 8,
               paddingVertical: 14,
+              flexDirection: "row",
               alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
             }}
             activeOpacity={0.85}
           >
+            {!isDone && (
+              <MaterialIcons name="check" size={16} color={theme.buttonText || "#F2F1EB"} />
+            )}
             <Text
               style={{
                 fontFamily: theme.typography?.headline?.fontFamily,
