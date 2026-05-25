@@ -1849,9 +1849,9 @@ function CalendarScreen({ navigation, route }) {
             keyboardVerticalOffset={0}
           >
             <View style={[styles.modalContent, { backgroundColor: theme.backgroundSecondary || theme.background }]}>
-              {/* Grabber */}
+              {/* Grabber — push below Dynamic Island on fullScreen modal */}
               {Platform.OS === "ios" && (
-                <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
+                <View style={{ alignItems: "center", paddingTop: insets.top + 8, paddingBottom: 4 }}>
                   <View style={{
                     width: 36, height: 4, borderRadius: 2,
                     backgroundColor: theme.mode === "dark" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)",
