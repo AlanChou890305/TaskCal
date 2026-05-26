@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { Platform, View, Text, Image, ActivityIndicator, useColorScheme, Appearance } from "react-native";
+import Svg, { Path, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { NavigationContainer } from "@react-navigation/native";
@@ -41,6 +42,8 @@ export { LanguageContext, ThemeContext, UserContext };
 import SplashScreen from "./src/screens/SplashScreen";
 import OnboardingScreen from "./src/screens/OnboardingScreen";
 import MainTabs from "./src/navigation/MainTabs";
+import TermsScreen from "./src/screens/TermsScreen";
+import PrivacyScreen from "./src/screens/PrivacyScreen";
 import VersionUpdateModal from "./src/components/VersionUpdateModal";
 
 // Hooks
@@ -184,32 +187,25 @@ export default function App() {
   }
 
   if (showingSplash) {
+    const isDark = systemColorScheme === "dark";
+    const bg = isDark ? "#14182A" : "#F2F1EB";
+    const iconBg = isDark ? "#8B98D0" : "#3B4B7A";
+    const iconColor = isDark ? "#14182A" : "#F2F1EB";
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#BEBAFF",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Image
-          source={require("./assets/logo-login.png")}
-          style={{ width: 100, height: 100, marginBottom: 16 }}
-          resizeMode="contain"
-        />
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "bold",
-            color: "#ffffff",
-            letterSpacing: 1,
-            marginBottom: 40,
-          }}
-        >
-          TaskCal
-        </Text>
-        <ActivityIndicator size="small" color="rgba(255,255,255,0.7)" />
+      <View style={{ flex: 1, backgroundColor: bg, justifyContent: "center", alignItems: "center" }}>
+        <View style={{
+          width: 108, height: 108, borderRadius: 24,
+          backgroundColor: iconBg,
+          alignItems: "center", justifyContent: "center",
+          shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.10, shadowRadius: 12, elevation: 4,
+        }}>
+          <Svg width={56} height={56} viewBox="0 0 24 24">
+            <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={iconColor} strokeWidth="1.6" strokeLinecap="round"/>
+            <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={iconColor} strokeWidth="1.7"/>
+            <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={iconColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </Svg>
+        </View>
       </View>
     );
   }
@@ -274,6 +270,8 @@ export default function App() {
                   animationEnabled: false,
                 }}
               />
+              <Stack.Screen name="Terms" component={TermsScreen} />
+              <Stack.Screen name="Privacy" component={PrivacyScreen} />
             </Stack.Navigator>
             <VersionUpdateModal
               visible={isUpdateModalVisible}

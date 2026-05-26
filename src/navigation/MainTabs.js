@@ -121,7 +121,7 @@ export default function MainTabs() {
         component={SettingsStack}
         options={({ route }) => ({
           title: t.settings || "Settings",
-          tabBarStyle: ["Terms", "Privacy"].includes(getFocusedRouteNameFromRoute(route))
+          tabBarStyle: ["Terms", "Privacy", "Support"].includes(getFocusedRouteNameFromRoute(route))
             ? { display: "none" }
             : tabBarStyleBase,
         })}
