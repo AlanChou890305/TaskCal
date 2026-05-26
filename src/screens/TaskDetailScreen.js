@@ -44,6 +44,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const [task, setTask] = useState(initialTask);
   const [titleValue, setTitleValue] = useState(initialTask.title);
   const [noteValue, setNoteValue] = useState(initialTask.note || "");
+  const [linkValue, setLinkValue] = useState(initialTask.link || "");
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [tempDate, setTempDate] = useState(null);
@@ -115,6 +116,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const handleGoBack = () => {
     navigation.navigate("CalendarMain", { updatedTask: taskRef.current });
   };
+
 
   // ── Meta row ───────────────────────────────────────────────────
   const MetaRow = ({ icon, labelKey, value, onPress, isPlaceholder }) => (
@@ -372,82 +374,96 @@ export default function TaskDetailScreen({ navigation, route }) {
               setTimePickerVisible(true);
             }}
           />
+
           <RowDivider />
-          <MetaRow
-            icon="repeat"
-            labelKey={isZH ? "重複" : "REPEAT"}
-            value={isZH ? "不重複" : "Does not repeat"}
-            onPress={() => {}}
-          />
 
-          {/* Notes band */}
-          <View style={{
-            marginTop: 8,
-            borderTopWidth: 8,
-            borderTopColor: theme.backgroundSecondary || "#E9E7DE",
-            paddingHorizontal: 22,
-            paddingTop: 18,
-            paddingBottom: 22,
-          }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <MaterialIcons name="notes" size={16} color={theme.textSecondary} />
-              <Text style={[monoKicker, { color: theme.textSecondary, letterSpacing: 2 }]}>
-                {isZH ? "備註" : "NOTES"}
-              </Text>
-            </View>
-            <TextInput
-              style={{
-                fontFamily: theme.typography?.body?.fontFamily,
-                fontSize: 14,
-                fontWeight: "400",
-                color: theme.text,
-                lineHeight: 22,
-                letterSpacing: -0.1,
-                padding: 0,
-                minHeight: noteInputHeight,
-                textAlignVertical: "top",
-              }}
-              value={noteValue}
-              onChangeText={setNoteValue}
-              onBlur={() => {
-                const trimmed = noteValue.trim();
-                const prev = task.note || "";
-                if (trimmed !== prev) saveField({ note: trimmed || null });
-              }}
-              placeholder={isZH ? "新增備註…" : "Add context, links, or anything useful…"}
-              placeholderTextColor={theme.textTertiary}
-              multiline
-              onContentSizeChange={(e) => {
-                const h = e.nativeEvent.contentSize.height;
-                setNoteInputHeight(Math.max(80, Math.min(h + 16, 300)));
-              }}
-            />
-          </View>
-
-          {/* Link (if present) */}
-          {task.link ? (
-            <TouchableOpacity
-              onPress={() => {
-                const url = task.link.startsWith("http") ? task.link : `https://${task.link}`;
-                Linking.openURL(url).catch((err) => console.error("openURL error:", err));
-              }}
-              style={{ paddingHorizontal: 22, paddingTop: 4, paddingBottom: 16 }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <MaterialIcons name="link" size={16} color={theme.textSecondary} />
-                <Text style={[monoKicker, { color: theme.textSecondary, letterSpacing: 2 }]}>LINK</Text>
+          {/* Link + Notes band */}
+          <View>
+            {/* Link */}
+            <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 16, gap: 14 }}>
+              <View style={styles.metaIcon}>
+                <MaterialIcons name="link" size={18} color={theme.textSecondary} />
               </View>
-              <Text style={{
-                fontFamily: theme.typography?.callout?.fontFamily,
-                fontSize: 14,
-                color: theme.primary,
-                letterSpacing: -0.15,
-                textDecorationLine: "underline",
-              }} numberOfLines={2}>
-                {task.link}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={[monoKicker, { color: theme.textTertiary, marginBottom: 1 }]}>LINK</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <TextInput
+                    style={{
+                      flex: 1,
+                      fontFamily: theme.typography?.body?.fontFamily,
+                      fontSize: 15,
+                      fontWeight: "500",
+                      color: theme.text,
+                      letterSpacing: -0.2,
+                      padding: 0,
+                    }}
+                    value={linkValue}
+                    onChangeText={setLinkValue}
+                    onBlur={() => {
+                      const trimmed = linkValue.trim();
+                      const prev = task.link || "";
+                      if (trimmed !== prev) saveField({ link: trimmed || null });
+                    }}
+                    placeholder={isZH ? "貼上連結…" : "Paste a link…"}
+                    placeholderTextColor={theme.textTertiary}
+                    keyboardType="url"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {linkValue.trim() ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        const url = linkValue.trim().startsWith("http") ? linkValue.trim() : `https://${linkValue.trim()}`;
+                        Linking.openURL(url).catch((err) => console.error("openURL error:", err));
+                      }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <MaterialIcons name="open-in-new" size={18} color={theme.primary} />
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+              </View>
+            </View>
+
+            <RowDivider />
+
+            {/* Notes */}
+            <View style={{ paddingHorizontal: 22, paddingTop: 14, paddingBottom: 22 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <MaterialIcons name="notes" size={16} color={theme.textSecondary} />
+                <Text style={[monoKicker, { color: theme.textSecondary, letterSpacing: 2 }]}>
+                  {isZH ? "備註" : "NOTES"}
+                </Text>
+              </View>
+              <TextInput
+                style={{
+                  fontFamily: theme.typography?.body?.fontFamily,
+                  fontSize: 14,
+                  fontWeight: "400",
+                  color: theme.text,
+                  lineHeight: 22,
+                  letterSpacing: -0.1,
+                  padding: 0,
+                  minHeight: noteInputHeight,
+                  textAlignVertical: "top",
+                }}
+                value={noteValue}
+                onChangeText={setNoteValue}
+                onBlur={() => {
+                  const trimmed = noteValue.trim();
+                  const prev = task.note || "";
+                  if (trimmed !== prev) saveField({ note: trimmed || null });
+                }}
+                placeholder={isZH ? "新增備註…" : "Add context, links, or anything useful…"}
+                placeholderTextColor={theme.textTertiary}
+                multiline
+                onContentSizeChange={(e) => {
+                  const h = e.nativeEvent.contentSize.height;
+                  setNoteInputHeight(Math.max(80, Math.min(h + 16, 300)));
+                }}
+              />
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
