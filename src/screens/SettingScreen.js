@@ -15,6 +15,7 @@ import {
   Dimensions,
   Linking,
   StyleSheet,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -24,6 +25,7 @@ import * as WebBrowser from "expo-web-browser";
 import * as StoreReview from "expo-store-review";
 import Svg, { Path, Circle } from "react-native-svg";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Ionicons } from "@expo/vector-icons";
 import { LanguageContext, ThemeContext, UserContext } from "../contexts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../services/supabaseClient";
@@ -37,7 +39,6 @@ import { cancelAllNotifications } from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
-
 
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
@@ -102,60 +103,8 @@ function SettingScreen() {
     : versionInfo;
 
   const [isCheckingVersion, setIsCheckingVersion] = useState(false);
-  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
-  const [feedbackCategory, setFeedbackCategory] = useState("suggestion");
-  const [feedbackTitle, setFeedbackTitle] = useState("");
-  const [feedbackText, setFeedbackText] = useState("");
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const navigation = useNavigation();
 
-  const handleSubmitFeedback = async () => {
-    if (!feedbackText.trim()) {
-      Alert.alert(t.detailsRequired, t.pleaseEnterFeedback);
-      return;
-    }
-    setIsSubmittingFeedback(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        Alert.alert(t.confirm, t.pleaseLoginFirst);
-        setIsSubmittingFeedback(false);
-        return;
-      }
-      const { error } = await supabase.from("user_feedback").insert({
-        user_id: user.id,
-        email: user.email,
-        category: feedbackCategory,
-        title: feedbackTitle.trim() || null,
-        feedback: feedbackText.trim(),
-        app_version: Application.nativeApplicationVersion,
-        build_number: Application.nativeBuildVersion,
-        os_version: Platform.Version,
-        platform: Platform.OS,
-      });
-      if (error) throw error;
-      mixpanelService.track("Feedback Submitted", {
-        category: feedbackCategory,
-        feedback_length: feedbackText.trim().length,
-        app_version: Application.nativeApplicationVersion,
-        platform: Platform.OS,
-      });
-      Alert.alert(t.submitSuccess, t.thanksFeedback, [{
-        text: t.done,
-        onPress: () => {
-          setFeedbackModalVisible(false);
-          setFeedbackTitle("");
-          setFeedbackText("");
-          setFeedbackCategory("suggestion");
-        },
-      }]);
-    } catch (err) {
-      console.error("Error submitting feedback:", err);
-      Alert.alert(t.submitFailed, t.pleaseTryAgainLater);
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
-  };
   const userProfileCache = useRef(null); // Cache user profile to avoid redundant API calls
 
   // 使用者類型切換處理 (僅限開發模式)
@@ -298,7 +247,10 @@ function SettingScreen() {
 
       setIsCheckingVersion(true);
       try {
-        const updateInfo = await versionService.checkForUpdates(false, language);
+        const updateInfo = await versionService.checkForUpdates(
+          false,
+          language,
+        );
         const currentVersionInfo = versionService.getCurrentVersionInfo();
 
         // Combine current version info with update info
@@ -770,9 +722,7 @@ function SettingScreen() {
   };
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.modalBackground }}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.modalBackground }}>
       <View
         style={{
           backgroundColor: theme.modalBackground,
@@ -783,7 +733,9 @@ function SettingScreen() {
       >
         <Text
           style={{
-            fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+            fontFamily:
+              theme.typography?.monoKicker?.fontFamily ||
+              "JetBrainsMono_500Medium",
             fontSize: 10,
             fontWeight: "500",
             letterSpacing: 2,
@@ -819,120 +771,200 @@ function SettingScreen() {
           style={{
             marginHorizontal: 16,
             marginTop: 6,
-            paddingVertical: 16,
-            paddingHorizontal: 18,
             backgroundColor: theme.background,
             borderWidth: 1,
             borderColor: theme.rule,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 14,
+            overflow: "hidden",
           }}
         >
-          {isLoadingProfile ? (
-            <>
-              <Animated.View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 22,
-                  backgroundColor: theme.shimmer,
-                  opacity: shimmerAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.3, 0.7],
-                  }),
-                }}
-              />
-              <View style={{ flex: 1 }}>
+          {/* Profile row */}
+          <View
+            style={{
+              paddingVertical: 16,
+              paddingHorizontal: 18,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
+            {isLoadingProfile ? (
+              <>
                 <Animated.View
-                  style={{
-                    height: 16,
-                    borderRadius: 4,
-                    backgroundColor: theme.shimmer,
-                    width: "55%",
-                    marginBottom: 7,
-                    opacity: shimmerAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.3, 0.7],
-                    }),
-                  }}
-                />
-                <Animated.View
-                  style={{
-                    height: 12,
-                    borderRadius: 4,
-                    backgroundColor: theme.shimmer,
-                    width: "40%",
-                    opacity: shimmerAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.3, 0.7],
-                    }),
-                  }}
-                />
-              </View>
-            </>
-          ) : (
-            <>
-              {userProfile?.avatar_url ? (
-                <Image
-                  source={{ uri: userProfile.avatar_url }}
-                  style={{ width: 44, height: 44, borderRadius: 22 }}
-                />
-              ) : (
-                <View
                   style={{
                     width: 44,
                     height: 44,
                     borderRadius: 22,
-                    backgroundColor: theme.primary,
-                    justifyContent: "center",
-                    alignItems: "center",
+                    backgroundColor: theme.shimmer,
+                    opacity: shimmerAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 0.7],
+                    }),
                   }}
-                >
-                  <Text
+                />
+                <View style={{ flex: 1 }}>
+                  <Animated.View
                     style={{
-                      fontFamily: theme.typography?.title1?.fontFamily,
-                      color: theme.buttonText || "#F2F1EB",
-                      fontSize: 16,
-                      fontWeight: "600",
-                      letterSpacing: -0.4,
+                      height: 16,
+                      borderRadius: 4,
+                      backgroundColor: theme.shimmer,
+                      width: "55%",
+                      marginBottom: 7,
+                      opacity: shimmerAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 0.7],
+                      }),
+                    }}
+                  />
+                  <Animated.View
+                    style={{
+                      height: 12,
+                      borderRadius: 4,
+                      backgroundColor: theme.shimmer,
+                      width: "40%",
+                      opacity: shimmerAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 0.7],
+                      }),
+                    }}
+                  />
+                </View>
+              </>
+            ) : (
+              <>
+                {userProfile?.avatar_url ? (
+                  <Image
+                    source={{ uri: userProfile.avatar_url }}
+                    style={{ width: 44, height: 44, borderRadius: 22 }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 22,
+                      backgroundColor: theme.primary,
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
-                    {(userProfile?.name || userName || "U")
-                      .split(" ")
-                      .map((w) => w.charAt(0))
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
+                    <Text
+                      style={{
+                        fontFamily: theme.typography?.title1?.fontFamily,
+                        color: theme.buttonText || "#F2F1EB",
+                        fontSize: 16,
+                        fontWeight: "600",
+                        letterSpacing: -0.4,
+                      }}
+                    >
+                      {(userProfile?.name || userName || "U")
+                        .split(" ")
+                        .map((w) => w.charAt(0))
+                        .join("")
+                        .toUpperCase()
+                        .slice(0, 2)}
+                    </Text>
+                  </View>
+                )}
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontFamily: theme.typography?.title1?.fontFamily,
+                      color: theme.text,
+                      fontSize: 15,
+                      fontWeight: "600",
+                      letterSpacing: -0.2,
+                    }}
+                  >
+                    {userProfile?.name || userName || "User"}
+                  </Text>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontFamily: theme.typography?.body?.fontFamily,
+                      color: theme.textSecondary,
+                      fontSize: 12,
+                      letterSpacing: 0,
+                    }}
+                  >
+                    {userProfile?.email || "No email available"}
                   </Text>
                 </View>
-              )}
-              <View style={{ flex: 1, minWidth: 0 }}>
+              </>
+            )}
+          </View>
+
+          {/* Login Method row */}
+          {!isLoadingProfile && (
+            <>
+              <View
+                style={{
+                  height: StyleSheet.hairlineWidth,
+                  backgroundColor: theme.rule,
+                }}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 12,
+                  paddingHorizontal: 18,
+                }}
+              >
                 <Text
-                  numberOfLines={1}
-                  style={{
-                    fontFamily: theme.typography?.title1?.fontFamily,
-                    color: theme.text,
-                    fontSize: 15,
-                    fontWeight: "600",
-                    letterSpacing: -0.2,
-                  }}
-                >
-                  {userProfile?.name || userName || "User"}
-                </Text>
-                <Text
-                  numberOfLines={1}
                   style={{
                     fontFamily: theme.typography?.body?.fontFamily,
-                    color: theme.textSecondary,
-                    fontSize: 12,
-                    letterSpacing: 0,
+                    color: theme.primary,
+                    fontSize: 14,
+                    fontWeight: "500",
                   }}
                 >
-                  {userProfile?.email || "No email available"}
+                  {t.loginMethod}
                 </Text>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
+                  {userProfile?.provider === "google" ? (
+                    <Svg width="16" height="16" viewBox="0 0 24 24">
+                      <Path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4"
+                      />
+                      <Path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853"
+                      />
+                      <Path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05"
+                      />
+                      <Path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335"
+                      />
+                    </Svg>
+                  ) : userProfile?.provider === "apple" ? (
+                    <Ionicons name="logo-apple" size={16} color={theme.text} />
+                  ) : null}
+                  <Text
+                    style={{
+                      fontFamily: theme.typography?.body?.fontFamily,
+                      color: theme.text,
+                      fontSize: 14,
+                    }}
+                  >
+                    {userProfile?.provider === "google"
+                      ? "Google"
+                      : userProfile?.provider === "apple"
+                        ? "Apple"
+                        : userProfile?.provider
+                          ? userProfile.provider.charAt(0).toUpperCase() +
+                            userProfile.provider.slice(1)
+                          : "—"}
+                  </Text>
+                </View>
               </View>
-              <MaterialIcons name="chevron-right" size={14} color={theme.textTertiary} />
             </>
           )}
         </View>
@@ -940,8 +972,15 @@ function SettingScreen() {
         {/* Developer Tools */}
         {__DEV__ && (
           <>
-            <IOSSectionHeader title={t.devTools || "Developer Tools"} theme={theme} style={{ paddingHorizontal: 28 }} />
-            <IOSCard theme={theme} style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}>
+            <IOSSectionHeader
+              title={t.devTools || "Developer Tools"}
+              theme={theme}
+              style={{ paddingHorizontal: 28 }}
+            />
+            <IOSCard
+              theme={theme}
+              style={{ marginHorizontal: 20, padding: 0, overflow: "hidden" }}
+            >
               <TouchableOpacity
                 onPress={() => handleUserTypeChange("member")}
                 activeOpacity={0.6}
@@ -1026,7 +1065,10 @@ function SettingScreen() {
 
               <TouchableOpacity
                 onPress={async () => {
-                  const result = await versionService.checkForUpdates(true, language);
+                  const result = await versionService.checkForUpdates(
+                    true,
+                    language,
+                  );
                   setUpdateInfo({
                     latestVersion: result.latestVersion,
                     releaseNotes: result.releaseNotes,
@@ -1143,7 +1185,13 @@ function SettingScreen() {
                   style={{ marginRight: 12 }}
                 />
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#FF3B30", fontSize: 15, fontWeight: "600" }}>
+                  <Text
+                    style={{
+                      color: "#FF3B30",
+                      fontSize: 15,
+                      fontWeight: "600",
+                    }}
+                  >
                     {"Force Logout + Onboarding"}
                   </Text>
                   <Text style={{ color: theme.textTertiary, fontSize: 11 }}>
@@ -1157,478 +1205,463 @@ function SettingScreen() {
 
         {/* General Section */}
         <IOSSectionHeader title={t.general} theme={theme} />
-        <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
-            {/* Language Selection */}
-            <TouchableOpacity
-              onPress={() => {
-                setLanguageDropdownVisible(!languageDropdownVisible);
-                setThemeDropdownVisible(false);
-                setReminderDropdownVisible(false);
-              }}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
-                borderBottomWidth: 1,
-                borderBottomColor: languageDropdownVisible ? "transparent" : theme.rule,
-              }}
+        <View
+          style={{
+            marginHorizontal: 16,
+            borderWidth: 1,
+            borderColor: theme.rule,
+            overflow: "hidden",
+          }}
+        >
+          {/* Language Selection */}
+          <TouchableOpacity
+            onPress={() => {
+              setLanguageDropdownVisible(!languageDropdownVisible);
+              setThemeDropdownVisible(false);
+              setReminderDropdownVisible(false);
+            }}
+            activeOpacity={0.6}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+              borderBottomWidth: 1,
+              borderBottomColor: languageDropdownVisible
+                ? "transparent"
+                : theme.rule,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-              >
-                <MaterialIcons
-                  name="language"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={{ marginRight: 14 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
-                >
-                  {t.language}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={{
-                    color: theme.textTertiary,
-                    fontSize: 13,
-                    letterSpacing: -0.1,
-                    marginRight: 4,
-                  }}
-                >
-                  {language === "en"
-                    ? t.english
-                    : language === "zh"
-                      ? t.chinese
-                      : t.spanish}
-                </Text>
-                <MaterialIcons
-                  name={
-                    languageDropdownVisible
-                      ? "keyboard-arrow-up"
-                      : "chevron-right"
-                  }
-                  size={14}
-                  color={theme.textTertiary}
-                />
-              </View>
-            </TouchableOpacity>
-
-            {languageDropdownVisible && (
-              <View
+              <MaterialIcons
+                name="language"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
+              />
+              <Text
                 style={{
-                  borderTopWidth: 1,
-                  borderTopColor: theme.divider,
-                  backgroundColor:
-                    themeMode === "light"
-                      ? "#f9f9f9"
-                      : theme.backgroundSecondary,
+                  color: theme.text,
+                  fontSize: 15,
+                  fontWeight: "500",
+                  letterSpacing: -0.2,
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => {
-                    setLanguage("en");
-                    setLanguageDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      language === "en"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        language === "en" ? theme.primary : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: language === "en" ? "600" : "400",
-                    }}
-                  >
-                    {t.english}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setLanguage("zh");
-                    setLanguageDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      language === "zh"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        language === "zh" ? theme.primary : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: language === "zh" ? "600" : "400",
-                    }}
-                  >
-                    {t.chinese}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setLanguage("es");
-                    setLanguageDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      language === "es"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        language === "es" ? theme.primary : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: language === "es" ? "600" : "400",
-                    }}
-                  >
-                    {t.spanish}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Theme Selection */}
-            <TouchableOpacity
-              onPress={() => {
-                setThemeDropdownVisible(!themeDropdownVisible);
-                setLanguageDropdownVisible(false);
-                setReminderDropdownVisible(false);
-              }}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
-                borderBottomWidth: 1,
-                borderBottomColor: themeDropdownVisible ? "transparent" : theme.rule,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                {t.language}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  color: theme.textTertiary,
+                  fontSize: 13,
+                  letterSpacing: -0.1,
+                  marginRight: 4,
+                }}
               >
-                <MaterialIcons
-                  name="palette"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={{ marginRight: 14 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
-                >
-                  {t.theme}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={{
-                    color: theme.textTertiary,
-                    fontSize: 13,
-                    letterSpacing: -0.1,
-                    marginRight: 4,
-                  }}
-                >
-                  {themeMode === "light"
-                    ? t.lightMode
-                    : themeMode === "dark"
+                {language === "en"
+                  ? t.english
+                  : language === "zh"
+                    ? t.chinese
+                    : t.spanish}
+              </Text>
+              <MaterialIcons
+                name={
+                  languageDropdownVisible
+                    ? "keyboard-arrow-up"
+                    : "chevron-right"
+                }
+                size={14}
+                color={theme.textTertiary}
+              />
+            </View>
+          </TouchableOpacity>
+
+          {languageDropdownVisible && (
+            <>
+              {[
+                { value: "en", label: t.english },
+                { value: "zh", label: t.chinese },
+                { value: "es", label: t.spanish },
+              ].map((option) => {
+                const active = language === option.value;
+                return (
+                  <React.Fragment key={option.value}>
+                    <View
+                      style={{
+                        height: StyleSheet.hairlineWidth,
+                        backgroundColor: theme.rule,
+                      }}
+                    />
+                    <TouchableOpacity
+                      onPress={() => {
+                        setLanguage(option.value);
+                        setLanguageDropdownVisible(false);
+                      }}
+                      activeOpacity={0.6}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingVertical: 14,
+                        paddingHorizontal: 22,
+                        backgroundColor: active
+                          ? theme.primaryTint
+                          : theme.background,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: theme.typography?.body?.fontFamily,
+                          color: active ? theme.primary : theme.text,
+                          fontSize: 15,
+                          fontWeight: active ? "600" : "400",
+                          letterSpacing: -0.2,
+                        }}
+                      >
+                        {option.label}
+                      </Text>
+                      {active && (
+                        <Ionicons
+                          name="checkmark"
+                          size={16}
+                          color={theme.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </React.Fragment>
+                );
+              })}
+            </>
+          )}
+
+          {/* Theme Selection */}
+          <TouchableOpacity
+            onPress={() => {
+              setThemeDropdownVisible(!themeDropdownVisible);
+              setLanguageDropdownVisible(false);
+              setReminderDropdownVisible(false);
+            }}
+            activeOpacity={0.6}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+              borderBottomWidth: 1,
+              borderBottomColor: themeDropdownVisible
+                ? "transparent"
+                : theme.rule,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
+              <MaterialIcons
+                name="palette"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
+              />
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 15,
+                  fontWeight: "500",
+                  letterSpacing: -0.2,
+                }}
+              >
+                {t.theme}
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text
+                style={{
+                  color: theme.textTertiary,
+                  fontSize: 13,
+                  letterSpacing: -0.1,
+                  marginRight: 4,
+                }}
+              >
+                {themeMode === "light"
+                  ? t.lightMode
+                  : themeMode === "dark"
                     ? t.darkMode
                     : t.autoMode || "Auto"}
-                </Text>
-                <MaterialIcons
-                  name={
-                    themeDropdownVisible
-                      ? "keyboard-arrow-up"
-                      : "chevron-right"
-                  }
-                  size={14}
-                  color={theme.textTertiary}
-                />
-              </View>
-            </TouchableOpacity>
+              </Text>
+              <MaterialIcons
+                name={
+                  themeDropdownVisible ? "keyboard-arrow-down" : "chevron-right"
+                }
+                size={14}
+                color={theme.textTertiary}
+              />
+            </View>
+          </TouchableOpacity>
 
-            {themeDropdownVisible && (
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderTopColor: theme.divider,
-                  backgroundColor:
-                    themeMode === "light"
-                      ? "#f9f9f9"
-                      : theme.backgroundSecondary,
-                }}
-              >
-                {/* Auto (第一個選項 - 預設推薦) */}
-                <TouchableOpacity
-                  onPress={() => {
-                    setThemeMode("auto");
-                    setThemeDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      themeMode === "auto"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        themeMode === "auto"
-                          ? theme.primary
-                          : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: themeMode === "auto" ? "600" : "400",
-                    }}
-                  >
-                    {t.autoMode || "Auto (Follow System)"}
-                  </Text>
-                </TouchableOpacity>
-                {/* Light Mode */}
-                <TouchableOpacity
-                  onPress={() => {
-                    setThemeMode("light");
-                    setThemeDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      themeMode === "light"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        themeMode === "light"
-                          ? theme.primary
-                          : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: themeMode === "light" ? "600" : "400",
-                    }}
-                  >
-                    {t.lightMode}
-                  </Text>
-                </TouchableOpacity>
-                {/* Dark Mode */}
-                <TouchableOpacity
-                  onPress={() => {
-                    setThemeMode("dark");
-                    setThemeDropdownVisible(false);
-                  }}
-                  activeOpacity={0.6}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 52,
-                    backgroundColor:
-                      themeMode === "dark"
-                        ? theme.primaryTint || theme.backgroundSecondary
-                        : "transparent",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        themeMode === "dark"
-                          ? theme.primary
-                          : theme.textSecondary,
-                      fontSize: 15,
-                      fontWeight: themeMode === "dark" ? "600" : "400",
-                    }}
-                  >
-                    {t.darkMode}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Reminder Settings */}
-            <TouchableOpacity
-              onPress={() => {
-                setReminderDropdownVisible(!reminderDropdownVisible);
-                setLanguageDropdownVisible(false);
-                setThemeDropdownVisible(false);
-              }}
-              activeOpacity={0.6}
+          {themeDropdownVisible && (
+            <View
               style={{
                 flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
+                gap: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: theme.rule,
               }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-              >
-                {isLoadingSettings ? (
-                  <Animated.View
-                    style={{
-                      height: 16,
-                      borderRadius: 4,
-                      backgroundColor: theme.shimmer,
-                      width: "60%",
-                      opacity: shimmerAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.3, 0.7],
-                      }),
+              {[
+                {
+                  value: "auto",
+                  label: t.autoModeShort || "Auto",
+                  icon: "contrast-outline",
+                },
+                {
+                  value: "light",
+                  label: t.lightModeShort || "Light",
+                  icon: "sunny-outline",
+                },
+                {
+                  value: "dark",
+                  label: t.darkModeShort || "Dark",
+                  icon: "moon-outline",
+                },
+              ].map((option) => {
+                const active = themeMode === option.value;
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    onPress={() => {
+                      setThemeMode(option.value);
+                      setThemeDropdownVisible(false);
                     }}
-                  />
-                ) : (
-                  <>
-                    <MaterialIcons
-                      name="notifications"
-                      size={18}
-                      color={theme.textSecondary}
-                      style={{ marginRight: 14 }}
+                    activeOpacity={0.7}
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      paddingVertical: 16,
+                      borderRadius: 12,
+                      borderWidth: 1.5,
+                      borderColor: active ? theme.primary : theme.rule,
+                      backgroundColor: active
+                        ? theme.primaryTint
+                        : theme.background,
+                      gap: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name={option.icon}
+                      size={22}
+                      color={active ? theme.primary : theme.textSecondary}
                     />
                     <Text
                       style={{
-                        color: theme.text,
-                        fontSize: 15,
-                        fontWeight: "500",
-                        letterSpacing: -0.2,
+                        fontFamily: theme.typography?.body?.fontFamily,
+                        color: active ? theme.primary : theme.text,
+                        fontSize: 13,
+                        fontWeight: active ? "600" : "400",
+                        letterSpacing: -0.1,
                       }}
                     >
-                      {t.reminderSettings}
+                      {option.label}
                     </Text>
-                  </>
-                )}
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {!isLoadingSettings && (
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Reminder Settings */}
+          <TouchableOpacity
+            onPress={() => {
+              setReminderDropdownVisible(!reminderDropdownVisible);
+              setLanguageDropdownVisible(false);
+              setThemeDropdownVisible(false);
+            }}
+            activeOpacity={0.6}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
+              {isLoadingSettings ? (
+                <Animated.View
+                  style={{
+                    height: 16,
+                    borderRadius: 4,
+                    backgroundColor: theme.shimmer,
+                    width: "60%",
+                    opacity: shimmerAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 0.7],
+                    }),
+                  }}
+                />
+              ) : (
+                <>
+                  <MaterialIcons
+                    name="notifications"
+                    size={18}
+                    color={theme.textSecondary}
+                    style={{ marginRight: 14 }}
+                  />
                   <Text
                     style={{
-                      color: theme.textTertiary,
-                      fontSize: 13,
-                      letterSpacing: -0.1,
-                      marginRight: 4,
+                      color: theme.text,
+                      fontSize: 15,
+                      fontWeight: "500",
+                      letterSpacing: -0.2,
                     }}
                   >
-                    {reminderSettings?.enabled === true
-                      ? t.reminderEnabled
-                      : t.reminderDisabled}
+                    {t.reminderSettings}
                   </Text>
-                )}
-                <MaterialIcons
-                  name={
-                    reminderDropdownVisible
-                      ? "keyboard-arrow-up"
-                      : "chevron-right"
-                  }
-                  size={14}
-                  color={theme.textTertiary}
-                />
-              </View>
-            </TouchableOpacity>
+                </>
+              )}
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              {!isLoadingSettings && (
+                <Text
+                  style={{
+                    color: theme.textTertiary,
+                    fontSize: 13,
+                    letterSpacing: -0.1,
+                    marginRight: 4,
+                  }}
+                >
+                  {reminderSettings?.enabled === true
+                    ? t.reminderEnabled || "Enable"
+                    : t.reminderOffShort || "Off"}
+                </Text>
+              )}
+              <MaterialIcons
+                name={
+                  reminderDropdownVisible
+                    ? "keyboard-arrow-down"
+                    : "chevron-right"
+                }
+                size={14}
+                color={theme.textTertiary}
+              />
+            </View>
+          </TouchableOpacity>
 
-            {reminderDropdownVisible && (
+          {reminderDropdownVisible && (
+            <>
               <View
                 style={{
-                  borderTopWidth: StyleSheet.hairlineWidth,
-                  borderTopColor: theme.rule,
-                  backgroundColor:
-                    themeMode === "light"
-                      ? "#f9f9f9"
-                      : theme.backgroundSecondary,
-                  paddingVertical: 8,
+                  height: StyleSheet.hairlineWidth,
+                  backgroundColor: theme.rule,
+                }}
+              />
+
+              {/* Enable reminders toggle row */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 14,
+                  paddingHorizontal: 22,
                 }}
               >
-                {/* 啟用/停用提醒 */}
-                <TouchableOpacity
-                  onPress={() => {
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.body?.fontFamily,
+                    color: theme.text,
+                    fontSize: 15,
+                    fontWeight: "500",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {t.enableReminders || "Enable reminders"}
+                </Text>
+                <Switch
+                  value={reminderSettings?.enabled === true}
+                  onValueChange={(value) => {
                     try {
-                      const newEnabled = !(reminderSettings?.enabled === true);
-                      const newTimes = newEnabled
+                      const newTimes = value
                         ? [30, 10, 5]
                         : Array.isArray(reminderSettings?.times)
                           ? reminderSettings.times
                           : [30, 10, 5];
                       updateReminderSettings({
-                        enabled: newEnabled,
+                        enabled: value,
                         times: newTimes,
                       });
                     } catch (error) {
                       console.error("Error toggling reminder enabled:", error);
                     }
                   }}
-                  activeOpacity={0.6}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingVertical: 12,
-                    paddingHorizontal: 20,
+                  trackColor={{
+                    false: theme.divider || theme.rule,
+                    true: theme.primary,
                   }}
-                >
-                  <Text style={{ color: theme.text, fontSize: 15 }}>
-                    {t.reminderEnabled}
-                  </Text>
-                  <MaterialIcons
-                    name={
-                      reminderSettings?.enabled !== false
-                        ? "check-box"
-                        : "check-box-outline-blank"
-                    }
-                    size={24}
-                    color={
-                      reminderSettings?.enabled !== false
-                        ? theme.primary
-                        : theme.textTertiary
-                    }
+                  ios_backgroundColor={theme.divider || theme.rule}
+                />
+              </View>
+
+              {reminderSettings?.enabled !== false && (
+                <>
+                  <View
+                    style={{
+                      height: StyleSheet.hairlineWidth,
+                      backgroundColor: theme.rule,
+                    }}
                   />
-                </TouchableOpacity>
 
-                {reminderSettings?.enabled !== false && (
-                  <>
-                    <View
+                  {/* NOTIFY BEFORE TASK kicker */}
+                  <View
+                    style={{
+                      paddingHorizontal: 22,
+                      paddingTop: 12,
+                      paddingBottom: 8,
+                    }}
+                  >
+                    <Text
                       style={{
-                        borderTopWidth: 1,
-                        borderTopColor: theme.divider,
-                        marginVertical: 4,
+                        fontFamily:
+                          theme.typography?.monoKicker?.fontFamily ||
+                          "JetBrainsMono_500Medium",
+                        fontSize: 10,
+                        fontWeight: "500",
+                        letterSpacing: 2,
+                        textTransform: "uppercase",
+                        color: theme.textTertiary,
                       }}
-                    />
+                    >
+                      {t.notifyBeforeTask || "Notify before task"}
+                    </Text>
+                  </View>
 
-                    {/* 提醒時間選項 */}
+                  {/* Pill buttons row */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 10,
+                      paddingHorizontal: 14,
+                      paddingBottom: 14,
+                    }}
+                  >
                     {[
-                      { value: 30, label: t.reminder30min },
-                      { value: 10, label: t.reminder10min },
-                      { value: 5, label: t.reminder5min },
+                      { value: 30, label: t.reminder30minShort || "30 min" },
+                      { value: 10, label: t.reminder10minShort || "10 min" },
+                      { value: 5, label: t.reminder5minShort || "5 min" },
                     ].map((option) => {
                       const times = Array.isArray(reminderSettings.times)
                         ? reminderSettings.times
                         : [30, 10, 5];
                       const isSelected = times.includes(option.value);
-
                       return (
                         <TouchableOpacity
                           key={option.value}
@@ -1645,435 +1678,223 @@ function SettingScreen() {
                               : [...currentTimes, option.value].sort(
                                   (a, b) => b - a,
                                 );
-
                             updateReminderSettings({
                               ...reminderSettings,
                               times: newTimes,
                             });
                           }}
-                          activeOpacity={0.6}
+                          activeOpacity={0.7}
                           style={{
+                            flex: 1,
                             flexDirection: "row",
                             alignItems: "center",
-                            justifyContent: "space-between",
-                            paddingVertical: 12,
-                            paddingHorizontal: 20,
+                            justifyContent: "center",
+                            paddingVertical: 13,
+                            borderRadius: 50,
+                            borderWidth: 1.5,
+                            borderColor: isSelected
+                              ? theme.primary
+                              : theme.rule,
+                            backgroundColor: isSelected
+                              ? theme.primaryTint
+                              : theme.background,
+                            gap: 5,
                           }}
                         >
-                          <Text style={{ color: theme.text, fontSize: 15 }}>
+                          {isSelected && (
+                            <Ionicons
+                              name="checkmark"
+                              size={13}
+                              color={theme.primary}
+                            />
+                          )}
+                          <Text
+                            style={{
+                              fontFamily: theme.typography?.body?.fontFamily,
+                              color: isSelected ? theme.primary : theme.text,
+                              fontSize: 14,
+                              fontWeight: isSelected ? "600" : "400",
+                              letterSpacing: -0.1,
+                            }}
+                          >
                             {option.label}
                           </Text>
-                          <MaterialIcons
-                            name={
-                              isSelected
-                                ? "check-box"
-                                : "check-box-outline-blank"
-                            }
-                            size={24}
-                            color={
-                              isSelected ? theme.primary : theme.textTertiary
-                            }
-                          />
                         </TouchableOpacity>
                       );
                     })}
+                  </View>
 
-                    <View
-                      style={{
-                        borderTopWidth: 1,
-                        borderTopColor: theme.divider,
-                        marginVertical: 4,
-                      }}
-                    />
+                  <View
+                    style={{
+                      height: StyleSheet.hairlineWidth,
+                      backgroundColor: theme.rule,
+                    }}
+                  />
+                  <View style={{ paddingHorizontal: 22, paddingVertical: 10 }}>
                     <Text
                       style={{
+                        fontFamily: theme.typography?.caption?.fontFamily,
                         color: theme.textTertiary,
                         fontSize: 12,
-                        paddingHorizontal: 20,
-                        paddingVertical: 8,
-                        fontStyle: "italic",
+                        letterSpacing: -0.1,
                       }}
                     >
                       {t.reminderNote}
                     </Text>
-                  </>
-                )}
-              </View>
-            )}
+                  </View>
+                </>
+              )}
+            </>
+          )}
         </View>
 
         {/* Support & Legal Section */}
-        <IOSSectionHeader title={t.legalAndSupport || "Support & Legal"} theme={theme} />
-        <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
-            {/* Send Feedback Button */}
-            <TouchableOpacity
-              onPress={() => setFeedbackModalVisible(true)}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
-                borderBottomWidth: 1,
-                borderBottomColor: theme.rule,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-              >
-                <MaterialIcons
-                  name="feedback"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={{ marginRight: 14 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
-                >
-                  {t.feedback || "Send Feedback"}
-                </Text>
-              </View>
-              <MaterialIcons
-                name="chevron-right"
-                size={14}
-                color={theme.textTertiary}
-              />
-            </TouchableOpacity>
-
-        {/* Feedback Form Modal */}
-        <Modal
-          visible={feedbackModalVisible}
-          transparent={false}
-          animationType="slide"
-          presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-          onRequestClose={() => {
-            if (!isSubmittingFeedback) setFeedbackModalVisible(false);
+        <IOSSectionHeader
+          title={t.legalAndSupport || "Support & Legal"}
+          theme={theme}
+        />
+        <View
+          style={{
+            marginHorizontal: 16,
+            borderWidth: 1,
+            borderColor: theme.rule,
+            overflow: "hidden",
           }}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
-          >
-            {/* Grabber */}
-            {Platform.OS === "ios" && (
-              <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 0 }}>
-                <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
-              </View>
-            )}
-            {/* SheetNav-style header: Cancel | Send feedback | Send */}
-            <View style={{
-              height: 52,
+          {/* Send Feedback Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Support")}
+            activeOpacity={0.6}
+            style={{
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 16,
-              borderBottomWidth: StyleSheet.hairlineWidth,
-              borderBottomColor: theme.divider,
-            }}>
-              <TouchableOpacity
-                onPress={() => !isSubmittingFeedback && setFeedbackModalVisible(false)}
-                disabled={isSubmittingFeedback}
-                style={{ padding: 6, minWidth: 60 }}
-              >
-                <Text style={{
-                  fontFamily: theme.typography?.callout?.fontFamily,
-                  fontSize: 14,
-                  fontWeight: "500",
-                  letterSpacing: -0.2,
-                  color: theme.textSecondary,
-                }}>
-                  {t.cancel}
-                </Text>
-              </TouchableOpacity>
-              <Text style={{
-                flex: 1,
-                textAlign: "center",
-                fontFamily: theme.typography?.callout?.fontFamily,
-                fontSize: 14,
-                fontWeight: "600",
-                letterSpacing: -0.2,
-                color: theme.text,
-              }}>
-                {t.feedback || "Send feedback"}
-              </Text>
-              <TouchableOpacity
-                onPress={handleSubmitFeedback}
-                disabled={isSubmittingFeedback}
-                style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
-              >
-                <Text style={{
-                  fontFamily: theme.typography?.callout?.fontFamily,
-                  fontSize: 14,
-                  fontWeight: "600",
-                  letterSpacing: -0.2,
-                  color: isSubmittingFeedback ? theme.textTertiary : theme.primary,
-                }}>
-                  {isSubmittingFeedback ? "..." : (t.send || "Send")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Hero block */}
-              <View style={{
-                padding: 22,
-                paddingBottom: 18,
-                backgroundColor: theme.background,
-                borderBottomWidth: StyleSheet.hairlineWidth,
-                borderBottomColor: theme.ruleStrong || theme.divider,
-              }}>
-                <Text style={{
-                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-                  fontSize: 10,
-                  fontWeight: "500",
-                  letterSpacing: 2,
-                  textTransform: "uppercase",
-                  color: theme.primary,
-                  marginBottom: 4,
-                }}>
-                  {t.feedbackMotivationSmall || "One human reads every message"}
-                </Text>
-                <Text style={{
-                  fontFamily: theme.typography?.title2?.fontFamily,
-                  fontSize: 22,
-                  fontWeight: "600",
-                  letterSpacing: -0.5,
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+              borderBottomWidth: 1,
+              borderBottomColor: theme.rule,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
+              <MaterialIcons
+                name="feedback"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
+              />
+              <Text
+                style={{
                   color: theme.text,
-                  lineHeight: 26,
-                }}>
-                  {t.feedbackHero || "Tell us what's\non your mind."}
-                </Text>
-              </View>
-
-              {/* Type chips */}
-              <View style={{
-                padding: 18,
-                paddingBottom: 14,
-                backgroundColor: theme.background,
-                borderBottomWidth: StyleSheet.hairlineWidth,
-                borderBottomColor: theme.divider,
-              }}>
-                <Text style={{
-                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-                  fontSize: 9,
+                  fontSize: 15,
                   fontWeight: "500",
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  color: theme.textTertiary,
-                  marginBottom: 10,
-                }}>
-                  {t.feedbackType || "Type"}
-                </Text>
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-                  {[
-                    { id: "suggestion", label: t.improvementSuggestion || "Love note", icon: "favorite-border" },
-                    { id: "bug", label: t.bugReport || "Bug", icon: "bug-report" },
-                    { id: "feature", label: t.featureRequest || "Idea", icon: "flag" },
-                    { id: "other", label: t.feedbackOther || "Question", icon: "info-outline" },
-                  ].map((cat) => {
-                    const isOn = feedbackCategory === cat.id;
-                    return (
-                      <TouchableOpacity
-                        key={cat.id}
-                        onPress={() => setFeedbackCategory(cat.id)}
-                        activeOpacity={0.7}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 5,
-                          paddingVertical: 7,
-                          paddingHorizontal: 12,
-                          borderRadius: 999,
-                          backgroundColor: isOn ? theme.primaryTint || theme.primary + "20" : "transparent",
-                          borderWidth: 1,
-                          borderColor: isOn ? theme.primary : theme.ruleStrong || theme.divider,
-                        }}
-                      >
-                        <MaterialIcons
-                          name={cat.icon}
-                          size={13}
-                          color={isOn ? theme.primary : theme.textSecondary}
-                        />
-                        <Text style={{
-                          fontFamily: theme.typography?.callout?.fontFamily,
-                          fontSize: 12,
-                          fontWeight: isOn ? "600" : "500",
-                          letterSpacing: -0.1,
-                          color: isOn ? theme.primary : theme.textSecondary,
-                        }}>
-                          {cat.label}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* Subject field */}
-              <View style={{
-                paddingHorizontal: 22,
-                paddingTop: 16,
-                paddingBottom: 14,
-                backgroundColor: theme.background,
-                borderBottomWidth: StyleSheet.hairlineWidth,
-                borderBottomColor: theme.divider,
-              }}>
-                <Text style={{
-                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-                  fontSize: 9,
-                  fontWeight: "500",
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  color: theme.textTertiary,
-                  marginBottom: 6,
-                }}>
-                  {t.feedbackTitle || "Subject"}
-                </Text>
-                <TextInput
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    fontSize: 15,
-                    fontWeight: "500",
-                    letterSpacing: -0.2,
-                    color: theme.text,
-                    padding: 0,
-                  }}
-                  placeholder={t.feedbackTitlePlaceholder || "Brief summary…"}
-                  placeholderTextColor={theme.textTertiary}
-                  value={feedbackTitle}
-                  onChangeText={setFeedbackTitle}
-                  maxLength={100}
-                />
-              </View>
-
-              {/* Message field */}
-              <View style={{
-                paddingHorizontal: 22,
-                paddingTop: 16,
-                paddingBottom: 14,
-                backgroundColor: theme.background,
-                flex: 1,
-              }}>
-                <Text style={{
-                  fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
-                  fontSize: 9,
-                  fontWeight: "500",
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  color: theme.textTertiary,
-                  marginBottom: 8,
-                }}>
-                  {t.feedbackDetails || "Message"}
-                </Text>
-                <TextInput
-                  style={{
-                    fontFamily: theme.typography?.body?.fontFamily,
-                    fontSize: 14,
-                    lineHeight: 22,
-                    letterSpacing: -0.1,
-                    color: theme.text,
-                    minHeight: 120,
-                    textAlignVertical: "top",
-                    padding: 0,
-                  }}
-                  placeholder={t.feedbackPlaceholder || ""}
-                  placeholderTextColor={theme.textTertiary}
-                  multiline={true}
-                  value={feedbackText}
-                  onChangeText={setFeedbackText}
-                  maxLength={1000}
-                />
-                <Text style={{
-                  fontFamily: theme.typography?.footnote?.fontFamily,
-                  fontSize: 12,
-                  color: theme.textTertiary,
-                  textAlign: "right",
-                  marginTop: 8,
-                  marginBottom: 40,
-                }}>
-                  {feedbackText.length} / 1000
-                </Text>
-              </View>
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </Modal>
-
-            {/* Terms of Use */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Terms")}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
-                borderBottomWidth: 1,
-                borderBottomColor: theme.rule,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                  letterSpacing: -0.2,
+                }}
               >
-                <MaterialIcons
-                  name="description"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={{ marginRight: 14 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
-                >
-                  {t.terms}
-                </Text>
-              </View>
-              <MaterialIcons
-                name="chevron-right"
-                size={14}
-                color={theme.textTertiary}
-              />
-            </TouchableOpacity>
+                {t.feedback || "Send Feedback"}
+              </Text>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={14}
+              color={theme.textTertiary}
+            />
+          </TouchableOpacity>
 
-            {/* Privacy Policy */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Privacy")}
-              activeOpacity={0.6}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingVertical: 14,
-                paddingHorizontal: 22,
-              }}
+          {/* Terms of Use */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Terms")}
+            activeOpacity={0.6}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+              borderBottomWidth: 1,
+              borderBottomColor: theme.rule,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-              >
-                <MaterialIcons
-                  name="privacy-tip"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={{ marginRight: 14 }}
-                />
-                <Text
-                  style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}
-                >
-                  {t.privacy}
-                </Text>
-              </View>
               <MaterialIcons
-                name="chevron-right"
-                size={14}
-                color={theme.textTertiary}
+                name="description"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
               />
-            </TouchableOpacity>
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 15,
+                  fontWeight: "500",
+                  letterSpacing: -0.2,
+                }}
+              >
+                {t.terms}
+              </Text>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={14}
+              color={theme.textTertiary}
+            />
+          </TouchableOpacity>
+
+          {/* Privacy Policy */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Privacy")}
+            activeOpacity={0.6}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+            >
+              <MaterialIcons
+                name="privacy-tip"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
+              />
+              <Text
+                style={{
+                  color: theme.text,
+                  fontSize: 15,
+                  fontWeight: "500",
+                  letterSpacing: -0.2,
+                }}
+              >
+                {t.privacy}
+              </Text>
+            </View>
+            <MaterialIcons
+              name="chevron-right"
+              size={14}
+              color={theme.textTertiary}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* About Section */}
         {Platform.OS !== "web" && (
           <>
             <IOSSectionHeader title={t.about || "About"} theme={theme} />
-            <View style={{ marginHorizontal: 16, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
+            <View
+              style={{
+                marginHorizontal: 16,
+                borderWidth: 1,
+                borderColor: theme.rule,
+                overflow: "hidden",
+              }}
+            >
               {effectiveHasUpdate ? (
                 <TouchableOpacity
                   onPress={handleVersionPress}
@@ -2086,16 +1907,31 @@ function SettingScreen() {
                     paddingHorizontal: 22,
                   }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flex: 1,
+                    }}
+                  >
                     <MaterialIcons
                       name="system-update"
                       size={18}
                       color={theme.textSecondary}
                       style={{ marginRight: 14 }}
                     />
-                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}>
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontSize: 15,
+                        fontWeight: "500",
+                        letterSpacing: -0.2,
+                      }}
+                    >
                       {t.version}{" "}
-                      {effectiveVersionInfo?.version || Application.nativeApplicationVersion || "1.2.9"}
+                      {effectiveVersionInfo?.version ||
+                        Application.nativeApplicationVersion ||
+                        "1.2.9"}
                     </Text>
                   </View>
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -2110,11 +1946,22 @@ function SettingScreen() {
                         borderColor: theme.primary + "60",
                       }}
                     >
-                      <Text style={{ color: theme.primary, fontSize: 10, fontWeight: "700", letterSpacing: 0.3 }}>
+                      <Text
+                        style={{
+                          color: theme.primary,
+                          fontSize: 10,
+                          fontWeight: "700",
+                          letterSpacing: 0.3,
+                        }}
+                      >
                         {t.updateAvailable || "Download Latest"}
                       </Text>
                     </View>
-                    <MaterialIcons name="open-in-new" size={14} color={theme.primary} />
+                    <MaterialIcons
+                      name="open-in-new"
+                      size={14}
+                      color={theme.primary}
+                    />
                   </View>
                 </TouchableOpacity>
               ) : (
@@ -2127,19 +1974,40 @@ function SettingScreen() {
                     paddingHorizontal: 22,
                   }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flex: 1,
+                    }}
+                  >
                     <MaterialIcons
                       name="info-outline"
                       size={18}
                       color={theme.textSecondary}
                       style={{ marginRight: 14 }}
                     />
-                    <Text style={{ color: theme.text, fontSize: 15, fontWeight: "500", letterSpacing: -0.2 }}>
+                    <Text
+                      style={{
+                        color: theme.text,
+                        fontSize: 15,
+                        fontWeight: "500",
+                        letterSpacing: -0.2,
+                      }}
+                    >
                       {t.version}{" "}
-                      {effectiveVersionInfo?.version || Application.nativeApplicationVersion || "1.2.9"}
+                      {effectiveVersionInfo?.version ||
+                        Application.nativeApplicationVersion ||
+                        "1.2.9"}
                     </Text>
                   </View>
-                  <Text style={{ color: theme.textTertiary, fontSize: 13, letterSpacing: -0.1 }}>
+                  <Text
+                    style={{
+                      color: theme.textTertiary,
+                      fontSize: 13,
+                      letterSpacing: -0.1,
+                    }}
+                  >
                     {t.latestVersion || "Latest"}
                   </Text>
                 </View>
@@ -2149,7 +2017,15 @@ function SettingScreen() {
         )}
 
         {/* Log Out Button */}
-        <View style={{ marginHorizontal: 16, marginTop: 32, borderWidth: 1, borderColor: theme.rule, overflow: "hidden" }}>
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginTop: 32,
+            borderWidth: 1,
+            borderColor: theme.rule,
+            overflow: "hidden",
+          }}
+        >
           <TouchableOpacity
             onPress={() => {
               setLogoutModalVisible(true);
@@ -2170,7 +2046,12 @@ function SettingScreen() {
               style={{ marginRight: 8 }}
             />
             <Text
-              style={{ color: theme.error, fontSize: 15, fontWeight: "600", letterSpacing: -0.2 }}
+              style={{
+                color: theme.error,
+                fontSize: 15,
+                fontWeight: "600",
+                letterSpacing: -0.2,
+              }}
             >
               {t.logout || "Log out"}
             </Text>
@@ -2486,11 +2367,8 @@ function SettingScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
-
     </SafeAreaView>
   );
 }
-
-
 
 export default SettingScreen;
