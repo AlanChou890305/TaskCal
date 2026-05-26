@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Modal,
   Linking,
   Platform,
 } from "react-native";
@@ -21,8 +20,6 @@ import { ThemeContext, LanguageContext, UserContext } from "../contexts";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";
 import { UserService } from "../services/userService";
-import TermsScreen from "./TermsScreen";
-import PrivacyScreen from "./PrivacyScreen";
 
 const getAppDisplayName = () => {
   return "TaskCal";
@@ -56,6 +53,7 @@ const LogoTile = ({ size, bg, corner }) => (
 
 const SplashScreen = ({ navigation }) => {
   const { theme, themeMode, loadTheme: reloadTheme } = useContext(ThemeContext);
+  const isDark = theme.mode === "dark";
   const { t } = useContext(LanguageContext);
   const { loadUserType } = useContext(UserContext);
   const [hasNavigated, setHasNavigated] = useState(false);
@@ -77,9 +75,6 @@ const SplashScreen = ({ navigation }) => {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isAppleSigningIn, setIsAppleSigningIn] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
-  const [termsModalVisible, setTermsModalVisible] = useState(false);
-  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
-
   // Check if Apple Authentication is available
   useEffect(() => {
     const checkAppleAvailability = async () => {
@@ -1987,20 +1982,29 @@ const SplashScreen = ({ navigation }) => {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 22 }}>
           <LogoTile size={108} bg={theme.primary} corner={24} />
           <View style={{ alignItems: "center", gap: 6 }}>
+            <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontSize: 38,
+                  fontWeight: "600",
+                  letterSpacing: -1.4,
+                  color: theme.text,
+                }}
+              >Task</Text>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontSize: 38,
+                  fontWeight: "600",
+                  letterSpacing: -1.4,
+                  color: theme.primary,
+                }}
+              >Cal</Text>
+            </View>
             <Text
               style={{
-                fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
-                fontSize: 38,
-                fontWeight: "600",
-                letterSpacing: -1.4,
-              }}
-            >
-              <Text style={{ color: theme.text }}>Task</Text>
-              <Text style={{ color: theme.primary }}>Cal</Text>
-            </Text>
-            <Text
-              style={{
-                fontFamily: theme.typography?.body?.fontFamily,
+                fontFamily: theme.typography?.body?.fontFamily || "InterTight_400Regular",
                 fontSize: 13,
                 fontWeight: "400",
                 color: theme.textSecondary,
@@ -2074,11 +2078,12 @@ const SplashScreen = ({ navigation }) => {
               letterSpacing: -1.6,
               lineHeight: 42,
               marginBottom: 14,
+              color: theme.text,
             }}
           >
-            <Text style={{ color: theme.text }}>{"Sign in to\nTask"}</Text>
+            {"Sign in to\nTask"}
             <Text style={{ color: theme.primary }}>Cal</Text>
-            <Text style={{ color: theme.text }}>{"."}</Text>
+            {"."}
           </Text>
           <Text
             style={{
@@ -2150,7 +2155,7 @@ const SplashScreen = ({ navigation }) => {
             disabled={isAppleSigningIn || isSigningIn}
           >
             <Image
-              source={require("../../assets/apple-100(dark).png")}
+              source={isDark ? require("../../assets/apple-90(light).png") : require("../../assets/apple-100(dark).png")}
               style={{ width: 20, height: 20, marginRight: 12 }}
               resizeMode="contain"
             />
@@ -2171,7 +2176,7 @@ const SplashScreen = ({ navigation }) => {
         )}
       </View>
 
-      {/* Footer: Terms + version */}
+      {/* Footer: Terms + Privacy + version */}
       <View style={{ paddingHorizontal: 22, paddingBottom: 32 }}>
         <View
           style={{
@@ -2180,14 +2185,7 @@ const SplashScreen = ({ navigation }) => {
             marginBottom: 14,
           }}
         />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: 14,
-          }}
-        >
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 14 }}>
           <Text
             style={{
               fontFamily: theme.typography?.footnote?.fontFamily,
@@ -2198,46 +2196,27 @@ const SplashScreen = ({ navigation }) => {
               flex: 1,
             }}
           >
-            {t.byContinuing}{" "}
+            {"By continuing, you agree to our "}
             <Text
               style={{ color: theme.primary, textDecorationLine: "underline" }}
-              onPress={() => setTermsModalVisible(true)}
+              onPress={() => navigation.navigate("Terms")}
             >
-              {t.terms}
-            </Text>{" "}
-            {t.and}{" "}
-            <Text
-              style={{ color: theme.primary, textDecorationLine: "underline" }}
-              onPress={() => setPrivacyModalVisible(true)}
-            >
-              {t.privacy}
+              {"Terms"}
             </Text>
-            .
+            {" and "}
+            <Text
+              style={{ color: theme.primary, textDecorationLine: "underline" }}
+              onPress={() => navigation.navigate("Privacy")}
+            >
+              {"Privacy"}
+            </Text>
+            {"."}
           </Text>
           <Text style={[monoKicker, { color: theme.textTertiary, letterSpacing: 1.5 }]}>
             {"v" + (Application.nativeApplicationVersion || "1.5.0")}
           </Text>
         </View>
       </View>
-
-      <Modal
-        visible={termsModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setTermsModalVisible(false)}
-      >
-        <TermsScreen onClose={() => setTermsModalVisible(false)} />
-      </Modal>
-      <Modal
-        visible={privacyModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setPrivacyModalVisible(false)}
-      >
-        <PrivacyScreen onClose={() => setPrivacyModalVisible(false)} />
-      </Modal>
     </SafeAreaView>
   );
 };
