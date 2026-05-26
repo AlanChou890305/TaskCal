@@ -13,12 +13,12 @@ const getEnvironmentConfig = () => {
   return {
     name: "TaskCal",
     slug: "taskcal",
-    version: "1.3.2",
+    version: "2.0.0",
     description: "Simple and intuitive task management app with Google SSO",
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "32",
+    iosBuildNumber: "33",
   };
 };
 
@@ -129,9 +129,13 @@ module.exports = {
 
     // Splash screen configuration
     splash: {
-      image: "./assets/splash-light.jpg",
-      resizeMode: "contain",
-      backgroundColor: "#ffffff",
+      image: "./assets/splash-light.png",
+      dark: {
+        image: "./assets/splash-dark.png",
+        backgroundColor: "#14182A",
+      },
+      resizeMode: "cover",
+      backgroundColor: "#F2F1EB",
     },
 
     // Asset bundle patterns

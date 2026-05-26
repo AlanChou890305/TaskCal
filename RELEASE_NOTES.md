@@ -1,62 +1,41 @@
-# Release Notes - Version 1.3.2 (Build 32)
+# Release Notes - Version 2.0.0 (Build 33)
 
-**Release Date**: 2026-03-23
+**Release Date**: 2026-05-26
 
 ---
 
 ## What's New
 
 ### English
-- Keyboard automatically focuses the first input field when opening task creation and editing modals (iOS/Android)
-- Fixed onboarding incorrectly appearing after login for existing users
-- Fixed theme not loading correctly (stuck on light mode) after login
-- Added Onboarding experience to guide new users through key features
-- Improved login page layout — text no longer overflows the screen
-- Fixed vertical scrollbar appearing on create/edit task pages (web)
-- Fixed Terms of Use and Privacy Policy navigation errors on login page
-- Save button in task editor changed to checkmark icon (fixes text overflow in Spanish)
-- Web header style updated to shadow for visual consistency
-- Fixed last task being partially hidden by gradient fade in task list
-- Spanish locale fully synced
+- Completely redesigned UI with the new Indigo design system
+- Redesigned Task Detail screen with inline editing and Mark Done button
+- Calendar screen improvements: task dots, Today highlight, and banner optimizations
+- Updated Settings screen layout aligned with new design
 
 ### 繁體中文
-- 開啟任務建立與編輯彈窗時，鍵盤自動 focus 第一個輸入欄位（iOS/Android）
-- 修正既有用戶登入後誤跳 Onboarding 引導頁的問題
-- 修正登入後 theme 無法正確載入（卡在 light 模式）的問題
-- 新增 Onboarding 引導頁面，協助新用戶快速了解核心功能
-- 改善登入頁面排版，底部文字不再超出螢幕
-- 修正網頁版建立/編輯任務頁面出現多餘垂直捲軸的問題
-- 修正登入頁面中使用條款與隱私政策導航錯誤
-- 任務編輯器儲存按鈕改為打勾圖示（修正西文斷行問題）
-- 網頁版 Header 改為陰影樣式，視覺一致性提升
-- 修正任務列表最後一項被漸層效果遮住的問題
-- 西班牙文翻譯補全
+- 全新 Indigo 設計系統，整體介面視覺煥然一新
+- Task Detail 頁面改版：inline 編輯、Mark Done 按鈕全寬顯示
+- Calendar 畫面優化：多個 task dots、今日高亮、Banner 細節改善
+- Settings 畫面對齊新設計稿全面更新
 
 ### Español
-- El teclado enfoca automáticamente el primer campo al abrir los modales de creación y edición de tareas (iOS/Android)
-- Corregido el problema donde el Onboarding aparecía incorrectamente para usuarios existentes al iniciar sesión
-- Corregido el tema que no se cargaba correctamente (atascado en modo claro) después de iniciar sesión
-- Nueva experiencia de Onboarding para guiar a los nuevos usuarios por las funciones principales
-- Mejora en el diseño de la página de inicio de sesión — el texto ya no se desborda de la pantalla
-- Corregida la barra de desplazamiento vertical en las páginas de crear/editar tarea (web)
-- Corregidos errores de navegación en los enlaces de Términos de Uso y Política de Privacidad
-- Botón de guardar en el editor de tareas cambiado a ícono de verificación (soluciona desbordamiento en español)
-- Estilo del encabezado web actualizado a sombra para mayor consistencia visual
-- Corregido el problema donde la última tarea quedaba oculta por el efecto de degradado
-- Traducciones al español completamente sincronizadas
+- Interfaz completamente rediseñada con el nuevo sistema de diseño Indigo
+- Pantalla de detalles de tarea rediseñada con edición en línea y botón Marcar como completado
+- Mejoras en la pantalla de calendario: puntos de tareas, resaltado de hoy y optimizaciones del banner
+- Pantalla de Configuración actualizada con el nuevo diseño
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-TaskCal just got smoother — keyboards now auto-focus when you open task modals, so you can start typing instantly. Plus onboarding for new users, login fixes, and web layout polish. Every detail matters.
+TaskCal 2.0 is here — a full visual redesign with the Indigo design system. Cleaner task details, smarter calendar view, and a more polished experience throughout. This is the biggest update yet.
 
 ### 繁體中文
-TaskCal 更流暢了！開啟任務彈窗後鍵盤自動 focus，馬上就能開始輸入。同時帶來新用戶 Onboarding 引導、登入修正與網頁版細節優化。每個細節都更精緻。
+TaskCal 2.0 全新登場！採用 Indigo 設計系統，任務詳情更清晰、日曆視圖更聰明、整體體驗更精緻。這是迄今最大幅度的更新。
 
 ### Español
-TaskCal acaba de mejorar — el teclado ahora se enfoca automáticamente al abrir modales de tareas, para que puedas escribir de inmediato. Además: onboarding para nuevos usuarios, correcciones de inicio de sesión y mejoras visuales. Cada detalle importa.
+TaskCal 2.0 ya está aquí — un rediseño visual completo con el sistema de diseño Indigo. Detalles de tareas más claros, vista de calendario más inteligente y una experiencia más pulida. La mayor actualización hasta ahora.
 
 ---
 
