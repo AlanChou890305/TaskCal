@@ -319,7 +319,7 @@ export default function TaskDetailScreen({ navigation, route }) {
             paddingHorizontal: 22,
             paddingTop: 14,
             paddingBottom: 22,
-            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomWidth: 1.5,
             borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
           }}>
             <Text style={[monoKicker, { color: theme.primary, marginBottom: 6, letterSpacing: 2, fontSize: 10 }]}>

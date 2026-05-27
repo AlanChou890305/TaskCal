@@ -236,7 +236,8 @@ function SupportScreen() {
               fontWeight: "500",
               letterSpacing: -0.2,
               color: theme.text,
-              paddingVertical: 4,
+              paddingVertical: 2,
+              textAlignVertical: "center",
             }}
           />
         </View>

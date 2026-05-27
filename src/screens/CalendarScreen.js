@@ -1964,7 +1964,7 @@ function CalendarScreen({ navigation, route }) {
                 style={styles.modalScrollView}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 60 }}
+                contentContainerStyle={{ flex: 1 }}
                 nestedScrollEnabled={true}
               >
                 {/* Title area */}
@@ -2211,9 +2211,7 @@ function CalendarScreen({ navigation, route }) {
                     paddingHorizontal: 22,
                     paddingTop: 16,
                     paddingBottom: 20,
-                    marginTop: 8,
                     flex: 1,
-                    minHeight: 120,
                   }}
                 >
                   <View
@@ -2244,7 +2242,7 @@ function CalendarScreen({ navigation, route }) {
                       letterSpacing: -0.1,
                       lineHeight: 22,
                       padding: 0,
-                      minHeight: 80,
+                      flex: 1,
                       textAlignVertical: "top",
                     }}
                     value={taskNote}
@@ -3184,9 +3182,9 @@ const styles = StyleSheet.create({
     overflow: "visible",
   },
   dayCircle: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
