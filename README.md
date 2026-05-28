@@ -2,7 +2,7 @@
 
 A React Native (Expo) task management app with calendar view, Google SSO, Supabase backend, and iOS home screen widget. Supports English, Traditional Chinese, and Spanish.
 
-**Current version:** v2.0.0 (Build 33)
+**Current version:** v2.0.0 (Build 34)
 
 ---
 
