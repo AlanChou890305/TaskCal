@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
+  ScrollView,
   Platform,
   Alert,
   StyleSheet,
@@ -105,6 +106,11 @@ function SupportScreen() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+        >
         {/* Hero */}
         <View
           style={[
@@ -144,7 +150,7 @@ function SupportScreen() {
             ]}
           >
             {t.feedbackDesc ||
-              "One human reads every message. Replies usually come within two working days."}
+              "One human reads every message."}
           </Text>
         </View>
 
@@ -273,7 +279,7 @@ function SupportScreen() {
               letterSpacing: -0.1,
               lineHeight: 22,
               color: theme.text,
-              flex: 1,
+              minHeight: 180,
               textAlignVertical: "top",
               paddingVertical: 4,
             }}
@@ -314,6 +320,7 @@ function SupportScreen() {
             </Text>
           </Text>
         </TouchableOpacity>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
