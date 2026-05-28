@@ -218,7 +218,7 @@ export default {
   feedbackBug: "Bug",
   feedbackIdea: "想法",
   feedbackQuestion: "問題",
-  feedbackDesc: "每一封都由真人閱讀。通常在兩個工作天內回覆。",
+  feedbackDesc: "每一封都由真人閱讀。",
   feedbackAttach: "附上診斷資訊",
   feedbackAttachSub: "裝置、版本、近 7 天崩潰",
   feedbackPlaceholder: "請告訴我們您的想法...",

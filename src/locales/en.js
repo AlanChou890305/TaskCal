@@ -219,7 +219,7 @@ export default {
   feedbackBug: "Bug",
   feedbackIdea: "Idea",
   feedbackQuestion: "Question",
-  feedbackDesc: "One human reads every message. Replies usually come within two working days.",
+  feedbackDesc: "One human reads every message.",
   feedbackAttach: "Attach diagnostic info",
   feedbackAttachSub: "device, version, last 7d crashes",
   feedbackPlaceholder: "What's on your mind?",

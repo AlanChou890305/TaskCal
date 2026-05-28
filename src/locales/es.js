@@ -222,7 +222,7 @@ export default {
   feedbackBug: "Error",
   feedbackIdea: "Idea",
   feedbackQuestion: "Pregunta",
-  feedbackDesc: "Un humano lee cada mensaje. Las respuestas suelen llegar en dos días hábiles.",
+  feedbackDesc: "Un humano lee cada mensaje.",
   feedbackAttach: "Adjuntar información de diagnóstico",
   feedbackAttachSub: "dispositivo, versión, fallos últimos 7 días",
   feedbackPlaceholder: "¿Qué tienes en mente?",
