@@ -1964,7 +1964,7 @@ function CalendarScreen({ navigation, route }) {
                 style={styles.modalScrollView}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ flex: 1 }}
+                contentContainerStyle={{ flexGrow: 1 }}
                 nestedScrollEnabled={true}
               >
                 {/* Title area */}
@@ -2876,7 +2876,7 @@ function CalendarScreen({ navigation, route }) {
                   fontSize: 34,
                   fontWeight: "600",
                   letterSpacing: -1.3,
-                  lineHeight: 36,
+                  lineHeight: 42,
                   color: theme.text,
                 }}
               >
