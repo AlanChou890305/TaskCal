@@ -9,7 +9,7 @@ submit_for_review false
 automatic_release false
 
 # 語系清單
-languages ["en-US", "zh-Hant", "es-MX"]
+languages ["en-US", "zh-Hant", "es-ES"]
 
 # metadata 來自 fastlane/metadata/ 目錄
 metadata_path "./fastlane/metadata"
