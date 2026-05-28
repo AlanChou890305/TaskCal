@@ -186,5 +186,4 @@ coverage/
 # Android directory (not used)
 android/
 
-# Fastlane (contains apple_id in Appfile)
-fastlane/
+# Fastlane

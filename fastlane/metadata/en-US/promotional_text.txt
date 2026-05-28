@@ -1,0 +1,1 @@
+TaskCal 2.0 — a full redesign with the Indigo system. Cleaner task details, smarter calendar view, and a more polished experience. The biggest update yet.

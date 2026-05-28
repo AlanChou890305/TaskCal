@@ -1,0 +1,4 @@
+全新 Indigo 設計系統，整體介面視覺煥然一新
+Task Detail 頁面改版：inline 編輯、Mark Done 按鈕全寬顯示
+Calendar 畫面優化：多個 task dots、今日高亮、Banner 細節改善
+Settings 畫面對齊新設計稿全面更新

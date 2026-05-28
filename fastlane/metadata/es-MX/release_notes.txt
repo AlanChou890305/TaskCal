@@ -1,0 +1,4 @@
+Interfaz completamente rediseñada con el nuevo sistema de diseño Indigo
+Pantalla de detalles de tarea rediseñada con edición en línea y botón Marcar como completado
+Mejoras en la pantalla de calendario: puntos de tareas, resaltado de hoy y optimizaciones del banner
+Pantalla de Configuración actualizada con el nuevo diseño

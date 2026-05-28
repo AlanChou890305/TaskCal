@@ -1,0 +1,4 @@
+Completely redesigned UI with the new Indigo design system
+Redesigned Task Detail screen with inline editing and Mark Done button
+Calendar screen improvements: task dots, Today highlight, and banner optimizations
+Updated Settings screen layout aligned with new design

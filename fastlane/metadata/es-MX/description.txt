@@ -1,0 +1,11 @@
+TaskCal es un gestor de tareas limpio e intuitivo construido alrededor de tu calendario. Mantente al tanto de tu día con una hermosa lista de tareas, vista de calendario y un widget para la pantalla de inicio de iOS que mantiene tus tareas visibles en todo momento.
+
+Características principales:
+• Vista de Calendario — ve tus tareas organizadas por fecha en un calendario claro y desplazable
+• Widget para Pantalla de Inicio — tus tareas, directamente en tu pantalla de inicio
+• Detalle de Tarea — agrega títulos, fechas, ubicaciones, notas y enlaces a cada tarea
+• Modo Oscuro — compatible con temas claro y oscuro
+• Inicio con Google — inicio de sesión rápido y seguro
+• Multiidioma — inglés, chino tradicional y español
+
+TaskCal sincroniza entre sesiones para que tus tareas estén siempre actualizadas. Ya sea que estés planificando tu semana o simplemente marcando las tareas de hoy, TaskCal mantiene las cosas simples y enfocadas.
