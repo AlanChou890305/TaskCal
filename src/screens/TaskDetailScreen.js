@@ -54,7 +54,6 @@ export default function TaskDetailScreen({ navigation, route }) {
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
 
   const isZH = language === "zh-Hant";
-  const isDone = !!(task.is_completed || task.checked);
 
   const monoKicker = {
     fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
@@ -98,18 +97,6 @@ export default function TaskDetailScreen({ navigation, route }) {
         { text: t.cancel, style: "cancel" },
         { text: t.delete, onPress: doDelete, style: "destructive" },
       ]);
-    }
-  };
-
-  const handleMarkDone = async () => {
-    const newState = !isDone;
-    try {
-      const result = await TaskService.updateTask(task.id, { is_completed: newState });
-      const updated = result || { ...task, is_completed: newState, checked: newState };
-      setTask(updated);
-      navigation.navigate("CalendarMain", { updatedTask: updated });
-    } catch (err) {
-      console.error("markDone error:", err);
     }
   };
 
@@ -306,7 +293,7 @@ export default function TaskDetailScreen({ navigation, route }) {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={insets.top + 44}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           style={{ flex: 1 }}
@@ -444,7 +431,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                   lineHeight: 22,
                   letterSpacing: -0.1,
                   padding: 0,
-                  minHeight: noteInputHeight,
+                  minHeight: Math.max(180, noteInputHeight),
                   textAlignVertical: "top",
                 }}
                 value={noteValue}
@@ -465,47 +452,8 @@ export default function TaskDetailScreen({ navigation, route }) {
             </View>
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
 
-      {/* Bottom action bar */}
-      <View style={{
-        paddingHorizontal: 16,
-        paddingBottom: insets.bottom + 12,
-        paddingTop: 12,
-        borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
-        backgroundColor: theme.background,
-      }}>
-        <TouchableOpacity
-          onPress={handleMarkDone}
-          style={{
-            backgroundColor: isDone ? theme.backgroundSecondary || "#E9E7DE" : theme.primary,
-            borderRadius: theme.radius?.lg || 8,
-            paddingVertical: 14,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-          activeOpacity={0.85}
-        >
-          {!isDone && (
-            <MaterialIcons name="check" size={16} color={theme.buttonText || "#F2F1EB"} />
-          )}
-          <Text style={{
-            fontFamily: theme.typography?.headline?.fontFamily,
-            fontSize: 13,
-            fontWeight: "600",
-            color: isDone ? theme.textSecondary : theme.buttonText || "#F2F1EB",
-            letterSpacing: isZH ? 0 : 0.4,
-            textTransform: isZH ? "none" : "uppercase",
-          }}>
-            {isDone
-              ? (isZH ? "已完成" : "Completed")
-              : (isZH ? "標記為完成" : "Mark done")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
 
       {renderDatePickerOverlay()}
       {renderTimePickerOverlay()}
