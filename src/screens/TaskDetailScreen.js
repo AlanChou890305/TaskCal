@@ -17,6 +17,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext, LanguageContext } from "../contexts";
 import { TaskService } from "../services/taskService";
 import { mixpanelService } from "../services/mixpanelService";
+import { invokeCallback } from "../utils/navigationCallbacks";
 import { formatTimeDisplay } from "../utils/dateUtils";
 
 const DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -85,10 +86,8 @@ export default function TaskDetailScreen({ navigation, route }) {
     const doDelete = async () => {
       mixpanelService.track("Task Deleted", { task_id: task.id, platform: Platform.OS });
       TaskService.deleteTask(task.id).catch((err) => console.error("deleteTask error:", err));
-      navigation.navigate("CalendarMain", {
-        deletedTaskId: task.id,
-        deletedTaskDate: task.date,
-      });
+      invokeCallback(route.params.callbackId, "onDelete", task.id, task.date);
+      navigation.goBack();
     };
     if (Platform.OS === "web") {
       if (window.confirm(t.deleteConfirm)) doDelete();
@@ -101,7 +100,8 @@ export default function TaskDetailScreen({ navigation, route }) {
   };
 
   const handleGoBack = () => {
-    navigation.navigate("CalendarMain", { updatedTask: taskRef.current });
+    invokeCallback(route.params.callbackId, "onUpdate", taskRef.current);
+    navigation.goBack();
   };
 
 

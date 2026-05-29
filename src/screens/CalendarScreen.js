@@ -50,6 +50,7 @@ import {
 } from "../services/notificationService";
 import { getActiveReminderMinutes } from "../config/notificationConfig";
 import { dataPreloadService } from "../services/dataPreloadService";
+import { registerCallbacks, clearCallbacks } from "../utils/navigationCallbacks";
 import { format } from "date-fns";
 import {
   formatTimestamp,
@@ -666,7 +667,8 @@ function CalendarScreen({ navigation, route }) {
     setTimeout(() => {
       centerToday();
     }, 500);
-  }, [centerToday, isInitialized]); // Include centerToday and isInitialized in dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerToday]);
 
   // Reset to today when Calendar tab is focused (but avoid duplicate fetches)
   useFocusEffect(
@@ -692,36 +694,7 @@ function CalendarScreen({ navigation, route }) {
     }, [route?.params?.focusToday, centerToday]),
   );
 
-  // Sync state changes from TaskDetailScreen back to CalendarScreen
-  useEffect(() => {
-    if (route.params?.updatedTask) {
-      const updated = route.params.updatedTask;
-      setTasks((prev) => {
-        const dayList = (prev[updated.date] || []).map((t) =>
-          t.id === updated.id ? updated : t,
-        );
-        const newTasks = { ...prev, [updated.date]: dayList };
-        widgetService.syncTodayTasks(newTasks);
-        return newTasks;
-      });
-      navigation.setParams({ updatedTask: undefined });
-    }
-    if (route.params?.deletedTaskId) {
-      const { deletedTaskId, deletedTaskDate } = route.params;
-      setTasks((prev) => {
-        const dayList = (prev[deletedTaskDate] || []).filter(
-          (t) => t.id !== deletedTaskId,
-        );
-        const newTasks = { ...prev, [deletedTaskDate]: dayList };
-        widgetService.syncTodayTasks(newTasks);
-        return newTasks;
-      });
-      navigation.setParams({
-        deletedTaskId: undefined,
-        deletedTaskDate: undefined,
-      });
-    }
-  }, [route.params?.updatedTask, route.params?.deletedTaskId]);
+  // Task state changes from TaskDetailScreen are now handled via callbacks passed in openEditTask
 
   // Note: We no longer need to save tasks to AsyncStorage
   // Tasks are automatically saved to Supabase when modified
@@ -740,9 +713,34 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const openEditTask = (task) => {
+    const callbackId = `task_${task.id}`;
+    registerCallbacks(callbackId, {
+      onDelete: (deletedId, deletedDate) => {
+        setTasks((prev) => {
+          const dayList = (prev[deletedDate] || []).filter((t) => t.id !== deletedId);
+          const newTasks = { ...prev, [deletedDate]: dayList };
+          widgetService.syncTodayTasks(newTasks);
+          return newTasks;
+        });
+        clearTaskCache();
+        clearCallbacks(callbackId);
+      },
+      onUpdate: (updatedTask) => {
+        setTasks((prev) => {
+          const dayList = (prev[updatedTask.date] || []).map((t) =>
+            t.id === updatedTask.id ? updatedTask : t,
+          );
+          const newTasks = { ...prev, [updatedTask.date]: dayList };
+          widgetService.syncTodayTasks(newTasks);
+          return newTasks;
+        });
+        clearCallbacks(callbackId);
+      },
+    });
     navigation.navigate("TaskDetail", {
       task,
       dayTasks: tasks[task.date] || [],
+      callbackId,
     });
   };
 
@@ -812,7 +810,7 @@ function CalendarScreen({ navigation, route }) {
       const dayTasks = tasks[targetDate] || [];
       const newTasksState = { ...tasks, [targetDate]: [...dayTasks, newTask] };
       setTasks(newTasksState);
-      widgetService.syncTodayTasks(newTasksState);
+      // widget sync 延後到 API 回應並取得真實 ID 後再執行（line 993）
     }
 
     // Close modal immediately
