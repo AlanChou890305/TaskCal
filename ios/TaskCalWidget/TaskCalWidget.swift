@@ -37,13 +37,22 @@ struct WidgetTask: Codable {
 struct TaskCalWidget: Widget {
   let kind: String = "TaskCalWidget"
 
+  private static var supportedFamilyList: [WidgetFamily] {
+    #if os(iOS)
+    if #available(iOS 16.0, *) {
+      return [.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline]
+    }
+    #endif
+    return [.systemSmall, .systemMedium]
+  }
+
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: TaskCalWidgetProvider()) { entry in
       TaskCalWidgetView(entry: entry)
     }
     .configurationDisplayName("Today's Tasks")
     .description("View your today's to-do list on the home screen.")
-    .supportedFamilies([.systemSmall, .systemMedium])
+    .supportedFamilies(TaskCalWidget.supportedFamilyList)
     .contentMarginsDisabled()
   }
 }
@@ -148,6 +157,17 @@ struct TaskCalWidgetView: View {
   @Environment(\.colorScheme) var colorScheme
   var entry: TaskCalWidgetEntry
 
+  private var isAccessory: Bool {
+    #if os(iOS)
+    if #available(iOS 16.0, *) {
+      return family == .accessoryCircular
+          || family == .accessoryRectangular
+          || family == .accessoryInline
+    }
+    #endif
+    return false
+  }
+
   var body: some View {
     let isDark    = colorScheme == .dark
     let bg        = isDark ? palPaperDk  : palPaper
@@ -163,21 +183,38 @@ struct TaskCalWidgetView: View {
     let total     = entry.tasks.count
     let dayNum    = Calendar.current.component(.day, from: entry.date)
     let kicker    = kickerString(from: entry.date)
+    let nextTime  = entry.tasks
+      .filter { !$0.completed && !$0.time.isEmpty }
+      .sorted { $0.time < $1.time }
+      .first?.formattedTime ?? ""
 
     if #available(iOS 17.0, *) {
+      #if os(iOS)
       layoutView(
         isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
         visible: visible, todoCount: todoCount, doneCount: doneCount,
-        total: total, dayNum: dayNum, kicker: kicker
+        total: total, dayNum: dayNum, kicker: kicker, nextTime: nextTime
+      )
+      .containerBackground(isAccessory ? .clear : bg, for: .widget)
+      #else
+      layoutView(
+        isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
+        visible: visible, todoCount: todoCount, doneCount: doneCount,
+        total: total, dayNum: dayNum, kicker: kicker, nextTime: nextTime
       )
       .containerBackground(bg, for: .widget)
+      #endif
     } else {
       layoutView(
         isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
         visible: visible, todoCount: todoCount, doneCount: doneCount,
-        total: total, dayNum: dayNum, kicker: kicker
+        total: total, dayNum: dayNum, kicker: kicker, nextTime: nextTime
       )
+      #if os(iOS)
+      .background(isAccessory ? Color.clear : bg)
+      #else
       .background(bg)
+      #endif
     }
   }
 
@@ -185,7 +222,7 @@ struct TaskCalWidgetView: View {
   private func layoutView(
     isDark: Bool, fg: Color, fg3: Color, acc: Color, div: Color,
     visible: [WidgetTask], todoCount: Int, doneCount: Int,
-    total: Int, dayNum: Int, kicker: String
+    total: Int, dayNum: Int, kicker: String, nextTime: String
   ) -> some View {
     if family == .systemMedium {
       mediumLayout(
@@ -194,11 +231,119 @@ struct TaskCalWidgetView: View {
         dayNum: dayNum, kicker: kicker
       )
     } else {
+      #if os(iOS)
+      if #available(iOS 16.0, *) {
+        if family == .accessoryInline {
+          accessoryInlineLayout(doneCount: doneCount, total: total, nextTime: nextTime)
+        } else if family == .accessoryCircular {
+          accessoryCircularLayout(doneCount: doneCount, total: total)
+        } else if family == .accessoryRectangular {
+          accessoryRectangularLayout(visible: visible, todoCount: todoCount)
+        } else {
+          smallLayout(
+            isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
+            visible: visible, todoCount: todoCount, dayNum: dayNum, kicker: kicker
+          )
+        }
+      } else {
+        smallLayout(
+          isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
+          visible: visible, todoCount: todoCount, dayNum: dayNum, kicker: kicker
+        )
+      }
+      #else
       smallLayout(
         isDark: isDark, fg: fg, fg3: fg3, acc: acc, div: div,
         visible: visible, todoCount: todoCount, dayNum: dayNum, kicker: kicker
       )
+      #endif
     }
+  }
+
+  // ── Lock screen: Inline ───────────────────────────────────────────────────
+  @ViewBuilder
+  private func accessoryInlineLayout(doneCount: Int, total: Int, nextTime: String) -> some View {
+    if total == 0 || doneCount == total {
+      Label(total == 0 ? "No tasks today" : "All \(total) done", systemImage: "checkmark")
+    } else {
+      let next = nextTime.isEmpty ? "" : " · Next \(nextTime)"
+      Label("\(doneCount) of \(total) done\(next)", systemImage: "checkmark")
+    }
+  }
+
+  // ── Lock screen: Circular ─────────────────────────────────────────────────
+  @ViewBuilder
+  private func accessoryCircularLayout(doneCount: Int, total: Int) -> some View {
+    if #available(iOS 16.0, *) {
+      let progress = total > 0 ? Double(doneCount) / Double(total) : 0
+      Gauge(value: progress) {
+        EmptyView()
+      } currentValueLabel: {
+        if total == 0 {
+          Image(systemName: "checklist")
+            .font(.system(size: 13, weight: .medium))
+        } else {
+          VStack(spacing: -1) {
+            Text("\(doneCount)/\(total)")
+              .font(.system(size: 13, weight: .semibold, design: .rounded))
+            Text("DONE")
+              .font(.system(size: 6, weight: .semibold, design: .monospaced))
+              .kerning(0.4)
+          }
+        }
+      }
+      .gaugeStyle(.accessoryCircular)
+    } else {
+      VStack(spacing: 0) {
+        Text("\(doneCount)/\(total)")
+          .font(.system(size: 14, weight: .semibold, design: .rounded))
+        Text("DONE")
+          .font(.system(size: 7, weight: .medium, design: .monospaced))
+      }
+    }
+  }
+
+  // ── Lock screen: Rectangular ──────────────────────────────────────────────
+  @ViewBuilder
+  private func accessoryRectangularLayout(visible: [WidgetTask], todoCount: Int) -> some View {
+    let pending = Array(visible.filter { !$0.completed }.prefix(2))
+    VStack(alignment: .leading, spacing: 3) {
+      // Header
+      HStack(spacing: 4) {
+        Image(systemName: "checklist")
+          .font(.system(size: 7, weight: .medium))
+        Text(todoCount == 0 ? "TASKCAL · ALL DONE" : "TASKCAL · \(todoCount) LEFT")
+          .font(.system(size: 7, weight: .semibold, design: .monospaced))
+          .kerning(0.6)
+      }
+      .opacity(0.6)
+
+      if pending.isEmpty {
+        Text("All clear today")
+          .font(.system(size: 13, weight: .medium))
+      } else {
+        ForEach(pending, id: \.id) { task in
+          HStack(alignment: .center) {
+            Text(task.title)
+              .font(.system(size: 13, weight: .medium))
+              .lineLimit(1)
+            Spacer(minLength: 4)
+            if !task.formattedTime.isEmpty {
+              Text(task.formattedTime)
+                .font(.system(size: 12, weight: .regular, design: .monospaced))
+                .opacity(0.7)
+            }
+          }
+        }
+        if todoCount > 2 {
+          Text("+\(todoCount - 2) more")
+            .font(.system(size: 11, weight: .regular))
+            .opacity(0.5)
+        }
+      }
+      Spacer(minLength: 0)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
 
   // ── Small layout ─────────────────────────────────────────────────────────
@@ -342,12 +487,26 @@ struct TaskCalWidget_Previews: PreviewProvider {
       WidgetTask(id: "3", title: "Lunch w/ Mei",     time: "12:00", completed: false),
       WidgetTask(id: "4", title: "Draft Q2 plan",    time: "14:00", completed: false),
     ]
+    let entry = TaskCalWidgetEntry(date: Date(), tasks: tasks)
     Group {
-      TaskCalWidgetView(entry: TaskCalWidgetEntry(date: Date(), tasks: tasks))
+      TaskCalWidgetView(entry: entry)
         .previewContext(WidgetPreviewContext(family: .systemSmall))
 
-      TaskCalWidgetView(entry: TaskCalWidgetEntry(date: Date(), tasks: tasks))
+      TaskCalWidgetView(entry: entry)
         .previewContext(WidgetPreviewContext(family: .systemMedium))
+
+      #if os(iOS)
+      if #available(iOS 16.0, *) {
+        TaskCalWidgetView(entry: entry)
+          .previewContext(WidgetPreviewContext(family: .accessoryInline))
+
+        TaskCalWidgetView(entry: entry)
+          .previewContext(WidgetPreviewContext(family: .accessoryCircular))
+
+        TaskCalWidgetView(entry: entry)
+          .previewContext(WidgetPreviewContext(family: .accessoryRectangular))
+      }
+      #endif
     }
   }
 }
