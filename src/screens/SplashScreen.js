@@ -399,7 +399,7 @@ const SplashScreen = ({ navigation }) => {
     const navigateToMainApp = (options = {}) => {
       console.log("📍 [navigateToMainApp] Function called", options);
 
-      if (hasNavigated && !options.focusToday) {
+      if (hasNavigated) {
         console.log("📍 [navigateToMainApp] ⚠️ Already navigated, skipping");
         return;
       }
@@ -414,7 +414,7 @@ const SplashScreen = ({ navigation }) => {
       // Check if already in MainTabs to avoid resetting navigation
       const currentRoute =
         navigation.getState?.()?.routes?.[navigation.getState?.()?.index];
-      if (currentRoute?.name === "MainTabs" && !options.focusToday) {
+      if (currentRoute?.name === "MainTabs") {
         console.log(
           "📍 [navigateToMainApp] ⚠️ Already in MainTabs, skipping reset to preserve current tab",
         );
@@ -990,67 +990,44 @@ const SplashScreen = ({ navigation }) => {
         // If no auth callback in initial URL, check for existing session with retry
         console.log("No auth callback in initial URL, checking for session...");
 
-        // Try multiple times with delays to handle OAuth callback timing
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            console.log(`Session check attempt ${attempt}/3...`);
+        // Single session check — auth state listener handles the rest
+        try {
+          console.log("Session check attempt 1/1...");
 
-            const {
-              data: { session },
-              error,
-            } = await supabase.auth.getSession();
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
 
-            if (error) {
-              console.error(
-                `Error checking session (attempt ${attempt}):`,
-                error,
-              );
-            } else if (session) {
-              console.log(
-                `Mobile: Session found on attempt ${attempt}, navigating to main app`,
-              );
+          if (error) {
+            console.error("Error checking session:", error);
+          } else if (session) {
+            console.log("Mobile: Session found, navigating to main app");
 
-              // 立即開始預載入所有數據（不等待完成，在背景執行）
-              dataPreloadService.preloadAllData().catch((preloadError) => {
-                console.error("❌ Error preloading data:", preloadError);
+            dataPreloadService.preloadAllData().catch((preloadError) => {
+              console.error("❌ Error preloading data:", preloadError);
+            });
+
+            const currentRoute =
+              navigation.getState?.()?.routes?.[
+                navigation.getState?.()?.index
+              ];
+            if (currentRoute?.name !== "MainTabs") {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "MainTabs" }],
               });
-
-              // Check if already in MainTabs to avoid resetting navigation
-              const currentRoute =
-                navigation.getState?.()?.routes?.[
-                  navigation.getState?.()?.index
-                ];
-              if (currentRoute?.name !== "MainTabs") {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: "MainTabs" }],
-                });
-              } else {
-                console.log(
-                  "⚠️ [checkSession] Already in MainTabs, skipping reset to preserve current tab",
-                );
-              }
-              return;
-            } else {
-              console.log(`No session found on attempt ${attempt}`);
             }
-
-            // Wait before next attempt (except on last attempt)
-            if (attempt < 3) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, 1000 * attempt),
-              );
-            }
-          } catch (error) {
-            console.error(
-              `Error in mobile session check (attempt ${attempt}):`,
-              error,
-            );
+            return;
+          } else {
+            console.log("No session found");
           }
+        } catch (error) {
+          console.error("Error in mobile session check:", error);
         }
 
         console.log(
-          "All session check attempts completed, proceeding to check existing session",
+          "Session check completed, proceeding to auth state listener",
         );
       }
 
