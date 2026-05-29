@@ -207,9 +207,6 @@ const handleOpenURL = async (event) => {
         if (exchangeError) {
           console.error("❌ Error exchanging code for session:", exchangeError);
         } else {
-          // Wait a moment for session to be fully established
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
           // Force auth state check to trigger navigation
           const {
             data: { session },
