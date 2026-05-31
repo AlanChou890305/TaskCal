@@ -66,13 +66,20 @@ export default function TaskDetailScreen({ navigation, route }) {
   // ── Persistence ────────────────────────────────────────────────
   // inline save: update local state only, no navigation
   const persistUpdate = async (fields) => {
+    const previous = taskRef.current;
+    const optimistic = { ...previous, ...fields };
+    taskRef.current = optimistic;
+    setTask(optimistic);
     try {
       const result = await TaskService.updateTask(task.id, fields);
-      const updated = result || { ...task, ...fields };
-      taskRef.current = updated;
-      setTask(updated);
+      if (result) {
+        taskRef.current = result;
+        setTask(result);
+      }
     } catch (err) {
       console.error("updateTask error:", err);
+      taskRef.current = previous;
+      setTask(previous);
     }
   };
 
