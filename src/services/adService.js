@@ -5,11 +5,14 @@
 
 import { Platform } from "react-native";
 
+// 廣告暫停開關：與 AdBanner.js 保持同步，設為 true 時不初始化 SDK（避免 signal handler 衝突）
+const ADS_PAUSED = true;
+
 // 動態導入 Google Mobile Ads，如果不可用則為 null
 let mobileAds = null;
 
 // Only import on native platforms
-if (Platform.OS !== "web") {
+if (!ADS_PAUSED && Platform.OS !== "web") {
   try {
     mobileAds = require("react-native-google-mobile-ads").default;
   } catch (error) {
