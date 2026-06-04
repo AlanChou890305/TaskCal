@@ -414,31 +414,25 @@ struct TaskCalWidgetView: View {
   // ── Lock screen: Circular ─────────────────────────────────────────────────
   @ViewBuilder
   private func accessoryCircularLayout(doneCount: Int, total: Int) -> some View {
-    if #available(iOS 16.0, *) {
-      let progress = total > 0 ? Double(doneCount) / Double(total) : 0
-      Gauge(value: progress) {
-        EmptyView()
-      } currentValueLabel: {
-        if total == 0 {
-          Image(systemName: "checklist")
-            .font(.system(size: 13, weight: .medium))
-        } else {
-          VStack(spacing: -1) {
-            Text("\(doneCount)/\(total)")
-              .font(.system(size: 13, weight: .semibold, design: .rounded))
-            Text("DONE")
-              .font(.system(size: 6, weight: .semibold, design: .monospaced))
-              .kerning(0.4)
-          }
+    let progress = total > 0 ? Double(doneCount) / Double(total) : 0
+    ZStack {
+      Circle()
+        .stroke(Color.white.opacity(0.25), lineWidth: 7)
+      Circle()
+        .trim(from: 0, to: progress)
+        .stroke(Color.white, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+        .rotationEffect(.degrees(-90))
+      if total == 0 {
+        Image(systemName: "checkmark.square")
+          .font(.system(size: 13, weight: .medium))
+      } else {
+        VStack(spacing: -1) {
+          Text("\(doneCount)/\(total)")
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+          Text("DONE")
+            .font(.system(size: 6, weight: .semibold, design: .monospaced))
+            .kerning(0.4)
         }
-      }
-      .gaugeStyle(.accessoryCircular)
-    } else {
-      VStack(spacing: 0) {
-        Text("\(doneCount)/\(total)")
-          .font(.system(size: 14, weight: .semibold, design: .rounded))
-        Text("DONE")
-          .font(.system(size: 7, weight: .medium, design: .monospaced))
       }
     }
   }
@@ -449,7 +443,7 @@ struct TaskCalWidgetView: View {
     let pending = Array(visible.filter { !$0.completed }.prefix(2))
     VStack(alignment: .leading, spacing: 3) {
       HStack(spacing: 4) {
-        Image(systemName: "checklist")
+        Image(systemName: "checkmark.square")
           .font(.system(size: 7, weight: .medium))
         Text(todoCount == 0 ? "TASKCAL · ALL DONE" : "TASKCAL · \(todoCount) LEFT")
           .font(.system(size: 7, weight: .semibold, design: .monospaced))
