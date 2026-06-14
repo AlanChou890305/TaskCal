@@ -20,6 +20,19 @@ platform :ios do
     )
   end
 
+  desc "更新 live 版本的 metadata（description / keywords / promotional_text）"
+  lane :live_metadata do
+    deliver(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      edit_live: true,
+      skip_app_version_update: true,
+      force: true
+    )
+  end
+
   desc "上傳 metadata 並送審"
   lane :submit do
     deliver(

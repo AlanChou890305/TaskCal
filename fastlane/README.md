@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 上傳 App Store metadata（不上傳 binary）
 
+### ios live_metadata
+
+```sh
+[bundle exec] fastlane ios live_metadata
+```
+
+更新 live 版本的 metadata（description / keywords / promotional_text）
+
 ### ios submit
 
 ```sh
