@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -52,6 +52,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const [tempTime, setTempTime] = useState(null);
   const [noteInputHeight, setNoteInputHeight] = useState(80);
   const saveDebounceRef = useRef(null);
+  const pendingWriteRef = useRef(null); // accumulated fields awaiting debounced DB write
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
 
   const isZH = language === "zh-Hant";
@@ -64,18 +65,17 @@ export default function TaskDetailScreen({ navigation, route }) {
   };
 
   // ── Persistence ────────────────────────────────────────────────
-  // inline save: update local state only, no navigation
-  const persistUpdate = async (fields) => {
-    const previous = taskRef.current;
-    const optimistic = { ...previous, ...fields };
+  // optimistic local update (sync) — keeps taskRef current so goBack callback is never stale
+  const applyLocal = (fields) => {
+    const optimistic = { ...taskRef.current, ...fields };
     taskRef.current = optimistic;
     setTask(optimistic);
+  };
+
+  // background DB write with rollback to the pre-edit snapshot on failure
+  const writeRemote = async (fields, previous) => {
     try {
-      const result = await TaskService.updateTask(task.id, fields);
-      if (result) {
-        taskRef.current = result;
-        setTask(result);
-      }
+      await TaskService.updateTask(taskRef.current.id, fields);
     } catch (err) {
       console.error("updateTask error:", err);
       taskRef.current = previous;
@@ -83,10 +83,43 @@ export default function TaskDetailScreen({ navigation, route }) {
     }
   };
 
-  const saveField = (fields) => {
-    if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
-    saveDebounceRef.current = setTimeout(() => persistUpdate(fields), 300);
+  // immediate optimistic update + DB write (date/time pickers)
+  const persistUpdate = (fields) => {
+    const previous = taskRef.current;
+    applyLocal(fields);
+    writeRemote(fields, previous);
   };
+
+  // run any pending debounced write right now (called on goBack / unmount)
+  const flushPendingWrite = () => {
+    if (saveDebounceRef.current) {
+      clearTimeout(saveDebounceRef.current);
+      saveDebounceRef.current = null;
+    }
+    const pending = pendingWriteRef.current;
+    if (!pending) return;
+    pendingWriteRef.current = null;
+    writeRemote(pending.fields, pending.previous);
+  };
+
+  // text fields: update local state immediately, debounce the DB write.
+  // accumulates fields so no edit is lost if several blur within the debounce window.
+  const saveField = (fields) => {
+    const previous = pendingWriteRef.current?.previous ?? taskRef.current;
+    applyLocal(fields);
+    pendingWriteRef.current = {
+      fields: { ...(pendingWriteRef.current?.fields || {}), ...fields },
+      previous,
+    };
+    if (saveDebounceRef.current) clearTimeout(saveDebounceRef.current);
+    saveDebounceRef.current = setTimeout(flushPendingWrite, 300);
+  };
+
+  // flush pending write on unmount (covers iOS swipe-back gesture, which bypasses handleGoBack)
+  useEffect(() => {
+    return () => flushPendingWrite();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Actions ────────────────────────────────────────────────────
   const handleDelete = () => {
@@ -107,6 +140,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   };
 
   const handleGoBack = () => {
+    flushPendingWrite();
     invokeCallback(route.params.callbackId, "onUpdate", taskRef.current);
     navigation.goBack();
   };
