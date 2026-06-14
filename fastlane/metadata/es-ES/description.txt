@@ -1,11 +1,17 @@
-TaskCal es un gestor de tareas limpio e intuitivo construido alrededor de tu calendario. Mantente al tanto de tu día con una hermosa lista de tareas, vista de calendario y un widget para la pantalla de inicio de iOS que mantiene tus tareas visibles en todo momento.
+TaskCal es un gestor de tareas centrado en el calendario que mantiene tu día en una vista limpia y enfocada. Planifica, controla y completa tus tareas, y míralas en la pantalla de inicio y en la pantalla de bloqueo con widgets nativos de iOS.
 
-Características principales:
-• Vista de Calendario — ve tus tareas organizadas por fecha en un calendario claro y desplazable
-• Widget para Pantalla de Inicio — tus tareas, directamente en tu pantalla de inicio
-• Detalle de Tarea — agrega títulos, fechas, ubicaciones, notas y enlaces a cada tarea
-• Modo Oscuro — compatible con temas claro y oscuro
-• Inicio con Google — inicio de sesión rápido y seguro
-• Multiidioma — inglés, chino tradicional y español
+POR QUÉ TASKCAL
 
-TaskCal sincroniza entre sesiones para que tus tareas estén siempre actualizadas. Ya sea que estés planificando tu semana o simplemente marcando las tareas de hoy, TaskCal mantiene las cosas simples y enfocadas.
+• Centrado en el calendario — consulta tus tareas en un calendario mensual real, con puntos en los días ocupados y un resaltado claro de «Hoy».
+• Registro rápido — añade una tarea en segundos, asigna una fecha y vuelve a lo importante.
+• Detalles de tarea en línea — edítalo todo en una sola pantalla y marca las tareas como completadas con un toque.
+• Widgets nativos de iOS — consulta las tareas de hoy, un calendario mensual y un anillo de progreso en tu pantalla de inicio y de bloqueo, siempre sincronizados.
+• Siempre sincronizado — inicia sesión con Google y tus tareas te acompañan, con copia de seguridad segura en la nube.
+• Modo claro y oscuro — se adapta automáticamente a la apariencia del sistema.
+• Totalmente traducido — disponible en inglés, chino tradicional y español.
+
+NOVEDADES DE LA 2.0
+
+Un rediseño visual completo basado en el nuevo sistema de diseño Indigo — una pantalla de detalles de tarea más clara con edición en línea, una vista de calendario más inteligente, ajustes renovados y nuevos widgets para la pantalla de bloqueo y la pantalla de inicio en tamaño grande.
+
+TaskCal es gratis. Descárgalo y simplifica tu día.

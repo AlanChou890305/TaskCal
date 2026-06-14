@@ -1,1 +1,1 @@
-task management,todo list,productivity,calendar,iOS widget,daily planner,time management,reminder
+task,todo,to do list,calendar,widget,planner,productivity,reminder,organizer,schedule,agenda,tracker

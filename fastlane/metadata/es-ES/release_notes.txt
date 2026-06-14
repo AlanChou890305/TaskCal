@@ -1,4 +1,8 @@
-Interfaz completamente rediseñada con el nuevo sistema de diseño Indigo
-Pantalla de detalles de tarea rediseñada con edición en línea y botón Marcar como completado
-Mejoras en la pantalla de calendario: puntos de tareas, resaltado de hoy y optimizaciones del banner
-Pantalla de Configuración actualizada con el nuevo diseño
+TaskCal 2.0: nuestra mayor actualización hasta la fecha.
+
+• Interfaz completamente rediseñada con el nuevo sistema de diseño Indigo
+• Pantalla de detalles de tarea rediseñada con edición en línea y botón «Marcar como completado» a todo el ancho
+• Mejoras en el calendario: varios puntos de tareas, resaltado de «Hoy» y polish del banner
+• Pantalla de Ajustes renovada con el nuevo diseño
+• Nuevos widgets para pantalla de bloqueo y pantalla de inicio en tamaño grande
+• Monitoreo de fallos incorporado y múltiples correcciones de estabilidad
