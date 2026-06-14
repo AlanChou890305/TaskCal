@@ -233,7 +233,7 @@ export async function scheduleTaskNotification(
           },
           sound: true,
         },
-        trigger: reminderTime,
+        trigger: { type: "date", date: reminderTime },
       };
 
       // iOS 不需要 priority，Android 才需要
@@ -411,7 +411,7 @@ export async function sendTestNotification(secondsFromNow = 5) {
         },
         sound: true,
       },
-      trigger: triggerTime,
+      trigger: { type: "date", date: triggerTime },
     };
 
     // iOS 不需要 priority，Android 才需要
