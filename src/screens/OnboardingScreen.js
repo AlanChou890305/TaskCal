@@ -83,7 +83,9 @@ export default function OnboardingScreen({ navigation }) {
   });
 
   const isLast = currentIndex === SLIDES.length - 1;
-  const paperColor = theme.buttonText || "#F2F1EB";
+  // 背景跟隨主題（light: ink-blue #3B4B7A / dark: 深藍 #1F2440），與登入頁協調。
+  // 文字固定為奶油紙色，避免 theme.buttonText 在深色模式翻成深字而看不清楚。
+  const paperColor = "#F2F1EB";
   const washBg = theme.primaryWash || theme.primary;
   const mono = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
   const sans = theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold";
@@ -330,10 +332,10 @@ export default function OnboardingScreen({ navigation }) {
         </View>
 
         <TouchableOpacity
-          style={[styles.nextBtn, { backgroundColor: theme.background, borderRadius: theme.radius?.lg || 8 }]}
+          style={[styles.nextBtn, { backgroundColor: PAPER, borderRadius: theme.radius?.lg || 8 }]}
           onPress={handleNext}
         >
-          <Text style={[styles.nextTxt, { color: theme.primary, fontFamily: theme.typography?.headline?.fontFamily }]}>
+          <Text style={[styles.nextTxt, { color: PRIMARY, fontFamily: theme.typography?.headline?.fontFamily }]}>
             {isLast ? `${t.onboardingGetStarted}  →` : `${t.onboardingNext}  →`}
           </Text>
         </TouchableOpacity>
