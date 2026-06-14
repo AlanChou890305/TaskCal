@@ -187,6 +187,46 @@ grep "MARKETING_VERSION\|CURRENT_PROJECT_VERSION" ios/TaskCal.xcodeproj/project.
 {keywords}
 ```
 
+### 步驟 6: 建立 Release Tag（復原錨點）
+
+> **目的**：每個送 App Store 的 build 都要有一個對應的 git tag，作為「復原錨點」。
+> 將來線上版本出問題時，可用 `git checkout {tag}` 一行回到與 App Store 一模一樣的程式碼，
+> 不必翻 git log 對日期、猜 build number。
+
+**重要原則**：
+- **只在「實際 build 並送審」的那個 commit 打 tag**，不是每次 commit 都打。
+- tag 要打在「版本號 bump 完、準備 Archive」的那個 commit 上。
+- tag 命名一律用：`v{version}-build{build}`，例如 `v2.0.0-build39`。
+
+**操作時機**：在使用者完成 commit、準備 Xcode Archive 送審時提醒並執行。
+
+```bash
+# 1. 確認目前 HEAD 就是要送審的 commit（版本號已 bump）
+git log -1 --oneline
+
+# 2. 建立 annotated tag（含送審資訊）
+git tag -a v{version}-build{build} -m "App Store 送審版本 {version} (Build {build})
+
+送審日期: {YYYY-MM-DD}
+對應 commit: {HEAD 的 hash 與 subject}"
+
+# 3. 確認 tag
+git tag -n5 -l "v{version}-build{build}"
+
+# 4.（可選）推送到 GitHub，讓 tag 在遠端也看得到
+git push origin v{version}-build{build}
+```
+
+**復原方式**（供使用者參考）：
+```bash
+git checkout v{version}-build{build}   # 回到該版本送審時的程式碼
+```
+
+**已建立的 tag 對照**（每次發版後補上一行，方便追溯）：
+| Tag | 版本 | Build | 送審日期 | Commit |
+|-----|------|-------|---------|--------|
+| `v2.0.0-build38` | 2.0.0 | 38 | 2026-06-05 | `d31d46e` |
+
 ## 輸出格式
 
 ### 階段 1: 版本資訊收集
@@ -280,7 +320,7 @@ grep "MARKETING_VERSION\|CURRENT_PROJECT_VERSION" ios/TaskCal.xcodeproj/project.
 - [ ] 上傳 Archive
 - [ ] 提交審核
 
-### Git 提交
+### Git 提交與 Tag
 建議 commit 訊息：
 \`\`\`
 chore: Bump version to {version} (Build {build})
@@ -290,14 +330,21 @@ chore: Bump version to {version} (Build {build})
 - Update README.md version information
 - Prepare for App Store submission
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+\`\`\`
+
+commit 後建立 release tag（復原錨點）：
+\`\`\`
+git tag -a v{version}-build{build} -m "App Store 送審版本 {version} (Build {build})"
+git push origin v{version}-build{build}   # 可選
 \`\`\`
 
 ### 下一步
 1. 完成上述檢查清單
 2. 提交 commit: `git add -A && git commit`
-3. 推送到 GitHub: `git push origin main`
-4. 執行 `/clear` 清除 context
+3. **建立 release tag**: `git tag -a v{version}-build{build}`（見步驟 6）
+4. 推送到 GitHub: `git push origin {branch}` 並 `git push origin v{version}-build{build}`
+5. 執行 `/clear` 清除 context
 ```
 
 ## 特殊情況處理
