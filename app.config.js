@@ -168,6 +168,16 @@ module.exports = {
           // androidAppId: "ca-app-pub-6912116995419220~XXXXXXXX", // 建立 Android App 後填入
         },
       ],
+      [
+        "@sentry/react-native/expo",
+        {
+          // 用於 build 時上傳 source map，讓 JS stack trace 可讀
+          // 請核對與你建立的 Sentry org / project slug 一致
+          organization: "hububble",
+          project: "taskcal",
+          // SENTRY_AUTH_TOKEN 從環境變數讀取（build 時），未設定則略過 source map 上傳
+        },
+      ],
     ],
   },
 };

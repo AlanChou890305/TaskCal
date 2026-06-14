@@ -25,6 +25,8 @@ import {
 // Side-effect: handle OAuth redirect before React initializes (web only)
 import "./src/utils/oauthRedirect";
 
+import * as Sentry from "@sentry/react-native";
+
 // Services
 import { UserService } from "./src/services/userService";
 import { dataPreloadService } from "./src/services/dataPreloadService";
@@ -45,6 +47,7 @@ import MainTabs from "./src/navigation/MainTabs";
 import TermsScreen from "./src/screens/TermsScreen";
 import PrivacyScreen from "./src/screens/PrivacyScreen";
 import VersionUpdateModal from "./src/components/VersionUpdateModal";
+import ErrorBoundary from "./src/components/ErrorBoundary";
 
 // Hooks
 import { useAppLoading } from "./src/hooks/useAppLoading";
@@ -61,6 +64,17 @@ if (Platform.OS !== "web") {
   };
 }
 
+// Crash / error 監控：DSN 從環境變數讀取（沿用專案 EXPO_PUBLIC_ 慣例）
+// 未設定 DSN 時不啟用，避免本機 / 未配置環境噴錯
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    enabled: !__DEV__, // 只在 production build 回報，避免開發雜訊
+    tracesSampleRate: 0, // 只做 error/crash，不做 performance tracing，省免費額度
+  });
+}
+
 const LANGUAGE_STORAGE_KEY = "LANGUAGE_STORAGE_KEY";
 const Stack = createStackNavigator();
 
@@ -68,7 +82,7 @@ const getRedirectUrl = () => "https://to-do-mvp.vercel.app";
 const getAppDisplayName = () => "TaskCal";
 const APP_START_TIME = Date.now();
 
-export default function App() {
+function App() {
   const [fontsLoaded] = useFonts({
     InterTight_400Regular,
     InterTight_500Medium,
@@ -212,6 +226,12 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+    <ErrorBoundary
+      language={language}
+      onError={(error) => {
+        if (SENTRY_DSN) Sentry.captureException(error);
+      }}
+    >
     <ThemeContext.Provider
       value={{ theme, themeMode, setThemeMode, toggleTheme, loadTheme }}
     >
@@ -285,6 +305,9 @@ export default function App() {
         </LanguageContext.Provider>
       </UserContext.Provider>
     </ThemeContext.Provider>
+    </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(App);
