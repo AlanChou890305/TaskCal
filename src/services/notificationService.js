@@ -174,6 +174,13 @@ export async function scheduleTaskNotification(
 
     // 創建任務時間
     const taskTime = new Date(year, month - 1, day, hours, minutes);
+
+    // 日期/時間格式異常時會產生 Invalid Date，直接略過排程避免排出永不觸發的通知
+    if (isNaN(taskTime.getTime())) {
+      console.log("Invalid task date/time, skipping notification:", task.date, task.time);
+      return [];
+    }
+
     const now = new Date();
 
     // 1. 先取消該任務的所有舊通知

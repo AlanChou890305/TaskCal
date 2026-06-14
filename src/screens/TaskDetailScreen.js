@@ -37,13 +37,14 @@ function formatDetailDate(dateStr, language) {
 }
 
 export default function TaskDetailScreen({ navigation, route }) {
-  const { task: initialTask } = route.params;
+  // route.params 可能在深連結 / 狀態還原時缺失，預設為空物件避免解構 crash
+  const initialTask = route?.params?.task || {};
   const { theme, themeMode } = useContext(ThemeContext);
   const { t, language } = useContext(LanguageContext);
   const insets = useSafeAreaInsets();
 
   const [task, setTask] = useState(initialTask);
-  const [titleValue, setTitleValue] = useState(initialTask.title);
+  const [titleValue, setTitleValue] = useState(initialTask.title || "");
   const [noteValue, setNoteValue] = useState(initialTask.note || "");
   const [linkValue, setLinkValue] = useState(initialTask.link || "");
   const [datePickerVisible, setDatePickerVisible] = useState(false);
@@ -56,6 +57,13 @@ export default function TaskDetailScreen({ navigation, route }) {
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
 
   const isZH = language === "zh-Hant";
+
+  // 缺少有效任務（無 id）時直接返回，避免後續操作未定義資料
+  useEffect(() => {
+    if (!initialTask || !initialTask.id) {
+      navigation.goBack();
+    }
+  }, []);
 
   const monoKicker = {
     fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",

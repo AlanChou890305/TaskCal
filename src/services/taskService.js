@@ -55,7 +55,7 @@ export class TaskService {
 
       // Group tasks by date
       const tasksByDate = {};
-      data.forEach((task) => {
+      (data || []).forEach((task) => {
         if (!tasksByDate[task.date]) {
           tasksByDate[task.date] = [];
         }
@@ -212,7 +212,7 @@ export class TaskService {
         user.email?.split("@")[0] ||
         "User";
 
-      return data.map((task) => {
+      return (data || []).map((task) => {
         return {
           id: task.id,
           title: task.title,

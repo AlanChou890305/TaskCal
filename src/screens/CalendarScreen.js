@@ -150,6 +150,7 @@ const TaskSkeleton = ({ theme, widthIndex = 0 }) => {
 
 function CalendarScreen({ navigation, route }) {
   const { language, t } = useContext(LanguageContext);
+  const isZH = language === "zh-Hant";
   const { theme, themeMode } = useContext(ThemeContext);
   const { userType, loadingUserType } = useContext(UserContext);
   const insets = useSafeAreaInsets();
@@ -1774,7 +1775,6 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const renderModal = () => {
-    const isZH = language === "zh-Hant";
     const monoKickerStyle = {
       fontFamily:
         theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",

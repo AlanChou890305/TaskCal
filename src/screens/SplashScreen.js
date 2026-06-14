@@ -60,15 +60,21 @@ const SplashScreen = ({ navigation }) => {
   // On web, show loading indicator while OAuth code exchange is in progress
   const [isCheckingSession, setIsCheckingSession] = useState(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return false;
-    const url = new URL(window.location.href);
-    const hasOAuthInUrl = url.search.includes("code=") || url.hash.includes("access_token");
-    if (hasOAuthInUrl) {
-      // Mark OAuth in progress in sessionStorage so remounts also stay in loading state
-      sessionStorage.setItem("oauth_in_progress", "true");
-      return true;
+    // 無痕模式下 new URL / sessionStorage 可能 throw，包 try-catch 避免 render 白屏
+    try {
+      const url = new URL(window.location.href);
+      const hasOAuthInUrl =
+        url.search.includes("code=") || url.hash.includes("access_token");
+      if (hasOAuthInUrl) {
+        // Mark OAuth in progress in sessionStorage so remounts also stay in loading state
+        sessionStorage.setItem("oauth_in_progress", "true");
+        return true;
+      }
+      // Check if a previous mount already detected OAuth (e.g. after SIGNED_OUT remount)
+      return sessionStorage.getItem("oauth_in_progress") === "true";
+    } catch (e) {
+      return false;
     }
-    // Check if a previous mount already detected OAuth (e.g. after SIGNED_OUT remount)
-    return sessionStorage.getItem("oauth_in_progress") === "true";
   });
   // Show Splash loading screen while doing initial session check (all platforms)
   const [isInitializing, setIsInitializing] = useState(true);

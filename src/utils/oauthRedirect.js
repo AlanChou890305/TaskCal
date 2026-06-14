@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 // NOTE: Only redirect to native app if OAuth was initiated from native app
 // For pure web OAuth, let the normal flow handle it
 if (Platform.OS === "web" && typeof window !== "undefined") {
+  try {
   const currentUrl = window.location.href;
   const url = new URL(currentUrl);
 
@@ -75,5 +76,8 @@ if (Platform.OS === "web" && typeof window !== "undefined") {
       // Pure web OAuth - let the normal OAuth callback handler process it
       // This ensures web OAuth works correctly without trying to redirect to native app
     }
+  }
+  } catch (e) {
+    // 畸形 URL 或 sessionStorage 不可用時，靜默讓正常流程接手，避免 app 啟動白屏
   }
 }

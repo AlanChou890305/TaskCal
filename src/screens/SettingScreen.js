@@ -473,6 +473,9 @@ function SettingScreen() {
           console.log("📦 [SettingScreen] Using preloaded user settings");
         }
 
+        // getUserSettings 可能回傳 null，統一防護避免存取屬性 crash
+        settings = settings || {};
+
         if (settings.user_type) {
           setUserType(settings.user_type);
         }
