@@ -1,41 +1,38 @@
-# Release Notes - Version 2.0.0 (Build 33)
+# Release Notes - Version 2.0.1 (Build 40)
 
-**Release Date**: 2026-05-26
+**Release Date**: 2026-06-14
 
 ---
 
 ## What's New
 
 ### English
-- Completely redesigned UI with the new Indigo design system
-- Redesigned Task Detail screen with inline editing and Mark Done button
-- Calendar screen improvements: task dots, Today highlight, and banner optimizations
-- Updated Settings screen layout aligned with new design
+- Stability improvements and bug fixes
+- Updated App Store metadata with improved descriptions in all three languages
+- Performance and reliability enhancements
 
 ### 繁體中文
-- 全新 Indigo 設計系統，整體介面視覺煥然一新
-- Task Detail 頁面改版：inline 編輯、Mark Done 按鈕全寬顯示
-- Calendar 畫面優化：多個 task dots、今日高亮、Banner 細節改善
-- Settings 畫面對齊新設計稿全面更新
+- 穩定性改善與錯誤修正
+- 更新 App Store 說明文字（三種語言）
+- 效能與可靠性提升
 
 ### Español
-- Interfaz completamente rediseñada con el nuevo sistema de diseño Indigo
-- Pantalla de detalles de tarea rediseñada con edición en línea y botón Marcar como completado
-- Mejoras en la pantalla de calendario: puntos de tareas, resaltado de hoy y optimizaciones del banner
-- Pantalla de Configuración actualizada con el nuevo diseño
+- Mejoras de estabilidad y correcciones de errores
+- Actualización de la descripción en App Store en los tres idiomas
+- Mejoras de rendimiento y fiabilidad
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-TaskCal 2.0 is here — a full visual redesign with the Indigo design system. Cleaner task details, smarter calendar view, and a more polished experience throughout. This is the biggest update yet.
+TaskCal 2.0 is here — a full visual redesign with the new Indigo design system. Cleaner task details, a smarter calendar view, and a more polished experience throughout.
 
 ### 繁體中文
-TaskCal 2.0 全新登場！採用 Indigo 設計系統，任務詳情更清晰、日曆視圖更聰明、整體體驗更精緻。這是迄今最大幅度的更新。
+TaskCal 2.0 全新登場！採用全新 Indigo 設計系統，任務詳情更清晰、日曆視圖更聰明，整體體驗更精緻俐落。
 
 ### Español
-TaskCal 2.0 ya está aquí — un rediseño visual completo con el sistema de diseño Indigo. Detalles de tareas más claros, vista de calendario más inteligente y una experiencia más pulida. La mayor actualización hasta ahora.
+¡Ya está aquí TaskCal 2.0! Un rediseño visual completo con el nuevo sistema de diseño Indigo: detalles más claros, calendario más inteligente y una experiencia más cuidada.
 
 ---
 
