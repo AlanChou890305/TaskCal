@@ -248,64 +248,64 @@ export default function TaskDetailScreen({ navigation, route }) {
     const displayM = tempTime ? String(tempTime.getMinutes()).padStart(2, "0") : "00";
     return (
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+        {/* Background dismiss — separate from bottom sheet to avoid touch conflicts with native spinner */}
         <TouchableOpacity
-          style={{ flex: 1, backgroundColor: theme.modalOverlay || "rgba(26,31,46,0.55)", justifyContent: "flex-end" }}
+          style={[StyleSheet.absoluteFillObject, { backgroundColor: theme.modalOverlay || "rgba(26,31,46,0.55)" }]}
           activeOpacity={1}
           onPress={() => setTimePickerVisible(false)}
+        />
+        {/* Bottom sheet — NOT inside TouchableOpacity so spinner touches don't bubble up */}
+        <View
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: insets.bottom }}
         >
-          <View
-            style={{ backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: insets.bottom }}
-            onStartShouldSetResponder={() => true}
-          >
-            <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}>
-              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
-            </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
-              <TouchableOpacity
-                onPress={() => {
-                  persistUpdate({ time: null });
-                  setTimePickerVisible(false);
-                }}
-                style={{ padding: 6, minWidth: 60 }}
-              >
-                <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "500", letterSpacing: -0.2, color: theme.textSecondary }}>
-                  {isZH ? "清除" : "Clear"}
-                </Text>
-              </TouchableOpacity>
-              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
-                {displayH}:{displayM}
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  if (tempTime) {
-                    const h = String(tempTime.getHours()).padStart(2, "0");
-                    const m = String(tempTime.getMinutes()).padStart(2, "0");
-                    persistUpdate({ time: `${h}:${m}` });
-                  }
-                  setTimePickerVisible(false);
-                }}
-                style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
-              >
-                <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
-                  {t.confirm || (isZH ? "完成" : "Done")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {tempTime && (
-              <View style={{ alignItems: "center", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }}>
-                <DateTimePicker
-                  value={tempTime}
-                  mode="time"
-                  display={Platform.OS === "ios" ? "spinner" : "clock"}
-                  themeVariant={themeMode === "dark" ? "dark" : "light"}
-                  accentColor={theme.primary}
-                  minuteInterval={5}
-                  onChange={(_, selected) => { if (selected) setTempTime(selected); }}
-                />
-              </View>
-            )}
+          <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}>
+            <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
           </View>
-        </TouchableOpacity>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
+            <TouchableOpacity
+              onPress={() => {
+                persistUpdate({ time: null });
+                setTimePickerVisible(false);
+              }}
+              style={{ padding: 6, minWidth: 60 }}
+            >
+              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "500", letterSpacing: -0.2, color: theme.textSecondary }}>
+                {isZH ? "清除" : "Clear"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
+              {displayH}:{displayM}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                if (tempTime) {
+                  const h = String(tempTime.getHours()).padStart(2, "0");
+                  const m = String(tempTime.getMinutes()).padStart(2, "0");
+                  persistUpdate({ time: `${h}:${m}` });
+                }
+                setTimePickerVisible(false);
+              }}
+              style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
+            >
+              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
+                {t.confirm || (isZH ? "完成" : "Done")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {tempTime && (
+            <View style={{ alignItems: "center", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }}>
+              <DateTimePicker
+                value={tempTime}
+                mode="time"
+                display={Platform.OS === "ios" ? "spinner" : "clock"}
+                themeVariant={themeMode === "dark" ? "dark" : "light"}
+                accentColor={theme.primary}
+                minuteInterval={5}
+                onChange={(_, selected) => { if (selected) setTempTime(selected); }}
+              />
+            </View>
+          )}
+        </View>
       </View>
     );
   };
