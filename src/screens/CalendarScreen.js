@@ -1330,9 +1330,7 @@ function CalendarScreen({ navigation, route }) {
                           width: 4,
                           height: 4,
                           borderRadius: 2,
-                          backgroundColor: isToday
-                            ? theme.buttonText || "#F2F1EB"
-                            : theme.primary,
+                          backgroundColor: theme.primary,
                         }}
                       />
                     )}
