@@ -57,7 +57,7 @@ import {
   formatTimestamp,
   formatTimeDisplay as formatTimeDisplayUtil,
 } from "../utils/dateUtils";
-import AdBanner from "../components/AdBanner";
+import AdBanner, { ADS_PAUSED } from "../components/AdBanner";
 import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
@@ -729,13 +729,33 @@ function CalendarScreen({ navigation, route }) {
       },
       onUpdate: (updatedTask) => {
         setTasks((prev) => {
-          const dayList = (prev[updatedTask.date] || []).map((t) =>
-            t.id === updatedTask.id ? updatedTask : t,
+          const existsInTarget = (prev[updatedTask.date] || []).some(
+            (t) => t.id === updatedTask.id,
           );
-          const newTasks = { ...prev, [updatedTask.date]: dayList };
+          let newTasks;
+          if (existsInTarget) {
+            // 同日期編輯：原地更新，保留排序
+            newTasks = {
+              ...prev,
+              [updatedTask.date]: (prev[updatedTask.date] || []).map((t) =>
+                t.id === updatedTask.id ? updatedTask : t,
+              ),
+            };
+          } else {
+            // 日期搬移：先從所有日期移除，再加入新日期，避免任務憑空消失
+            newTasks = {};
+            for (const [date, list] of Object.entries(prev)) {
+              newTasks[date] = list.filter((t) => t.id !== updatedTask.id);
+            }
+            newTasks[updatedTask.date] = [
+              ...(newTasks[updatedTask.date] || []),
+              updatedTask,
+            ];
+          }
           widgetService.syncTodayTasks(newTasks);
           return newTasks;
         });
+        clearTaskCache();
         clearCallbacks(callbackId);
       },
     });
@@ -2541,15 +2561,6 @@ function CalendarScreen({ navigation, route }) {
       ? String(tempTime.getMinutes()).padStart(2, "0")
       : "00";
 
-    const adjustTime = (deltaMinutes) => {
-      const base = tempTime ? new Date(tempTime.getTime()) : new Date();
-      base.setMinutes(base.getMinutes() + deltaMinutes);
-      setTempTime(base);
-    };
-
-    const monoFont =
-      theme.typography?.monoTime?.fontFamily || "JetBrainsMono_500Medium";
-
     return (
       <View
         style={{
@@ -2628,7 +2639,7 @@ function CalendarScreen({ navigation, route }) {
                   color: theme.text,
                 }}
               >
-                {isZH ? "時間" : "Time"}
+                {displayH}:{displayM}
               </Text>
               <TouchableOpacity
                 onPress={() => {
@@ -2657,91 +2668,27 @@ function CalendarScreen({ navigation, route }) {
                 </Text>
               </TouchableOpacity>
             </View>
-            {/* Big mono time display */}
-            <View
-              style={{
-                paddingVertical: 40,
-                paddingHorizontal: 22,
-                backgroundColor: theme.background,
-                borderTopWidth: StyleSheet.hairlineWidth,
-                borderTopColor: theme.divider,
-                borderBottomWidth: StyleSheet.hairlineWidth,
-                borderBottomColor: theme.divider,
-                alignItems: "center",
-              }}
-            >
-              <Text
+            {tempTime && (
+              <View
                 style={{
-                  fontFamily: monoFont,
-                  fontSize: 11,
-                  fontWeight: "500",
-                  letterSpacing: 2,
-                  textTransform: "uppercase",
-                  color: theme.primary,
-                  marginBottom: 10,
+                  alignItems: "center",
+                  backgroundColor: theme.background,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: theme.divider,
                 }}
               >
-                {isZH ? "開始時間" : "Starts at"}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: monoFont,
-                  fontSize: 80,
-                  fontWeight: "500",
-                  lineHeight: 80,
-                  letterSpacing: -3,
-                  color: theme.text,
-                }}
-              >
-                {displayH}
-                <Text style={{ color: theme.textTertiary }}>:</Text>
-                {displayM}
-              </Text>
-            </View>
-            {/* Stepper buttons */}
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 8,
-                padding: 22,
-                backgroundColor: theme.background,
-              }}
-            >
-              {[
-                { label: "− 1h", delta: -60 },
-                { label: "− 15m", delta: -15 },
-                { label: "+ 15m", delta: 15 },
-                { label: "+ 1h", delta: 60 },
-              ].map(({ label, delta }) => (
-                <TouchableOpacity
-                  key={label}
-                  onPress={() => adjustTime(delta)}
-                  activeOpacity={0.6}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 13,
-                    backgroundColor: "transparent",
-                    borderWidth: StyleSheet.hairlineWidth,
-                    borderColor: theme.ruleStrong || theme.divider,
-                    borderRadius: 8,
-                    alignItems: "center",
-                    justifyContent: "center",
+                <DateTimePicker
+                  value={tempTime}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "clock"}
+                  themeVariant={themeMode === "dark" ? "dark" : "light"}
+                  accentColor={theme.primary}
+                  onChange={(_, selected) => {
+                    if (selected) setTempTime(selected);
                   }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: theme.typography?.callout?.fontFamily,
-                      fontSize: 13,
-                      fontWeight: "500",
-                      letterSpacing: -0.2,
-                      color: theme.text,
-                    }}
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+                />
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -2995,7 +2942,12 @@ function CalendarScreen({ navigation, route }) {
           styles.taskAreaContainer,
           {
             backgroundColor: theme.background,
-            paddingBottom: !loadingUserType && userType === "general" ? 58 : 0,
+            // 僅在廣告實際會顯示時才保留底部空間；ADS_PAUSED 時 AdBanner 回傳 null，
+            // 若仍保留 58px 會出現一塊空白色塊（無廣告卻佔位）
+            paddingBottom:
+              !ADS_PAUSED && !loadingUserType && userType === "general"
+                ? 58
+                : 0,
           },
         ]}
       >
@@ -3314,12 +3266,6 @@ const styles = StyleSheet.create({
   tasksContainer: {
     flex: 1,
     backgroundColor: "#f7f7fa",
-  },
-  taskAreaContainer: {
-    flex: 1,
-  },
-  taskArea: {
-    flex: 1,
   },
   tasksHeaderRow: {
     flexDirection: "row",
