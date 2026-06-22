@@ -200,6 +200,10 @@ export default {
   notifyBeforeTask: "Notify before task",
   reminderNote:
     "Reminders will only be sent for tasks that have a scheduled time",
+  dailySummaryReminder: "Daily to-do reminder",
+  dailySummaryCaption: "A 7:00 AM nudge to check today's to-dos",
+  dailySummaryTitle: "Good morning ☀️",
+  dailySummaryBody: "Check out your to-dos for today!",
   dayView: "Day",
   weekView: "Week",
   monthView: "Month",

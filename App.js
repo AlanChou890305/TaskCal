@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { Platform, View, Text, Image, ActivityIndicator, useColorScheme, Appearance } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -31,6 +31,10 @@ import * as Sentry from "@sentry/react-native";
 import { UserService } from "./src/services/userService";
 import { dataPreloadService } from "./src/services/dataPreloadService";
 import { versionService } from "./src/services/versionService";
+import {
+  scheduleDailySummaryNotification,
+  DAILY_SUMMARY_ENABLED_KEY,
+} from "./src/services/notificationService";
 
 // Config
 import { translations } from "./src/locales";
@@ -180,6 +184,26 @@ function App() {
   };
 
   const t = translations[language] || translations.en;
+
+  // 啟動時若使用者已開啟「每日待辦提醒」，依目前語言重新確保排程（idempotent）。
+  // 固定 identifier 保證不會重複；重裝/重啟/換語言後仍持續且文字正確。
+  useEffect(() => {
+    if (loadingLang) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const enabled = await AsyncStorage.getItem(DAILY_SUMMARY_ENABLED_KEY);
+        if (!cancelled && enabled === "true") {
+          await scheduleDailySummaryNotification(t);
+        }
+      } catch (error) {
+        console.error("Error re-arming daily summary notification:", error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadingLang, language]);
 
   const actualThemeMode = useMemo(() => {
     if (themeMode === "auto") {

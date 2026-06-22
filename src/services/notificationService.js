@@ -2,6 +2,16 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { PRIMARY } from "../config/theme";
 
+// 每日待辦摘要通知的固定 identifier（確保全程只存在一則，重排時可直接覆蓋）
+export const DAILY_SUMMARY_IDENTIFIER = "daily-todo-summary";
+
+// 每日待辦提醒開關的本地儲存 key（通知為裝置本地排程，故不寫入 Supabase）
+export const DAILY_SUMMARY_ENABLED_KEY = "DAILY_SUMMARY_ENABLED";
+
+// 每日摘要通知的固定觸發時間（使用者裝置當地時間）
+const DAILY_SUMMARY_HOUR = 7;
+const DAILY_SUMMARY_MINUTE = 0;
+
 /**
  * 根據提醒時間點生成個性化的通知文字
  * @param {number} minutesBefore - 任務前幾分鐘提醒
@@ -336,6 +346,81 @@ export async function cancelAllNotifications() {
     console.log("✅ All notifications cancelled");
   } catch (error) {
     console.error("Error cancelling all notifications:", error);
+  }
+}
+
+/**
+ * 安排每日待辦摘要通知（每天早上 7 點，使用者裝置當地時間）
+ *
+ * ⚠️ 採通用文字：iOS 本地通知內容在排程當下即固定，無法在觸發時即時計算當天任務數，
+ * 因此這裡不嵌入任務數量，僅提醒使用者打開 App 查看今日待辦。
+ *
+ * @param {Object} translations - 多語系翻譯物件（用於通知標題/內文）
+ * @returns {Promise<boolean>} - 是否成功排程
+ */
+export async function scheduleDailySummaryNotification(translations = null) {
+  try {
+    // 先取消既有的同一則，避免重複（identifier 相同也會覆蓋，但顯式取消較保險）
+    await cancelDailySummaryNotification();
+
+    const title = translations?.dailySummaryTitle || "Good morning ☀️";
+    const body =
+      translations?.dailySummaryBody || "Check out your to-dos for today!";
+
+    const notificationContent = {
+      identifier: DAILY_SUMMARY_IDENTIFIER,
+      content: {
+        title,
+        body,
+        data: {
+          type: "daily_summary",
+        },
+        sound: true,
+      },
+      // DAILY 型別會每天於指定時間重複觸發；iOS 依裝置當地時間（自動處理時區/DST）
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: DAILY_SUMMARY_HOUR,
+        minute: DAILY_SUMMARY_MINUTE,
+      },
+    };
+
+    // iOS 不需要 priority，Android 才需要
+    if (Platform.OS === "android") {
+      notificationContent.content.priority =
+        Notifications.AndroidNotificationPriority.HIGH;
+    }
+
+    await Notifications.scheduleNotificationAsync(notificationContent);
+
+    console.log(
+      `✅ Daily summary notification scheduled for ${DAILY_SUMMARY_HOUR}:${String(
+        DAILY_SUMMARY_MINUTE
+      ).padStart(2, "0")} (local time)`
+    );
+    return true;
+  } catch (error) {
+    console.error("❌ Error scheduling daily summary notification:", error);
+    console.error("   Error message:", error?.message || "Unknown error");
+    return false;
+  }
+}
+
+/**
+ * 取消每日待辦摘要通知
+ * @returns {Promise<void>}
+ */
+export async function cancelDailySummaryNotification() {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(
+      DAILY_SUMMARY_IDENTIFIER
+    );
+    console.log("✅ Daily summary notification cancelled");
+  } catch (error) {
+    // 可能原本就不存在，忽略
+    console.log(
+      "ℹ️ No daily summary notification to cancel (or already removed)"
+    );
   }
 }
 

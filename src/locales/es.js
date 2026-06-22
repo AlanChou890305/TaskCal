@@ -203,6 +203,10 @@ export default {
   notifyBeforeTask: "Notificar antes de la tarea",
   reminderNote:
     "Los recordatorios solo se enviarán para tareas que tengan una hora programada",
+  dailySummaryReminder: "Recordatorio diario de tareas",
+  dailySummaryCaption: "Un aviso a las 7:00 para revisar tus tareas de hoy",
+  dailySummaryTitle: "Buenos días ☀️",
+  dailySummaryBody: "¡Revisa tus tareas de hoy!",
   dayView: "Día",
   weekView: "Semana",
   monthView: "Mes",

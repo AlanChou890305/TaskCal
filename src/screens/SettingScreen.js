@@ -35,7 +35,13 @@ import { getUpdateUrl } from "../config/updateUrls";
 import { mixpanelService } from "../services/mixpanelService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { clearSessionCache } from "../services/sessionCache";
-import { cancelAllNotifications } from "../services/notificationService";
+import {
+  cancelAllNotifications,
+  registerForPushNotificationsAsync,
+  scheduleDailySummaryNotification,
+  cancelDailySummaryNotification,
+  DAILY_SUMMARY_ENABLED_KEY,
+} from "../services/notificationService";
 import AdBanner from "../components/AdBanner";
 import IOSCard from "../components/IOSCard";
 import IOSSectionHeader from "../components/IOSSectionHeader";
@@ -43,6 +49,9 @@ import IOSSectionHeader from "../components/IOSSectionHeader";
 function SettingScreen() {
   const { language, setLanguage, t } = useContext(LanguageContext);
   const { theme, themeMode, setThemeMode } = useContext(ThemeContext);
+  // iOS Switch 關閉時的軌道色需用「不透明」灰色；用半透明色會讓底下預設藍透出，
+  // 造成關閉狀態出現左藍右灰的兩色錯覺。沿用 iOS 系統標準關閉色。
+  const switchTrackOff = theme.mode === "dark" ? "#39393D" : "#E9E9EA";
   const {
     userType,
     loadingUserType,
@@ -87,6 +96,7 @@ function SettingScreen() {
     times: [30, 10, 5], // 預設30分鐘、10分鐘和5分鐘前提醒
   });
   const [reminderDropdownVisible, setReminderDropdownVisible] = useState(false);
+  const [dailySummaryEnabled, setDailySummaryEnabled] = useState(false);
   const [versionInfo, setVersionInfo] = useState(null);
   const [hasUpdate, setHasUpdate] = useState(false);
 
@@ -522,6 +532,56 @@ function SettingScreen() {
     };
     loadReminderSettings();
   }, []); // 只在組件掛載時執行一次
+
+  // 載入每日待辦提醒開關狀態（本地儲存）
+  useEffect(() => {
+    const loadDailySummarySetting = async () => {
+      try {
+        const value = await AsyncStorage.getItem(DAILY_SUMMARY_ENABLED_KEY);
+        setDailySummaryEnabled(value === "true");
+      } catch (error) {
+        console.error("Error loading daily summary setting:", error);
+      }
+    };
+    loadDailySummarySetting();
+  }, []);
+
+  // 切換每日待辦提醒（早上 7 點）
+  const toggleDailySummary = async (value) => {
+    if (value) {
+      // 開啟：先請求通知權限
+      const granted = await registerForPushNotificationsAsync();
+      if (!granted) {
+        // 權限被拒：還原開關並引導使用者到系統設定
+        setDailySummaryEnabled(false);
+        Alert.alert(
+          t.notificationPermission || "Notification Permission",
+          t.notificationPermissionMessage ||
+            "Please enable notifications in Settings to receive daily reminders.",
+          [
+            { text: t.cancel || "Cancel", style: "cancel" },
+            {
+              text: t.enableNotifications || "Enable Notifications",
+              onPress: () => Linking.openSettings(),
+            },
+          ],
+        );
+        return;
+      }
+      const ok = await scheduleDailySummaryNotification(t);
+      if (ok) {
+        await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "true");
+        setDailySummaryEnabled(true);
+      } else {
+        setDailySummaryEnabled(false);
+      }
+    } else {
+      // 關閉：取消排程
+      await cancelDailySummaryNotification();
+      await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "false");
+      setDailySummaryEnabled(false);
+    }
+  };
 
   // 注意：不再在語言切換時從緩存同步 reminder 設定
   // 因為用戶可能剛剛更新了 reminder 設定，應該保持當前狀態
@@ -1607,10 +1667,10 @@ function SettingScreen() {
                     }
                   }}
                   trackColor={{
-                    false: theme.divider || theme.rule,
+                    false: switchTrackOff,
                     true: theme.primary,
                   }}
-                  ios_backgroundColor={theme.divider || theme.rule}
+                  ios_backgroundColor={switchTrackOff}
                 />
               </View>
 
@@ -1749,6 +1809,78 @@ function SettingScreen() {
               )}
             </>
           )}
+
+          {/* Divider above daily to-do reminder */}
+          <View
+            style={{
+              height: StyleSheet.hairlineWidth,
+              backgroundColor: theme.rule,
+            }}
+          />
+
+          {/* Daily to-do reminder (07:00 local time) toggle row */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingVertical: 14,
+              paddingHorizontal: 22,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                flex: 1,
+                marginRight: 12,
+              }}
+            >
+              <MaterialIcons
+                name="wb-sunny"
+                size={18}
+                color={theme.textSecondary}
+                style={{ marginRight: 14 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: theme.text,
+                    fontSize: 15,
+                    fontWeight: "500",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {t.dailySummaryReminder || "Daily to-do reminder"}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.caption?.fontFamily,
+                    color: theme.textTertiary,
+                    fontSize: 12,
+                    letterSpacing: -0.1,
+                    marginTop: 2,
+                  }}
+                >
+                  {t.dailySummaryCaption ||
+                    "A 7:00 AM nudge to check today's to-dos"}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={dailySummaryEnabled}
+              onValueChange={(value) => {
+                toggleDailySummary(value).catch((error) =>
+                  console.error("Error toggling daily summary:", error),
+                );
+              }}
+              trackColor={{
+                false: switchTrackOff,
+                true: theme.primary,
+              }}
+              ios_backgroundColor={switchTrackOff}
+            />
+          </View>
         </View>
 
         {/* Support & Legal Section */}
