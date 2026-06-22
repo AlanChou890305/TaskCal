@@ -44,6 +44,7 @@ import { MapPreview } from "../components/MapPreview";
 import { TaskService } from "../services/taskService";
 import { widgetService } from "../services/widgetService";
 import { mixpanelService } from "../services/mixpanelService";
+import { reviewService } from "../services/reviewService";
 import {
   scheduleTaskNotification,
   cancelTaskNotification,
@@ -1463,6 +1464,11 @@ function CalendarScreen({ navigation, route }) {
           platform: Platform.OS,
         },
       );
+
+      // 爽點時刻：完成待辦後，在符合條件時請求 App Store 評分
+      if (newCompletedState) {
+        reviewService.recordTaskCompletionAndMaybePrompt();
+      }
     } catch (error) {
       console.error("Error toggling task:", error);
       // 3. Rollback on Failure
