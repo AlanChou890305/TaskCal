@@ -712,6 +712,7 @@ function SettingScreen() {
       // 清除預載入緩存和啟動快取
       dataPreloadService.clearCache();
       clearSessionCache();
+      UserService.clearCachedAuthUser();
       AsyncStorage.removeItem("APP_SETTINGS_CACHE").catch(() => {});
 
       // Try to log out (using Supabase's signOut API)
@@ -1219,6 +1220,7 @@ function SettingScreen() {
                     mixpanelService.track("Dev Force Logout + Onboarding");
                     mixpanelService.reset();
                     dataPreloadService.clearCache();
+                    UserService.clearCachedAuthUser();
                     try {
                       await supabase.auth.signOut({ scope: "local" });
                     } catch (e) {
