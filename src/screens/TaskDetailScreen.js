@@ -9,6 +9,7 @@ import {
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
+  Keyboard,
   Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -55,6 +56,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const saveDebounceRef = useRef(null);
   const pendingWriteRef = useRef(null); // accumulated fields awaiting debounced DB write
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
+  const deletedRef = useRef(false); // 標記已刪除，避免 unmount 的 onUpdate 復活任務
 
   const isZH = language === "zh-Hant";
 
@@ -125,7 +127,14 @@ export default function TaskDetailScreen({ navigation, route }) {
 
   // flush pending write on unmount (covers iOS swipe-back gesture, which bypasses handleGoBack)
   useEffect(() => {
-    return () => flushPendingWrite();
+    return () => {
+      flushPendingWrite();
+      // 已刪除則不可再觸發 onUpdate，否則會把刪掉的任務重新塞回日曆
+      if (deletedRef.current) return;
+      // 右滑返回不會經過 handleGoBack，需在此同步 onUpdate 並清除 callback；
+      // 與 Back 鈕路徑冪等（onUpdate 內會 clearCallbacks，第二次呼叫為 no-op）
+      invokeCallback(route.params?.callbackId, "onUpdate", taskRef.current);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -133,6 +142,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   const handleDelete = () => {
     const doDelete = async () => {
       mixpanelService.track("Task Deleted", { task_id: task.id, platform: Platform.OS });
+      deletedRef.current = true;
       TaskService.deleteTask(task.id).catch((err) => console.error("deleteTask error:", err));
       invokeCallback(route.params.callbackId, "onDelete", task.id, task.date);
       navigation.goBack();
@@ -308,7 +318,6 @@ export default function TaskDetailScreen({ navigation, route }) {
                 display={Platform.OS === "ios" ? "spinner" : "clock"}
                 themeVariant={themeMode === "dark" ? "dark" : "light"}
                 accentColor={theme.primary}
-                minuteInterval={5}
                 onChange={(_, selected) => { if (selected) setTempTime(selected); }}
               />
             </View>
@@ -390,6 +399,7 @@ export default function TaskDetailScreen({ navigation, route }) {
             labelKey={isZH ? "日期" : "DATE"}
             value={formatDetailDate(task.date, language)}
             onPress={() => {
+              Keyboard.dismiss();
               setTempDate(task.date ? new Date(task.date + "T00:00:00") : new Date());
               setDatePickerVisible(true);
             }}
@@ -401,6 +411,7 @@ export default function TaskDetailScreen({ navigation, route }) {
             value={formatTimeDisplay(task.time) || (isZH ? "無" : "None")}
             isPlaceholder={!task.time}
             onPress={() => {
+              Keyboard.dismiss();
               const now = new Date();
               setTempTime(
                 task.time
