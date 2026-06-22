@@ -818,7 +818,7 @@ function SettingScreen() {
             color: theme.text,
           }}
         >
-          {"Preferences"}
+          {t.preferences}
         </Text>
       </View>
       <ScrollView

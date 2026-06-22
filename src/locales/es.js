@@ -1,6 +1,7 @@
 // Spanish translations
 export default {
   settings: "Configuración",
+  preferences: "Preferencias",
   tasks: "Tareas",
   userName: "Nombre de usuario",
   account: "Cuenta",

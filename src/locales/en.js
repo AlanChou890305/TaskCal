@@ -1,6 +1,7 @@
 // English translations
 export default {
   settings: "Settings",
+  preferences: "Preferences",
   tasks: "Tasks",
   userName: "User Name",
   account: "Account",
