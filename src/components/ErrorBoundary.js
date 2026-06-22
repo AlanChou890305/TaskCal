@@ -65,7 +65,9 @@ export default class ErrorBoundary extends React.Component {
     }
 
     const language = this.props.language || "en";
-    const copy = COPY[language] || COPY.en;
+    // App 的 language 值為 "zh"，但 COPY 以 "zh-Hant" 為 key，需正規化避免落回英文
+    const copyKey = language === "zh" ? "zh-Hant" : language;
+    const copy = COPY[copyKey] || COPY.en;
 
     const isDark = Appearance.getColorScheme() === "dark";
     const bg = isDark ? "#14182A" : "#F2F1EB";
