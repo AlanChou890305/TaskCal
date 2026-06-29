@@ -403,60 +403,48 @@ function CalendarScreen({ navigation, route }) {
           }
         }
 
-        // 檢查預載入的數據是否包含當前範圍的任務
+        // 檢查預載入的數據是否完整涵蓋當前範圍
+        const preloadRange = cachedData?.preloadRange;
+        const isFullyCovered =
+          preloadRange &&
+          preloadRange.start <= startDateStr &&
+          preloadRange.end >= endDateStr;
+
         if (
+          isFullyCovered &&
           cachedData &&
-          cachedData.calendarTasks &&
-          Object.keys(cachedData.calendarTasks).length > 0
+          cachedData.calendarTasks
         ) {
-          // 檢查預載入的任務是否涵蓋當前範圍
+          // 預載範圍完整涵蓋請求範圍，過濾出當前範圍的任務
           const preloadedTasks = cachedData.calendarTasks;
-          const hasTasksInRange = Object.keys(preloadedTasks).some((date) => {
+          const filteredTasks = {};
+          Object.keys(preloadedTasks).forEach((date) => {
             const taskDate = new Date(date);
-            return taskDate >= startDate && taskDate <= endDate;
+            if (taskDate >= startDate && taskDate <= endDate) {
+              filteredTasks[date] = preloadedTasks[date];
+            }
           });
 
-          if (hasTasksInRange) {
-            // 過濾出當前範圍的任務
-            const filteredTasks = {};
-            Object.keys(preloadedTasks).forEach((date) => {
-              const taskDate = new Date(date);
-              if (taskDate >= startDate && taskDate <= endDate) {
-                filteredTasks[date] = preloadedTasks[date];
-              }
-            });
+          setTasks((prevTasks) => {
+            const updatedTasks = {
+              ...prevTasks,
+              ...filteredTasks,
+            };
 
-            if (Object.keys(filteredTasks).length > 0) {
-              setTasks((prevTasks) => {
-                const updatedTasks = {
-                  ...prevTasks,
-                  ...filteredTasks,
-                };
+            // Sync to widget
+            widgetService.syncTodayTasks(updatedTasks);
 
-                // Sync to widget
-                widgetService.syncTodayTasks(updatedTasks);
+            return updatedTasks;
+          });
 
-                return updatedTasks;
-              });
+          setIsLoadingTasks(false);
 
-              setIsLoadingTasks(false);
-
-              // Mark this range as fetched
-              fetchedRangesRef.current.add(rangeKey);
-              return;
-            } else {
-              console.log(
-                `⚠️ [CalendarScreen] Preloaded tasks exist but none in range ${startDateStr} to ${endDateStr}, fetching from API`,
-              );
-            }
-          } else {
-            console.log(
-              `⚠️ [CalendarScreen] Preloaded tasks exist but not in range ${startDateStr} to ${endDateStr}, fetching from API`,
-            );
-          }
+          // Mark this range as fetched
+          fetchedRangesRef.current.add(rangeKey);
+          return;
         } else {
-          console.log(
-            `📥 [CalendarScreen] No cached data available, fetching from API for ${startDateStr} to ${endDateStr}`,
+          if (__DEV__) console.log(
+            `📥 [CalendarScreen] Preload does not fully cover ${startDateStr} to ${endDateStr}, fetching from API`,
           );
         }
 

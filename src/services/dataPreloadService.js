@@ -16,6 +16,7 @@ class DataPreloadService {
     preloadTimestamp: null,
     todayTasks: null,
     currentMonthTasks: null,
+    preloadRange: null,
   };
 
   static CACHE_DURATION = 5 * 60 * 1000; // 5 分鐘緩存
@@ -173,6 +174,7 @@ class DataPreloadService {
       if (__DEV__) console.log(`🚀 [DataPreload] Loading tasks: ${start} to ${end}`);
       const tasks = await TaskService.getTasksByDateRange(start, end, user);
       if (__DEV__) console.log("✅ [DataPreload] Tasks loaded");
+      this.preloadCache.preloadRange = { start, end };
       return tasks;
     } catch (error) {
       console.error("❌ [DataPreload] Error loading tasks:", error);
@@ -223,6 +225,7 @@ class DataPreloadService {
       preloadTimestamp: null,
       todayTasks: null,
       currentMonthTasks: null,
+      preloadRange: null,
     };
     if (__DEV__) console.log("🗑️ [DataPreload] Cache cleared");
   }
@@ -239,6 +242,7 @@ class DataPreloadService {
         userSettings: this.preloadCache.userSettings,
         userProfile: this.preloadCache.userProfile,
         calendarTasks: this.preloadCache.calendarTasks,
+        preloadRange: this.preloadCache.preloadRange,
       };
     }
 
@@ -251,6 +255,7 @@ class DataPreloadService {
           this.preloadCache.currentMonthTasks ||
           this.preloadCache.calendarTasks ||
           null,
+        preloadRange: this.preloadCache.preloadRange,
       };
     }
 
@@ -260,6 +265,7 @@ class DataPreloadService {
         userProfile: this.preloadCache.userProfile,
         calendarTasks:
           this.preloadCache.todayTasks || this.preloadCache.currentMonthTasks,
+        preloadRange: this.preloadCache.preloadRange,
       };
     }
 

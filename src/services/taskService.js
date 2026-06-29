@@ -337,6 +337,13 @@ export class TaskService {
   // Update a task
   static async updateTask(taskId, updates) {
     try {
+      // 樂觀建立但尚未同步的暫存任務只存在於本地，沒有對應的 DB row。
+      // 直接送 temp id 給 Supabase 會因 uuid 型別不符而報 22P02；
+      // 此時更新只需保留在本地，待建立流程同步時一併帶上（見 CalendarScreen 建立後的 needsUpdate/needsToggle）。
+      if (String(taskId).startsWith("temp-")) {
+        return { id: taskId, ...updates };
+      }
+
       const user = await TaskService._getAuthUser();
       if (!user) {
         throw new Error("No authenticated user found");
@@ -439,6 +446,12 @@ export class TaskService {
   // Delete a task
   static async deleteTask(taskId) {
     try {
+      // 樂觀建立但尚未同步的暫存任務只存在於本地，沒有對應的 DB row。
+      // 直接送 temp id 給 Supabase 會因 uuid 型別不符而報 22P02，因此本地刪除即可。
+      if (String(taskId).startsWith("temp-")) {
+        return true;
+      }
+
       const user = await TaskService._getAuthUser();
       if (!user) {
         throw new Error("No authenticated user found");
