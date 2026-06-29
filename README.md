@@ -4,7 +4,7 @@ A calendar-first task manager for iOS, built with React Native (Expo) and a
 native Swift home-screen widget. Google SSO, Supabase backend, and full
 localization in English, Traditional Chinese, and Spanish.
 
-**🟢 Live on the App Store · v2.0.1**
+**🟢 Live on the App Store · v2.0.2**
 
 📱 [Download on the App Store](https://apps.apple.com/us/app/taskcal-task-manager/id6753785239)
 
@@ -77,6 +77,13 @@ Supabase and Xcode setup guides.
 > the committed config is scrubbed of secrets.
 
 ## Version History
+
+### v2.0.2 — 2026-06-22
+- New: daily morning reminder for your tasks
+- Fixed tasks disappearing when moved to a different date
+- Fixed the keyboard blocking the time picker while editing
+- Fixed the Today marker being invisible on the calendar
+- Stability and polish improvements
 
 ### v2.0.1 — 2026-06-14
 - Stability improvements and bug fixes

@@ -1,38 +1,44 @@
-# Release Notes - Version 2.0.1 (Build 40)
+# Release Notes - Version 2.0.2 (Build 41)
 
-**Release Date**: 2026-06-14
+**Release Date**: 2026-06-22
 
 ---
 
 ## What's New
 
 ### English
-- Stability improvements and bug fixes
-- Updated App Store metadata with improved descriptions in all three languages
-- Performance and reliability enhancements
+- New: a daily morning reminder so you never miss what's on your list
+- Fixed tasks disappearing when you moved them to a different date
+- Smoother time editing — the keyboard no longer blocks the time picker
+- Today's marker is now clearly visible on the calendar
+- Various stability and polish improvements
 
 ### 繁體中文
-- 穩定性改善與錯誤修正
-- 更新 App Store 說明文字（三種語言）
-- 效能與可靠性提升
+- 新增：每日早晨提醒，待辦事項不再錯過
+- 修正變更日期時任務消失的問題
+- 編輯時間更順手 — 鍵盤不再擋住時間選擇器
+- 日曆上「今天」的標記現在清楚可見
+- 多項穩定性與細節優化
 
 ### Español
-- Mejoras de estabilidad y correcciones de errores
-- Actualización de la descripción en App Store en los tres idiomas
-- Mejoras de rendimiento y fiabilidad
+- Nuevo: un recordatorio matutino diario para no olvidar tus tareas
+- Corregido: las tareas ya no desaparecen al cambiar su fecha
+- Edición de hora más fluida: el teclado ya no tapa el selector de hora
+- El marcador de hoy ahora se ve claramente en el calendario
+- Mejoras de estabilidad y detalles
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-TaskCal 2.0 is here — a full visual redesign with the new Indigo design system. Cleaner task details, a smarter calendar view, and a more polished experience throughout.
+Never miss a task with the new daily morning reminder. Plus a smoother calendar, easier time editing, and a more reliable experience all around.
 
 ### 繁體中文
-TaskCal 2.0 全新登場！採用全新 Indigo 設計系統，任務詳情更清晰、日曆視圖更聰明，整體體驗更精緻俐落。
+全新每日早晨提醒，待辦不再錯過！日曆更流暢、時間編輯更順手，整體體驗更穩定可靠。
 
 ### Español
-¡Ya está aquí TaskCal 2.0! Un rediseño visual completo con el nuevo sistema de diseño Indigo: detalles más claros, calendario más inteligente y una experiencia más cuidada.
+No olvides ninguna tarea con el nuevo recordatorio matutino. Calendario más fluido, edición de hora más fácil y una experiencia más fiable.
 
 ---
 
