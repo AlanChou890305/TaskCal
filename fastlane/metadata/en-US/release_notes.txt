@@ -1,0 +1,8 @@
+TaskCal 2.0 — our biggest update yet.
+
+• Completely redesigned UI with the new Indigo design system
+• Redesigned Task Detail screen with inline editing and a full-width Mark Done button
+• Calendar improvements: multiple task dots, Today highlight, and banner polish
+• Refreshed Settings screen aligned with the new design
+• New Lock Screen and Large Home Screen widgets
+• Added crash monitoring plus a batch of stability and bug fixes

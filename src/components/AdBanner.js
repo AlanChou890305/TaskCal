@@ -25,7 +25,7 @@ if (Platform.OS !== "web") {
 }
 
 // 廣告暫停開關：設為 true 時全部用戶不顯示廣告，架構保留供日後重新啟用
-const ADS_PAUSED = true;
+export const ADS_PAUSED = true;
 
 /**
  * AdBanner 組件

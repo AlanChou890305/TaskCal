@@ -1,0 +1,1 @@
+tareas,lista de tareas,calendario,widget,planificador,productividad,recordatorio,agenda,organizador

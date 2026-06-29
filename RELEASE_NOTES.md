@@ -1,62 +1,44 @@
-# Release Notes - Version 1.3.2 (Build 32)
+# Release Notes - Version 2.0.2 (Build 41)
 
-**Release Date**: 2026-03-23
+**Release Date**: 2026-06-22
 
 ---
 
 ## What's New
 
 ### English
-- Keyboard automatically focuses the first input field when opening task creation and editing modals (iOS/Android)
-- Fixed onboarding incorrectly appearing after login for existing users
-- Fixed theme not loading correctly (stuck on light mode) after login
-- Added Onboarding experience to guide new users through key features
-- Improved login page layout — text no longer overflows the screen
-- Fixed vertical scrollbar appearing on create/edit task pages (web)
-- Fixed Terms of Use and Privacy Policy navigation errors on login page
-- Save button in task editor changed to checkmark icon (fixes text overflow in Spanish)
-- Web header style updated to shadow for visual consistency
-- Fixed last task being partially hidden by gradient fade in task list
-- Spanish locale fully synced
+- New: a daily morning reminder so you never miss what's on your list
+- Fixed tasks disappearing when you moved them to a different date
+- Smoother time editing — the keyboard no longer blocks the time picker
+- Today's marker is now clearly visible on the calendar
+- Various stability and polish improvements
 
 ### 繁體中文
-- 開啟任務建立與編輯彈窗時，鍵盤自動 focus 第一個輸入欄位（iOS/Android）
-- 修正既有用戶登入後誤跳 Onboarding 引導頁的問題
-- 修正登入後 theme 無法正確載入（卡在 light 模式）的問題
-- 新增 Onboarding 引導頁面，協助新用戶快速了解核心功能
-- 改善登入頁面排版，底部文字不再超出螢幕
-- 修正網頁版建立/編輯任務頁面出現多餘垂直捲軸的問題
-- 修正登入頁面中使用條款與隱私政策導航錯誤
-- 任務編輯器儲存按鈕改為打勾圖示（修正西文斷行問題）
-- 網頁版 Header 改為陰影樣式，視覺一致性提升
-- 修正任務列表最後一項被漸層效果遮住的問題
-- 西班牙文翻譯補全
+- 新增：每日早晨提醒，待辦事項不再錯過
+- 修正變更日期時任務消失的問題
+- 編輯時間更順手 — 鍵盤不再擋住時間選擇器
+- 日曆上「今天」的標記現在清楚可見
+- 多項穩定性與細節優化
 
 ### Español
-- El teclado enfoca automáticamente el primer campo al abrir los modales de creación y edición de tareas (iOS/Android)
-- Corregido el problema donde el Onboarding aparecía incorrectamente para usuarios existentes al iniciar sesión
-- Corregido el tema que no se cargaba correctamente (atascado en modo claro) después de iniciar sesión
-- Nueva experiencia de Onboarding para guiar a los nuevos usuarios por las funciones principales
-- Mejora en el diseño de la página de inicio de sesión — el texto ya no se desborda de la pantalla
-- Corregida la barra de desplazamiento vertical en las páginas de crear/editar tarea (web)
-- Corregidos errores de navegación en los enlaces de Términos de Uso y Política de Privacidad
-- Botón de guardar en el editor de tareas cambiado a ícono de verificación (soluciona desbordamiento en español)
-- Estilo del encabezado web actualizado a sombra para mayor consistencia visual
-- Corregido el problema donde la última tarea quedaba oculta por el efecto de degradado
-- Traducciones al español completamente sincronizadas
+- Nuevo: un recordatorio matutino diario para no olvidar tus tareas
+- Corregido: las tareas ya no desaparecen al cambiar su fecha
+- Edición de hora más fluida: el teclado ya no tapa el selector de hora
+- El marcador de hoy ahora se ve claramente en el calendario
+- Mejoras de estabilidad y detalles
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-TaskCal just got smoother — keyboards now auto-focus when you open task modals, so you can start typing instantly. Plus onboarding for new users, login fixes, and web layout polish. Every detail matters.
+Never miss a task with the new daily morning reminder. Plus a smoother calendar, easier time editing, and a more reliable experience all around.
 
 ### 繁體中文
-TaskCal 更流暢了！開啟任務彈窗後鍵盤自動 focus，馬上就能開始輸入。同時帶來新用戶 Onboarding 引導、登入修正與網頁版細節優化。每個細節都更精緻。
+全新每日早晨提醒，待辦不再錯過！日曆更流暢、時間編輯更順手，整體體驗更穩定可靠。
 
 ### Español
-TaskCal acaba de mejorar — el teclado ahora se enfoca automáticamente al abrir modales de tareas, para que puedas escribir de inmediato. Además: onboarding para nuevos usuarios, correcciones de inicio de sesión y mejoras visuales. Cada detalle importa.
+No olvides ninguna tarea con el nuevo recordatorio matutino. Calendario más fluido, edición de hora más fácil y una experiencia más fiable.
 
 ---
 

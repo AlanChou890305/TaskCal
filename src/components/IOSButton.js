@@ -7,12 +7,17 @@ const IOSButton = ({ title, onPress, theme, variant = "primary", disabled, style
       case "secondary":
         return {
           button: {
-            backgroundColor: theme.buttonSecondary,
+            backgroundColor: "transparent",
             height: 44,
+            borderWidth: 1,
+            borderColor: theme.buttonSecondaryBorder || "rgba(26,31,46,0.22)",
           },
           text: {
-            color: theme.primary,
-            fontWeight: "600",
+            color: theme.buttonSecondaryText || theme.text,
+            fontFamily: theme.typography?.callout?.fontFamily,
+            fontSize: theme.typography?.callout?.fontSize || 14,
+            fontWeight: "500",
+            letterSpacing: -0.15,
           },
         };
       case "destructive":
@@ -20,21 +25,30 @@ const IOSButton = ({ title, onPress, theme, variant = "primary", disabled, style
           button: {
             backgroundColor: "transparent",
             height: 44,
+            borderWidth: 1,
+            borderColor: theme.buttonSecondaryBorder || "rgba(26,31,46,0.22)",
           },
           text: {
             color: theme.error,
-            fontWeight: "600",
+            fontFamily: theme.typography?.callout?.fontFamily,
+            fontSize: theme.typography?.callout?.fontSize || 14,
+            fontWeight: "500",
+            letterSpacing: -0.15,
           },
         };
       default:
         return {
           button: {
             backgroundColor: theme.primary,
-            height: 50,
+            height: 54,
           },
           text: {
-            color: theme.buttonText,
+            color: theme.buttonText || "#F2F1EB",
+            fontFamily: theme.typography?.headline?.fontFamily,
+            fontSize: 13,
             fontWeight: "600",
+            letterSpacing: 0.4,
+            textTransform: "uppercase",
           },
         };
     }
@@ -49,21 +63,13 @@ const IOSButton = ({ title, onPress, theme, variant = "primary", disabled, style
       activeOpacity={0.7}
       style={[
         styles.button,
-        {
-          borderRadius: theme.radius?.md || theme.borderRadius,
-        },
+        { borderRadius: theme.radius?.lg || 8 },
         variantStyles.button,
         disabled && styles.disabled,
         style,
       ]}
     >
-      <Text
-        style={[
-          styles.text,
-          { fontSize: theme.typography?.body?.fontSize || 17 },
-          variantStyles.text,
-        ]}
-      >
+      <Text style={[styles.text, variantStyles.text]}>
         {title}
       </Text>
     </TouchableOpacity>
@@ -76,9 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
   },
-  text: {
-    letterSpacing: -0.41,
-  },
+  text: {},
   disabled: {
     opacity: 0.4,
   },

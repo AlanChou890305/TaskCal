@@ -1,0 +1,17 @@
+TaskCal is a calendar-first task manager that keeps your day in one clean, focused view. Plan, track, and complete your tasks — then see them right on your Home Screen and Lock Screen with native iOS widgets.
+
+WHY TASKCAL
+
+• Calendar-first — see your tasks on a real monthly calendar, with dots for busy days and a clear Today highlight.
+• Fast capture — add a task in seconds, set a date, and get back to what matters.
+• Inline task details — edit everything on one screen and mark tasks done with a single tap.
+• Native iOS widgets — view today's tasks, a monthly calendar, and a progress ring on your Home Screen and Lock Screen, always in sync.
+• Stays in sync — sign in with Google and your tasks follow you, backed up securely in the cloud.
+• Light & dark mode — automatically follows your system appearance.
+• Fully localized — available in English, Traditional Chinese, and Spanish.
+
+WHAT'S NEW IN 2.0
+
+A complete visual redesign built on the new Indigo design system — a cleaner Task Detail screen with inline editing, a smarter calendar view, refreshed Settings, and new Lock Screen and Large Home Screen widgets.
+
+TaskCal is free. Download it and make today simpler.

@@ -44,24 +44,26 @@ import { MapPreview } from "../components/MapPreview";
 import { TaskService } from "../services/taskService";
 import { widgetService } from "../services/widgetService";
 import { mixpanelService } from "../services/mixpanelService";
+import { reviewService } from "../services/reviewService";
 import {
   scheduleTaskNotification,
   cancelTaskNotification,
 } from "../services/notificationService";
 import { getActiveReminderMinutes } from "../config/notificationConfig";
 import { dataPreloadService } from "../services/dataPreloadService";
+import { registerCallbacks, clearCallbacks } from "../utils/navigationCallbacks";
 import { format } from "date-fns";
 import {
   formatTimestamp,
   formatTimeDisplay as formatTimeDisplayUtil,
 } from "../utils/dateUtils";
-import AdBanner from "../components/AdBanner";
+import AdBanner, { ADS_PAUSED } from "../components/AdBanner";
 import IOSButton from "../components/IOSButton";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";
-import LiquidGlassFABButton from "../components/LiquidGlassFABButton";
-import LiquidGlassButton from "../components/LiquidGlassButton";
 import { isIOS26Plus } from "../utils/platform";
+import IndigoFAB from "../components/IndigoFAB";
+import IOSCheckbox from "../components/IOSCheckbox";
 
 function getToday() {
   const today = new Date();
@@ -75,106 +77,81 @@ function getToday() {
 // 使用工具文件中的函數，保持向後兼容
 const formatTimeDisplay = formatTimeDisplayUtil;
 
-const TaskSkeleton = ({ theme }) => {
+const SKELETON_WIDTHS = ["58%", "72%", "46%", "65%"];
+
+const TaskSkeleton = ({ theme, widthIndex = 0 }) => {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const useNativeDriver = Platform.OS !== "web";
+  const isDark = theme.mode === "dark";
 
   useEffect(() => {
-    // Web platform doesn't support useNativeDriver
-    const useNativeDriver = Platform.OS !== "web";
-
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver,
-        }),
-        Animated.timing(shimmerAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver,
-        }),
-      ]),
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1400,
+        useNativeDriver,
+      }),
     ).start();
   }, []);
 
-  const opacity = shimmerAnim.interpolate({
+  const translateX = shimmerAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0.3, 0.7],
+    outputRange: [-250, 250],
   });
+
+  const baseBg = isDark ? "rgba(255,255,255,0.06)" : "rgba(26,31,46,0.07)";
+  const highlightBg = isDark ? "rgba(255,255,255,0.14)" : "rgba(26,31,46,0.14)";
+
+  const SkBlock = ({ width, height, borderRadius = 4 }) => (
+    <View
+      style={{
+        overflow: "hidden",
+        backgroundColor: baseBg,
+        borderRadius,
+        width,
+        height,
+      }}
+    >
+      <Animated.View
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          width: 150,
+          backgroundColor: highlightBg,
+          transform: [{ translateX }],
+        }}
+      />
+    </View>
+  );
+
+  const titleW = SKELETON_WIDTHS[widthIndex % SKELETON_WIDTHS.length];
 
   return (
     <View
-      style={[
-        styles.taskItemRow,
-        {
-          backgroundColor: theme.card,
-          borderRadius: theme.radius?.lg || 12,
-          marginBottom: theme.spacing?.md || 12,
-          paddingVertical: theme.spacing?.sm || 8,
-          paddingHorizontal: theme.spacing?.md || 12,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: theme.cardBorder,
-        },
-      ]}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 13,
+        paddingHorizontal: 16,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: theme.rule || theme.divider,
+        backgroundColor: theme.background,
+        gap: 12,
+      }}
     >
-      <View style={styles.checkbox}>
-        <Animated.View
-          style={[
-            {
-              width: 24,
-              height: 24,
-              borderRadius: 4,
-              backgroundColor: theme.shimmer,
-            },
-            { opacity },
-          ]}
-        />
+      <SkBlock width={20} height={20} borderRadius={3} />
+      <View style={{ flex: 1 }}>
+        <SkBlock width={titleW} height={12} />
       </View>
-      <View
-        style={[
-          styles.taskItem,
-          {
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: theme.mode === "dark" ? "rgb(58, 58, 60)" : "#fff",
-          },
-        ]}
-      >
-        <View style={styles.taskTextContainer}>
-          <Animated.View
-            style={[
-              {
-                height: 16,
-                borderRadius: 4,
-                backgroundColor: theme.shimmer,
-                width: "80%",
-              },
-              { opacity },
-            ]}
-          />
-        </View>
-        <View style={styles.taskTimeContainer}>
-          <Animated.View
-            style={[
-              {
-                height: 14,
-                borderRadius: 4,
-                backgroundColor: theme.shimmer,
-                width: 50,
-              },
-              { opacity },
-            ]}
-          />
-        </View>
-      </View>
+      <SkBlock width={32} height={10} />
     </View>
   );
 };
 
 function CalendarScreen({ navigation, route }) {
   const { language, t } = useContext(LanguageContext);
+  const isZH = language === "zh-Hant";
   const { theme, themeMode } = useContext(ThemeContext);
   const { userType, loadingUserType } = useContext(UserContext);
   const insets = useSafeAreaInsets();
@@ -426,60 +403,48 @@ function CalendarScreen({ navigation, route }) {
           }
         }
 
-        // 檢查預載入的數據是否包含當前範圍的任務
+        // 檢查預載入的數據是否完整涵蓋當前範圍
+        const preloadRange = cachedData?.preloadRange;
+        const isFullyCovered =
+          preloadRange &&
+          preloadRange.start <= startDateStr &&
+          preloadRange.end >= endDateStr;
+
         if (
+          isFullyCovered &&
           cachedData &&
-          cachedData.calendarTasks &&
-          Object.keys(cachedData.calendarTasks).length > 0
+          cachedData.calendarTasks
         ) {
-          // 檢查預載入的任務是否涵蓋當前範圍
+          // 預載範圍完整涵蓋請求範圍，過濾出當前範圍的任務
           const preloadedTasks = cachedData.calendarTasks;
-          const hasTasksInRange = Object.keys(preloadedTasks).some((date) => {
+          const filteredTasks = {};
+          Object.keys(preloadedTasks).forEach((date) => {
             const taskDate = new Date(date);
-            return taskDate >= startDate && taskDate <= endDate;
+            if (taskDate >= startDate && taskDate <= endDate) {
+              filteredTasks[date] = preloadedTasks[date];
+            }
           });
 
-          if (hasTasksInRange) {
-            // 過濾出當前範圍的任務
-            const filteredTasks = {};
-            Object.keys(preloadedTasks).forEach((date) => {
-              const taskDate = new Date(date);
-              if (taskDate >= startDate && taskDate <= endDate) {
-                filteredTasks[date] = preloadedTasks[date];
-              }
-            });
+          setTasks((prevTasks) => {
+            const updatedTasks = {
+              ...prevTasks,
+              ...filteredTasks,
+            };
 
-            if (Object.keys(filteredTasks).length > 0) {
-              setTasks((prevTasks) => {
-                const updatedTasks = {
-                  ...prevTasks,
-                  ...filteredTasks,
-                };
+            // Sync to widget
+            widgetService.syncTodayTasks(updatedTasks);
 
-                // Sync to widget
-                widgetService.syncTodayTasks(updatedTasks);
+            return updatedTasks;
+          });
 
-                return updatedTasks;
-              });
+          setIsLoadingTasks(false);
 
-              setIsLoadingTasks(false);
-
-              // Mark this range as fetched
-              fetchedRangesRef.current.add(rangeKey);
-              return;
-            } else {
-              console.log(
-                `⚠️ [CalendarScreen] Preloaded tasks exist but none in range ${startDateStr} to ${endDateStr}, fetching from API`,
-              );
-            }
-          } else {
-            console.log(
-              `⚠️ [CalendarScreen] Preloaded tasks exist but not in range ${startDateStr} to ${endDateStr}, fetching from API`,
-            );
-          }
+          // Mark this range as fetched
+          fetchedRangesRef.current.add(rangeKey);
+          return;
         } else {
-          console.log(
-            `📥 [CalendarScreen] No cached data available, fetching from API for ${startDateStr} to ${endDateStr}`,
+          if (__DEV__) console.log(
+            `📥 [CalendarScreen] Preload does not fully cover ${startDateStr} to ${endDateStr}, fetching from API`,
           );
         }
 
@@ -616,7 +581,10 @@ function CalendarScreen({ navigation, route }) {
     // 等待預載入完成後再檢查快取（避免太早檢查導致 cache miss 後重複查詢）
     const initWithPreload = async () => {
       // 如果預載入正在進行中，等待它完成（最多 3 秒）
-      if (dataPreloadService.isPreloading && dataPreloadService.preloadPromise) {
+      if (
+        dataPreloadService.isPreloading &&
+        dataPreloadService.preloadPromise
+      ) {
         console.log("⏳ [CalendarScreen] Waiting for preload before init...");
         try {
           await Promise.race([
@@ -624,7 +592,10 @@ function CalendarScreen({ navigation, route }) {
             new Promise((resolve) => setTimeout(resolve, 3000)),
           ]);
         } catch (error) {
-          console.warn("⚠️ [CalendarScreen] Preload wait error during init:", error.message);
+          console.warn(
+            "⚠️ [CalendarScreen] Preload wait error during init:",
+            error.message,
+          );
         }
       }
 
@@ -664,7 +635,6 @@ function CalendarScreen({ navigation, route }) {
           const endDateStr = format(endDate, "yyyy-MM-dd");
           const rangeKey = `${startDateStr}_${endDateStr}`;
           fetchedRangesRef.current.add(rangeKey);
-
         } else {
           console.log(
             "⚠️ [CalendarScreen] Preloaded tasks exist but none in current range, will fetch from API",
@@ -687,7 +657,8 @@ function CalendarScreen({ navigation, route }) {
     setTimeout(() => {
       centerToday();
     }, 500);
-  }, [centerToday, isInitialized]); // Include centerToday and isInitialized in dependencies
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centerToday]);
 
   // Reset to today when Calendar tab is focused (but avoid duplicate fetches)
   useFocusEffect(
@@ -713,6 +684,8 @@ function CalendarScreen({ navigation, route }) {
     }, [route?.params?.focusToday, centerToday]),
   );
 
+  // Task state changes from TaskDetailScreen are now handled via callbacks passed in openEditTask
+
   // Note: We no longer need to save tasks to AsyncStorage
   // Tasks are automatically saved to Supabase when modified
 
@@ -730,23 +703,55 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const openEditTask = (task) => {
-    setEditingTask(task);
-    setTaskText(task.title);
-    setTaskTime(formatTimeDisplay(task.time) || "");
-    setTaskLink(task.link || "");
-    setTaskDate(task.date);
-    const note = task.note || "";
-    setTaskNote(note);
-    // 根據現有 note 內容設置初始高度
-    if (note) {
-      const lineCount = note.split("\n").length;
-      const estimatedHeight = Math.max(100, lineCount * 24 + 24);
-      setNoteInputHeight(Math.min(estimatedHeight, 300));
-    } else {
-      setNoteInputHeight(100);
-    }
-    setSelectedDate(task.date);
-    setModalVisible(true);
+    const callbackId = `task_${task.id}`;
+    registerCallbacks(callbackId, {
+      onDelete: (deletedId, deletedDate) => {
+        setTasks((prev) => {
+          const dayList = (prev[deletedDate] || []).filter((t) => t.id !== deletedId);
+          const newTasks = { ...prev, [deletedDate]: dayList };
+          widgetService.syncTodayTasks(newTasks);
+          return newTasks;
+        });
+        clearTaskCache();
+        clearCallbacks(callbackId);
+      },
+      onUpdate: (updatedTask) => {
+        setTasks((prev) => {
+          const existsInTarget = (prev[updatedTask.date] || []).some(
+            (t) => t.id === updatedTask.id,
+          );
+          let newTasks;
+          if (existsInTarget) {
+            // 同日期編輯：原地更新，保留排序
+            newTasks = {
+              ...prev,
+              [updatedTask.date]: (prev[updatedTask.date] || []).map((t) =>
+                t.id === updatedTask.id ? updatedTask : t,
+              ),
+            };
+          } else {
+            // 日期搬移：先從所有日期移除，再加入新日期，避免任務憑空消失
+            newTasks = {};
+            for (const [date, list] of Object.entries(prev)) {
+              newTasks[date] = list.filter((t) => t.id !== updatedTask.id);
+            }
+            newTasks[updatedTask.date] = [
+              ...(newTasks[updatedTask.date] || []),
+              updatedTask,
+            ];
+          }
+          widgetService.syncTodayTasks(newTasks);
+          return newTasks;
+        });
+        clearTaskCache();
+        clearCallbacks(callbackId);
+      },
+    });
+    navigation.navigate("TaskDetail", {
+      task,
+      dayTasks: tasks[task.date] || [],
+      callbackId,
+    });
   };
 
   // Helper function to clear task cache when tasks are modified
@@ -815,7 +820,7 @@ function CalendarScreen({ navigation, route }) {
       const dayTasks = tasks[targetDate] || [];
       const newTasksState = { ...tasks, [targetDate]: [...dayTasks, newTask] };
       setTasks(newTasksState);
-      widgetService.syncTodayTasks(newTasksState);
+      // widget sync 延後到 API 回應並取得真實 ID 後再執行（line 993）
     }
 
     // Close modal immediately
@@ -1250,7 +1255,15 @@ function CalendarScreen({ navigation, route }) {
             {t.weekDays.map((day, index) => (
               <Text
                 key={index}
-                style={[styles.weekDayText, { color: theme.textSecondary }]}
+                style={[
+                  styles.weekDayText,
+                  {
+                    color: theme.textSecondary,
+                    fontFamily:
+                      theme.typography?.monoSection?.fontFamily ||
+                      "JetBrainsMono_500Medium",
+                  },
+                ]}
               >
                 {day}
               </Text>
@@ -1281,63 +1294,55 @@ function CalendarScreen({ navigation, route }) {
                     }}
                     style={[
                       styles.calendarDay,
-                      isSelected && [
-                        styles.selectedDay,
-                        { backgroundColor: theme.calendarSelected },
-                      ],
-                      !isSelected && { backgroundColor: theme.background },
+                      { backgroundColor: theme.background },
                       moveMode && styles.calendarDayMoveTarget,
                     ]}
                     activeOpacity={0.7}
                   >
-                    <View style={styles.calendarDayContent}>
-                      <View style={styles.dateContainer}>
-                        {isToday ? (
-                          <View
-                            style={[
-                              styles.todayCircle,
-                              { backgroundColor: theme.primary },
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.calendarDayText,
-                                styles.todayText,
-                                // 如果是 today，文字永遠是白色，不受 selectedDayText 影響
-                              ]}
-                            >
-                              {dateObj.getDate()}
-                            </Text>
-                          </View>
-                        ) : (
-                          <Text
-                            style={[
-                              styles.calendarDayText,
-                              {
-                                color: isCurrentMonth
-                                  ? theme.text
-                                  : theme.textTertiary,
-                              },
-                              isSelected && [
-                                styles.selectedDayText,
-                                { color: theme.primary },
-                              ],
-                              !isCurrentMonth && styles.otherMonthText,
-                            ]}
-                          >
-                            {dateObj.getDate()}
-                          </Text>
-                        )}
-                        {taskCount > 0 && (
-                          <View
-                            style={[
-                              styles.taskDot,
-                              { backgroundColor: theme.primary },
-                            ]}
-                          />
-                        )}
-                      </View>
+                    {/* Circle directly centered by calendarDay's own flexbox */}
+                    <View
+                      style={[
+                        styles.dayCircle,
+                        isToday && { backgroundColor: theme.primary },
+                        isSelected &&
+                          !isToday && {
+                            borderWidth: 1.5,
+                            borderColor: theme.primary,
+                          },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.calendarDayText,
+                          { fontFamily: theme.typography?.monoDay?.fontFamily },
+                          {
+                            color: isCurrentMonth
+                              ? theme.text
+                              : theme.textTertiary,
+                          },
+                          isSelected && !isToday && { color: theme.primary },
+                          isToday && {
+                            color: theme.buttonText || "#F2F1EB",
+                            fontWeight: "600",
+                          },
+                        ]}
+                      >
+                        {dateObj.getDate()}
+                      </Text>
                     </View>
+                    {/* Dot absolutely positioned relative to calendarDay */}
+                    {taskCount > 0 && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          bottom: 4,
+                          width: 4,
+                          height: 4,
+                          borderRadius: 2,
+                          backgroundColor: theme.primary,
+                        }}
+                      />
+                    )}
                   </TouchableOpacity>
                 );
               })}
@@ -1375,7 +1380,7 @@ function CalendarScreen({ navigation, route }) {
                 { color: theme.text },
                 isSelected && [
                   styles.selectedDayText,
-                  { color: theme.primary },
+                  { color: theme.calendarTodayText },
                 ],
                 isToday && styles.todayTextLarge,
               ]}
@@ -1467,6 +1472,11 @@ function CalendarScreen({ navigation, route }) {
           platform: Platform.OS,
         },
       );
+
+      // 爽點時刻：完成待辦後，在符合條件時請求 App Store 評分
+      if (newCompletedState) {
+        reviewService.recordTaskCompletionAndMaybePrompt();
+      }
     } catch (error) {
       console.error("Error toggling task:", error);
       // 3. Rollback on Failure
@@ -1476,82 +1486,66 @@ function CalendarScreen({ navigation, route }) {
     }
   };
 
-  const renderTask = ({ item }) => (
-    <View
-      style={[
-        styles.taskItemRow,
-        {
-          backgroundColor: theme.card,
-          borderRadius: theme.radius?.lg || 12,
-          marginBottom: theme.spacing?.md || 12,
-          paddingVertical: theme.spacing?.sm || 8,
-          paddingHorizontal: theme.spacing?.md || 12,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: theme.cardBorder,
-          ...theme.shadows?.card,
-        },
-      ]}
-    >
-      <TouchableOpacity
-        style={styles.checkbox}
-        onPress={() => toggleTaskChecked(item)}
-        activeOpacity={0.7}
-      >
-        {item.is_completed || item.checked ? (
-          <MaterialIcons name="check-box" size={24} color={theme.primary} />
-        ) : (
-          <MaterialIcons
-            name="check-box-outline-blank"
-            size={24}
-            color={theme.textTertiary}
-          />
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity
+  const renderTask = ({ item }) => {
+    const done = !!(item.is_completed || item.checked);
+    return (
+      <View
         style={[
-          styles.taskItem,
+          styles.taskItemRow,
           {
+            backgroundColor: theme.background,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: theme.rule || theme.divider,
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+          },
+        ]}
+      >
+        <IOSCheckbox
+          checked={done}
+          onPress={() => toggleTaskChecked(item)}
+          theme={theme}
+        />
+        <TouchableOpacity
+          style={{
             flex: 1,
             flexDirection: "row",
             alignItems: "center",
+            marginLeft: 12,
             backgroundColor: "transparent",
-          },
-        ]}
-        onPress={() => openEditTask(item)}
-        onLongPress={() => startMoveTask(item)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.taskTextContainer}>
+          }}
+          onPress={() => openEditTask(item)}
+          onLongPress={() => startMoveTask(item)}
+          activeOpacity={0.7}
+        >
           <Text
-            style={[
-              styles.taskText,
-              {
-                color:
-                  item.is_completed || item.checked
-                    ? theme.textTertiary
-                    : theme.text,
-                fontSize: theme.typography?.body?.fontSize || 17,
-                letterSpacing: theme.typography?.body?.letterSpacing || -0.41,
-              },
-              (item.is_completed || item.checked) && styles.taskTextChecked,
-            ]}
+            style={{
+              flex: 1,
+              fontFamily: theme.typography?.callout?.fontFamily,
+              fontSize: 14,
+              fontWeight: "500",
+              letterSpacing: -0.2,
+              color: done ? theme.textTertiary : theme.text,
+              textDecorationLine: done ? "line-through" : "none",
+            }}
             numberOfLines={1}
             ellipsizeMode="tail"
           >
             {item.title}
           </Text>
-        </View>
-        <View style={styles.taskTimeContainer}>
           {item.time ? (
             <Text
-              style={[
-                styles.taskTimeRight,
-                {
-                  color: theme.primary,
-                  fontSize: theme.typography?.subheadline?.fontSize || 15,
-                  fontWeight: "600",
-                },
-              ]}
+              style={{
+                fontFamily:
+                  theme.typography?.monoTime?.fontFamily ||
+                  "JetBrainsMono_500Medium",
+                fontSize: 13,
+                fontWeight: "500",
+                letterSpacing: -0.2,
+                color: done ? theme.textTertiary : theme.primary,
+                marginLeft: 8,
+                flexShrink: 0,
+              }}
             >
               {formatTimeDisplay(item.time)}
             </Text>
@@ -1561,10 +1555,10 @@ function CalendarScreen({ navigation, route }) {
               {t.moveHint}
             </Text>
           ) : null}
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   // Helper to get previous/next day in YYYY-MM-DD (local time)
   const getAdjacentDate = (dateStr, diff) => {
@@ -1602,116 +1596,119 @@ function CalendarScreen({ navigation, route }) {
     const shouldShowSkeleton =
       isLoadingTasks && Object.keys(tasks).length === 0;
 
+    const [selY, selM, selD] = selectedDate.split("-").map(Number);
+    const selDateObj = new Date(selY, selM - 1, selD);
+    const weekDayAbbr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
+      selDateObj.getDay()
+    ];
+    const isSelectedToday = selectedDate === getToday();
+    const selMonthName = t.months ? t.months[selM - 1] : String(selM);
+    const bannerDateLabel = isSelectedToday
+      ? t.today || "Today"
+      : `${selMonthName} ${selD}`;
+    const completedCount = dayTasks.filter(
+      (t) => t.is_completed || t.checked,
+    ).length;
+    const totalCount = dayTasks.length;
+
     const taskAreaContent = (
       <View
         style={[
           styles.taskArea,
-          { flex: 1, backgroundColor: theme.backgroundSecondary },
+          { flex: 1, backgroundColor: theme.background },
         ]}
       >
         <View
           style={[
             styles.taskAreaContent,
-            { flex: 1, backgroundColor: theme.backgroundSecondary },
+            { flex: 1, backgroundColor: theme.background },
           ]}
         >
+          {/* Accent date banner */}
           <View
-            style={[
-              styles.tasksHeaderRow,
-              {
-                paddingLeft: 0,
-                paddingHorizontal: 0,
-                marginLeft: 4,
-                backgroundColor: "transparent",
-              },
-            ]}
+            style={{
+              backgroundColor: theme.primary,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
-            <Text
-              style={[
-                styles.tasksHeader,
-                {
-                  textAlign: "left",
-                  paddingLeft: 0,
-                  marginLeft: 4,
-                  color: theme.text,
-                },
-              ]}
-            >
-              {selectedDate}
-            </Text>
+            <View>
+              <Text
+                style={{
+                  fontFamily:
+                    theme.typography?.monoKicker?.fontFamily ||
+                    "JetBrainsMono_500Medium",
+                  fontSize: 10,
+                  fontWeight: "500",
+                  letterSpacing: 1.5,
+                  color: (theme.buttonText || "#F2F1EB") + "99",
+                  marginBottom: 2,
+                }}
+              >
+                {weekDayAbbr}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.title3?.fontFamily,
+                  fontSize: 18,
+                  fontWeight: "600",
+                  letterSpacing: -0.4,
+                  color: theme.buttonText || "#F2F1EB",
+                }}
+              >
+                {bannerDateLabel}
+              </Text>
+            </View>
+            <View style={{ alignItems: "flex-end" }}>
+              <Text
+                style={{
+                  fontFamily:
+                    theme.typography?.monoKicker?.fontFamily ||
+                    "JetBrainsMono_500Medium",
+                  fontSize: 9,
+                  letterSpacing: 1.2,
+                  color: (theme.buttonText || "#F2F1EB") + "BF",
+                  marginBottom: 2,
+                }}
+              >
+                {t.done || "Done"}
+              </Text>
+              <Text
+                style={{
+                  fontFamily:
+                    theme.typography?.monoTime?.fontFamily ||
+                    "JetBrainsMono_500Medium",
+                  fontSize: 15,
+                  fontWeight: "500",
+                  color: theme.buttonText || "#F2F1EB",
+                }}
+              >
+                {totalCount > 0 ? `${completedCount} / ${totalCount}` : "—"}
+              </Text>
+            </View>
           </View>
 
-          {/* Floating Add Button - 玻璃效果 */}
-          {isIOS26Plus ? (
-            <LiquidGlassFABButton
-              style={[
-                styles.fabAddButton,
-                {
-                  bottom: 88,
-                  backgroundColor: "transparent",
-                  shadowOpacity: 0,
-                  elevation: 0,
-                },
-              ]}
-              onPress={() => openAddTask(selectedDate)}
-              primaryColor={theme.primary}
-            />
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.fabAddButton,
-                {
-                  backgroundColor: theme.primary,
-                  shadowColor: theme.primary,
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
-                  bottom: 0,
-                },
-              ]}
-              onPress={() => openAddTask(selectedDate)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.addButtonIcon}>
-                <Svg
-                  width={32}
-                  height={32}
-                  viewBox="0 0 32 32"
-                  style={{ display: "flex", alignSelf: "center" }}
-                >
-                  <Line
-                    x1="16"
-                    y1="6"
-                    x2="16"
-                    y2="26"
-                    stroke="#ffffff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                  <Line
-                    x1="6"
-                    y1="16"
-                    x2="26"
-                    y2="16"
-                    stroke="#ffffff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </Svg>
-              </View>
-            </TouchableOpacity>
-          )}
+          {/* Floating Add Button */}
+          <IndigoFAB
+            onPress={() => openAddTask(selectedDate)}
+            theme={theme}
+            isNative={isIOS26Plus}
+          />
 
           {shouldShowSkeleton ? (
-            <View
-              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
-            >
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
               <FlatList
                 data={[1, 2, 3, 4]} // 顯示 4 個 skeleton
                 keyExtractor={(item) => `skeleton-${item}`}
-                renderItem={() => <TaskSkeleton theme={theme} />}
+                renderItem={({ index }) => (
+                  <TaskSkeleton theme={theme} widthIndex={index} />
+                )}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
-                style={{ backgroundColor: theme.backgroundSecondary }}
+                style={{ backgroundColor: theme.background }}
               />
             </View>
           ) : dayTasks.length === 0 ? (
@@ -1741,16 +1738,14 @@ function CalendarScreen({ navigation, route }) {
                   strokeWidth="2"
                   strokeLinecap="round"
                 />
-                <Circle cx="32" cy="16" r="6" fill="#e0e0e0" />
+                <Circle cx="36" cy="16" r="6" fill="#e0e0e0" />
               </Svg>
               <Text style={[styles.noTaskText, { color: theme.textSecondary }]}>
                 {t.noTasks}
               </Text>
             </View>
           ) : (
-            <View
-              style={{ flex: 1, backgroundColor: theme.backgroundSecondary }}
-            >
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
               <FlatList
                 data={dayTasks.slice().sort((a, b) => {
                   // 已完成的任務排到最底下
@@ -1766,7 +1761,7 @@ function CalendarScreen({ navigation, route }) {
                 renderItem={renderTask}
                 contentContainerStyle={styles.tasksScrollContent}
                 showsVerticalScrollIndicator={false}
-                style={{ backgroundColor: theme.backgroundSecondary }}
+                style={{ backgroundColor: theme.background }}
               />
             </View>
           )}
@@ -1791,431 +1786,357 @@ function CalendarScreen({ navigation, route }) {
     );
   };
 
-  const renderModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-      accessibilityViewIsModal={true}
-      accessibilityLabel="Task Creation/Edit Modal"
-    >
-      <View
-        style={[
-          styles.modalOverlay,
-          { backgroundColor: theme.modalOverlay },
-          Platform.OS === "web"
-            ? {
-                alignItems: "center",
-                justifyContent: "flex-start",
-                backgroundColor: "#f2f2f2",
-                overflow: "hidden",
-              }
-            : null,
-        ]}
+  const renderModal = () => {
+    const monoKickerStyle = {
+      fontFamily:
+        theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+      fontSize: 9,
+      fontWeight: "500",
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+    };
+
+    const formatDateDisplay = (dateStr) => {
+      if (!dateStr) return null;
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dow = new Date(y, m - 1, d).getDay();
+      const dowNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const monNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      if (isZH) return `${y} 年 ${m} 月 ${d} 日`;
+      return `${dowNames[dow]}, ${monNames[m - 1]} ${d}`;
+    };
+
+    const FieldRow = ({
+      iconName,
+      labelText,
+      value,
+      isPlaceholder,
+      onPress,
+      webInput,
+    }) => (
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.7}
+        style={styles.modalFieldRow}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-          keyboardVerticalOffset={0}
-        >
-          <View
+        <MaterialIcons name={iconName} size={18} color={theme.textSecondary} />
+        <View style={{ flex: 1, marginLeft: 14 }}>
+          <Text
             style={[
-              styles.modalContent,
-              { backgroundColor: theme.modalBackground },
-              Platform.OS === "web"
-                ? {
-                    width: 375,
-                    maxWidth: 375,
-                    alignSelf: "center",
-                    height: "100vh",
-                    overflow: "hidden",
-                  }
-                : null,
+              monoKickerStyle,
+              { color: theme.textTertiary, marginBottom: 1 },
             ]}
           >
-            {Platform.OS === "ios" && (
+            {labelText}
+          </Text>
+          {Platform.OS === "web" && webInput ? (
+            webInput
+          ) : (
+            <Text
+              style={{
+                fontFamily: theme.typography?.body?.fontFamily,
+                fontSize: 15,
+                fontWeight: "500",
+                color: isPlaceholder ? theme.textTertiary : theme.text,
+                letterSpacing: -0.2,
+              }}
+            >
+              {value}
+            </Text>
+          )}
+        </View>
+        <MaterialIcons
+          name="chevron-right"
+          size={16}
+          color={theme.textTertiary}
+        />
+      </TouchableOpacity>
+    );
+
+    const FieldDivider = () => (
+      <View
+        style={{
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: theme.rule,
+          marginLeft: 16 + 18 + 14,
+        }}
+      />
+    );
+
+    return (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        presentationStyle="fullScreen"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        accessibilityViewIsModal={true}
+      >
+        <View
+          style={[styles.modalOverlay, { backgroundColor: theme.background }]}
+        >
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={0}
+          >
+            <View
+              style={[
+                styles.modalContent,
+                {
+                  backgroundColor:
+                    theme.backgroundSecondary || theme.background,
+                },
+              ]}
+            >
+              {/* Nav bar */}
               <View
                 style={{
+                  flexDirection: "row",
                   alignItems: "center",
-                  paddingTop: 16,
-                  paddingBottom: 4,
+                  justifyContent: "space-between",
+                  paddingHorizontal: 16,
+                  paddingTop: insets.top + 12,
+                  paddingBottom: 12,
                 }}
-              >
-                <View
-                  style={{
-                    width: 36,
-                    height: 4,
-                    borderRadius: 2,
-                    backgroundColor:
-                      theme.mode === "dark"
-                        ? "rgba(255,255,255,0.25)"
-                        : "rgba(0,0,0,0.18)",
-                  }}
-                />
-              </View>
-            )}
-            {isIOS26Plus ? (
-              <View
-                style={{
-                  height: 52,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <LiquidGlassButton
-                  style={{
-                    position: "absolute",
-                    left: 16,
-                    width: 44,
-                    height: 44,
-                  }}
-                  buttonIcon="xmark"
-                  primaryColor={theme.text}
-                  onPress={() => setModalVisible(false)}
-                />
-                <Text
-                  style={{
-                    fontSize: 17,
-                    fontWeight: "600",
-                    color: theme.text,
-                    letterSpacing: -0.3,
-                  }}
-                >
-                  {editingTask ? t.editTask : t.createTask}
-                </Text>
-                <LiquidGlassButton
-                  style={{
-                    position: "absolute",
-                    right: 16,
-                    width: 44,
-                    height: 44,
-                  }}
-                  buttonIcon="checkmark"
-                  primaryColor={theme.primary}
-                  onPress={saveTask}
-                />
-              </View>
-            ) : (
-              <View
-                style={[
-                  styles.modalHeader,
-                  {
-                    paddingTop: insets.top + 16,
-                    backgroundColor:
-                      theme.mode === "dark" ? theme.background : "#fff",
-                    ...(Platform.OS !== "web" && {
-                      borderBottomColor:
-                        theme.mode === "dark" ? "#2a2a2a" : theme.divider,
-                    }),
-                    ...(Platform.OS === "web" && {
-                      shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
-                    }),
-                  },
-                ]}
               >
                 <TouchableOpacity
-                  style={styles.modalBackButton}
                   onPress={() => setModalVisible(false)}
-                  accessibilityLabel="Go back"
-                  accessibilityHint="Close the task creation/editing modal"
-                  focusable={Platform.OS === "web" ? false : undefined}
-                  tabIndex={Platform.OS === "web" ? -1 : undefined}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ minWidth: 60 }}
                 >
-                  <MaterialIcons name="close" size={24} color={theme.text} />
+                  <Text
+                    style={{
+                      fontFamily: theme.typography?.footnote?.fontFamily,
+                      fontSize: 14,
+                      fontWeight: "500",
+                      color: theme.textSecondary,
+                      letterSpacing: -0.2,
+                    }}
+                  >
+                    {isZH ? "取消" : "Cancel"}
+                  </Text>
                 </TouchableOpacity>
-                <Text style={[styles.modalTitle, { color: theme.text }]}>
-                  {editingTask ? t.editTask : t.createTask}
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.headline?.fontFamily,
+                    fontSize: 14,
+                    fontWeight: "600",
+                    color: theme.text,
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {editingTask
+                    ? isZH
+                      ? "編輯任務"
+                      : "Edit task"
+                    : isZH
+                      ? "新增任務"
+                      : "New task"}
                 </Text>
-                <View style={styles.modalHeaderSpacer} />
+                <TouchableOpacity
+                  onPress={saveTask}
+                  disabled={!taskText.trim()}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={{ minWidth: 60, alignItems: "flex-end" }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: theme.typography?.headline?.fontFamily,
+                      fontSize: 14,
+                      fontWeight: "600",
+                      color: taskText.trim()
+                        ? theme.primary
+                        : theme.textTertiary,
+                      letterSpacing: -0.2,
+                    }}
+                  >
+                    {isZH ? "儲存" : "Save"}
+                  </Text>
+                </TouchableOpacity>
               </View>
-            )}
-            <ScrollView
-              ref={modalScrollViewRef}
-              style={styles.modalScrollView}
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingBottom: 100,
-                paddingTop: isIOS26Plus ? 20 : 0,
-              }}
-              nestedScrollEnabled={true}
-              scrollEnabled={true}
-            >
-              <View
-                style={{ marginBottom: 24, marginTop: isIOS26Plus ? 0 : 24 }}
+
+              <ScrollView
+                ref={modalScrollViewRef}
+                style={styles.modalScrollView}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1 }}
+                nestedScrollEnabled={true}
               >
-                {/* Task Text Input */}
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.label, { color: theme.text }]}>
-                    {t.taskLabel} <Text style={{ color: theme.error }}>*</Text>
+                {/* Title area */}
+                <View
+                  style={{
+                    backgroundColor: theme.background,
+                    borderTopWidth: StyleSheet.hairlineWidth,
+                    borderTopColor: theme.rule,
+                    borderBottomWidth: 1.5,
+                    borderBottomColor:
+                      theme.ruleStrong || "rgba(26,31,46,0.22)",
+                    paddingHorizontal: 22,
+                    paddingTop: 18,
+                    paddingBottom: 22,
+                  }}
+                >
+                  <Text
+                    style={[
+                      monoKickerStyle,
+                      {
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: theme.primary,
+                        marginBottom: 8,
+                      },
+                    ]}
+                  >
+                    {isZH ? "任務標題" : "What needs doing?"}
                   </Text>
                   <TextInput
                     ref={taskTitleInputRef}
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: theme.input,
-                        borderColor: theme.inputBorder,
-                        color: theme.text,
-                      },
-                    ]}
+                    style={{
+                      fontFamily:
+                        theme.typography?.title2?.fontFamily ||
+                        "InterTight_600SemiBold",
+                      fontSize: 24,
+                      fontWeight: "600",
+                      color: theme.text,
+                      letterSpacing: -0.6,
+                      lineHeight: 30,
+                      minHeight: 36,
+                      padding: 0,
+                    }}
                     value={taskText}
                     onChangeText={setTaskText}
-                    placeholder={t.addTask}
-                    placeholderTextColor={theme.textPlaceholder}
+                    placeholder={isZH ? "輸入任務..." : "e.g. Lunch with Mei"}
+                    placeholderTextColor={theme.textTertiary}
                     autoFocus={false}
+                    multiline
                     returnKeyType="done"
-                    accessibilityLabel="Task title input"
-                    accessibilityHint="Enter the task title"
-                    onFocus={() => {
-                      setTimeout(() => {
-                        modalScrollViewRef.current?.scrollTo({
-                          y: 0,
-                          animated: true,
-                        });
-                      }, 100);
-                    }}
+                    blurOnSubmit
                     onSubmitEditing={() => {
-                      // 當用戶按 Enter 時，直接儲存任務（時間是可選的）
-                      if (taskText.trim()) {
-                        saveTask();
-                      }
+                      if (taskText.trim()) saveTask();
                     }}
                   />
                 </View>
 
-                {/* Link Input Field */}
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.label, { color: theme.text }]}>
-                    {t.link}
-                  </Text>
-                  <View
-                    style={[
-                      styles.linkInputContainer,
-                      {
-                        backgroundColor: theme.input,
-                        borderColor: theme.inputBorder,
-                      },
-                      linkInputFocused && styles.linkInputContainerFocused,
-                    ]}
-                  >
-                    <TextInput
-                      style={[styles.linkInput, { color: theme.text }]}
-                      value={taskLink}
-                      onChangeText={setTaskLink}
-                      placeholder={t.linkPlaceholder}
-                      placeholderTextColor={theme.textPlaceholder}
-                      keyboardType="url"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      accessibilityLabel="Task link input"
-                      accessibilityHint="Enter a URL link for this task"
-                      onFocus={() => {
-                        setLinkInputFocused(true);
-                        setTimeout(() => {
-                          modalScrollViewRef.current?.scrollTo({
-                            y: 50,
-                            animated: true,
-                          });
-                        }, 100);
-                      }}
-                      onBlur={() => {
-                        setLinkInputFocused(false);
-                      }}
-                    />
-                    {taskLink && editingTask ? (
-                      <TouchableOpacity
-                        onPress={() => {
-                          const url = taskLink.startsWith("http")
-                            ? taskLink
-                            : `https://${taskLink}`;
-                          Linking.openURL(url).catch((err) =>
-                            console.error("Failed to open URL:", err),
-                          );
-                        }}
-                        style={styles.linkPreviewButton}
-                      >
-                        <MaterialIcons
-                          name="open-in-new"
-                          size={20}
-                          color={theme.primary}
-                        />
-                      </TouchableOpacity>
-                    ) : null}
-                  </View>
-                  {/* Google Maps Preview */}
-                  {taskLink ? (
-                    <MapPreview
-                      url={taskLink}
-                      theme={theme}
-                      t={t}
-                      onOpenInBrowser={() => {
-                        const url = taskLink.startsWith("http")
-                          ? taskLink
-                          : `https://${taskLink}`;
-                        Linking.openURL(url).catch((err) =>
-                          console.error("Failed to open URL:", err),
-                        );
-                      }}
-                    />
-                  ) : null}
-                </View>
-
-                {/* Date Input Field */}
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.label, { color: theme.text }]}>
-                    {t.date} <Text style={{ color: theme.error }}>*</Text>
-                  </Text>
+                {/* Field rows */}
+                <View
+                  style={{
+                    backgroundColor: theme.background,
+                    borderBottomWidth: StyleSheet.hairlineWidth,
+                    borderBottomColor: theme.rule,
+                    marginTop: 1,
+                  }}
+                >
+                  {/* Date */}
                   {Platform.OS === "web" ? (
-                    <View
-                      style={[
-                        styles.linkInputContainer,
-                        {
-                          backgroundColor: theme.input,
-                          borderColor: theme.inputBorder,
-                        },
-                      ]}
-                    >
-                      <style>
-                        {`
-                        #date-input-field::-webkit-calendar-picker-indicator {
-                          position: absolute;
-                          width: 100%;
-                          height: 100%;
-                          top: 0;
-                          left: 0;
-                          opacity: 0;
-                          cursor: pointer;
-                        }
-                        #date-input-field::-webkit-date-and-time-value {
-                          text-align: left;
-                        }
-                      `}
-                      </style>
-                      <input
-                        id="date-input-field"
-                        type="date"
-                        value={taskDate}
-                        onChange={(e) => setTaskDate(e.target.value)}
-                        style={{
-                          width: "100%",
-                          fontSize: 16,
-                          paddingLeft: 16,
-                          paddingRight: 16,
-                          border: "none",
-                          backgroundColor: "transparent",
-                          fontFamily: "inherit",
-                          outline: "none",
-                          height: 50,
-                          color: theme.text,
-                          cursor: "pointer",
-                          position: "relative",
-                          textAlign: "left",
-                        }}
+                    <View style={styles.modalFieldRow}>
+                      <MaterialIcons
+                        name="event"
+                        size={18}
+                        color={theme.textSecondary}
                       />
+                      <View style={{ flex: 1, marginLeft: 14 }}>
+                        <Text
+                          style={[
+                            monoKickerStyle,
+                            { color: theme.textTertiary, marginBottom: 1 },
+                          ]}
+                        >
+                          {isZH ? "日期" : "DATE"}
+                        </Text>
+                        <input
+                          type="date"
+                          value={taskDate}
+                          onChange={(e) => setTaskDate(e.target.value)}
+                          style={{
+                            fontSize: 15,
+                            border: "none",
+                            backgroundColor: "transparent",
+                            fontFamily: "inherit",
+                            outline: "none",
+                            color: theme.text,
+                            padding: 0,
+                            width: "100%",
+                          }}
+                        />
+                      </View>
                     </View>
                   ) : (
-                    <TouchableOpacity
+                    <FieldRow
+                      iconName="event"
+                      labelText={isZH ? "日期" : "DATE"}
+                      value={
+                        formatDateDisplay(taskDate) ||
+                        (isZH ? "選擇日期" : "Pick a date")
+                      }
+                      isPlaceholder={!taskDate}
                       onPress={() => {
-                        Keyboard.dismiss(); // 關閉鍵盤
+                        Keyboard.dismiss();
                         setTempDate(taskDate ? new Date(taskDate) : new Date());
                         setDatePickerVisible(true);
                       }}
-                      style={[
-                        styles.linkInputContainer,
-                        {
-                          backgroundColor: theme.input,
-                          borderColor: theme.inputBorder,
-                        },
-                      ]}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.dateTimeText,
-                          { color: theme.text },
-                          !taskDate && [
-                            styles.placeholderText,
-                            { color: theme.textPlaceholder },
-                          ],
-                        ]}
-                      >
-                        {taskDate || t.datePlaceholder}
-                      </Text>
-                      <View
-                        style={styles.linkPreviewButton}
-                        pointerEvents="none"
-                      >
-                        <MaterialIcons
-                          name="event"
-                          size={20}
-                          color={theme.primary}
+                    />
+                  )}
+
+                  <FieldDivider />
+
+                  {/* Time */}
+                  {Platform.OS === "web" ? (
+                    <View style={styles.modalFieldRow}>
+                      <MaterialIcons
+                        name="access-time"
+                        size={18}
+                        color={theme.textSecondary}
+                      />
+                      <View style={{ flex: 1, marginLeft: 14 }}>
+                        <Text
+                          style={[
+                            monoKickerStyle,
+                            { color: theme.textTertiary, marginBottom: 1 },
+                          ]}
+                        >
+                          {isZH ? "時間" : "TIME"}
+                        </Text>
+                        <input
+                          type="time"
+                          step="60"
+                          value={taskTime}
+                          onChange={(e) => setTaskTime(e.target.value)}
+                          style={{
+                            fontSize: 15,
+                            border: "none",
+                            backgroundColor: "transparent",
+                            fontFamily: "inherit",
+                            outline: "none",
+                            color: theme.text,
+                            padding: 0,
+                            width: "100%",
+                          }}
                         />
                       </View>
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                {/* Time Input Field */}
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.label, { color: theme.text }]}>
-                    {t.time}
-                  </Text>
-                  {Platform.OS === "web" ? (
-                    <View
-                      style={[
-                        styles.linkInputContainer,
-                        {
-                          backgroundColor: theme.input,
-                          borderColor: theme.inputBorder,
-                        },
-                      ]}
-                    >
-                      <style>
-                        {`
-                        #time-input-field::-webkit-calendar-picker-indicator {
-                          position: absolute;
-                          width: 100%;
-                          height: 100%;
-                          top: 0;
-                          left: 0;
-                          opacity: 0;
-                          cursor: pointer;
-                        }
-                        #time-input-field::-webkit-date-and-time-value {
-                          text-align: left;
-                        }
-                      `}
-                      </style>
-                      <input
-                        id="time-input-field"
-                        type="time"
-                        step="60"
-                        value={taskTime}
-                        onChange={(e) => setTaskTime(e.target.value)}
-                        style={{
-                          width: "100%",
-                          fontSize: 16,
-                          paddingLeft: 16,
-                          paddingRight: 16,
-                          border: "none",
-                          backgroundColor: "transparent",
-                          fontFamily: "inherit",
-                          outline: "none",
-                          height: 50,
-                          color: theme.text,
-                          cursor: "pointer",
-                          position: "relative",
-                          textAlign: "left",
-                        }}
-                      />
                     </View>
                   ) : (
-                    <TouchableOpacity
+                    <FieldRow
+                      iconName="access-time"
+                      labelText={isZH ? "時間" : "TIME"}
+                      value={taskTime || (isZH ? "無" : "None")}
+                      isPlaceholder={!taskTime}
                       onPress={() => {
-                        Keyboard.dismiss(); // 關閉鍵盤
+                        Keyboard.dismiss();
                         const now = new Date();
                         setTempTime(
                           taskTime
@@ -2230,129 +2151,162 @@ function CalendarScreen({ navigation, route }) {
                         );
                         setTimePickerVisible(true);
                       }}
-                      style={[
-                        styles.linkInputContainer,
-                        {
-                          backgroundColor: theme.input,
-                          borderColor: theme.inputBorder,
-                        },
-                      ]}
-                      activeOpacity={0.7}
-                    >
+                    />
+                  )}
+
+                  <FieldDivider />
+
+                  {/* Link */}
+                  <View
+                    style={[
+                      styles.modalFieldRow,
+                      { alignItems: "flex-start", paddingTop: 14 },
+                    ]}
+                  >
+                    <MaterialIcons
+                      name="link"
+                      size={18}
+                      color={theme.textSecondary}
+                      style={{ marginTop: 2 }}
+                    />
+                    <View style={{ flex: 1, marginLeft: 14 }}>
                       <Text
                         style={[
-                          styles.dateTimeText,
-                          { color: theme.text },
-                          !taskTime && [
-                            styles.placeholderText,
-                            { color: theme.textPlaceholder },
-                          ],
+                          monoKickerStyle,
+                          { color: theme.textTertiary, marginBottom: 6 },
                         ]}
                       >
-                        {taskTime || t.timePlaceholder}
+                        LINK
                       </Text>
-                      <View
-                        style={styles.linkPreviewButton}
-                        pointerEvents="none"
-                      >
-                        <MaterialIcons
-                          name="access-time"
-                          size={20}
-                          color={theme.primary}
+                      <TextInput
+                        style={{
+                          fontFamily: theme.typography?.body?.fontFamily,
+                          fontSize: 15,
+                          fontWeight: "500",
+                          color: taskLink ? theme.text : theme.textTertiary,
+                          letterSpacing: -0.2,
+                          padding: 0,
+                        }}
+                        value={taskLink}
+                        onChangeText={setTaskLink}
+                        placeholder={isZH ? "貼上連結…" : "Paste a link…"}
+                        placeholderTextColor={theme.textTertiary}
+                        keyboardType="url"
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                      />
+                      {taskLink ? (
+                        <MapPreview
+                          url={taskLink}
+                          theme={theme}
+                          t={t}
+                          onOpenInBrowser={() => {
+                            const url = taskLink.startsWith("http")
+                              ? taskLink
+                              : `https://${taskLink}`;
+                            Linking.openURL(url).catch(console.error);
+                          }}
                         />
-                      </View>
-                    </TouchableOpacity>
-                  )}
+                      ) : null}
+                    </View>
+                  </View>
                 </View>
 
-                {/* Note Input Field */}
-                <View style={{ marginBottom: 20 }}>
-                  <Text style={[styles.label, { color: theme.text }]}>
-                    {t.note}
-                  </Text>
+                {/* Notes section */}
+                <View
+                  style={{
+                    backgroundColor: theme.background,
+                    borderTopWidth: StyleSheet.hairlineWidth,
+                    borderTopColor: theme.rule,
+                    paddingHorizontal: 22,
+                    paddingTop: 16,
+                    paddingBottom: 20,
+                    flex: 1,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <MaterialIcons
+                      name="notes"
+                      size={16}
+                      color={theme.textSecondary}
+                    />
+                    <Text
+                      style={[monoKickerStyle, { color: theme.textSecondary }]}
+                    >
+                      {isZH ? "備註（選填）" : "Notes (optional)"}
+                    </Text>
+                  </View>
                   <TextInput
-                    style={[
-                      styles.input,
-                      styles.noteInput,
-                      {
-                        backgroundColor: theme.input,
-                        borderColor: theme.inputBorder,
-                        color: theme.text,
-                        height: Math.max(100, Math.min(noteInputHeight, 300)), // 動態高度，最小 100，最大 300
-                      },
-                    ]}
+                    style={{
+                      fontFamily: theme.typography?.body?.fontFamily,
+                      fontSize: 14,
+                      fontWeight: "400",
+                      color: theme.text,
+                      letterSpacing: -0.1,
+                      lineHeight: 22,
+                      padding: 0,
+                      flex: 1,
+                      textAlignVertical: "top",
+                    }}
                     value={taskNote}
-                    onChangeText={(text) => {
-                      setTaskNote(text);
-                      // 根據內容動態調整高度
-                      const lineCount = text.split("\n").length;
-                      const estimatedHeight = Math.max(
-                        100,
-                        lineCount * 24 + 24,
-                      ); // 每行約 24px + padding
-                      setNoteInputHeight(Math.min(estimatedHeight, 300)); // 最大 300px
-                    }}
-                    placeholder={t.notePlaceholder}
-                    placeholderTextColor={theme.textPlaceholder}
-                    multiline={true}
+                    onChangeText={setTaskNote}
+                    placeholder={
+                      isZH
+                        ? "新增說明、連結、任何你之後會用到的內容…"
+                        : "Add context, links, or anything you'll want to see later…"
+                    }
+                    placeholderTextColor={theme.textTertiary}
+                    multiline
                     textAlignVertical="top"
-                    accessibilityLabel="Task note input"
-                    accessibilityHint="Enter additional notes for this task"
-                    onContentSizeChange={(event) => {
-                      // 根據實際內容高度調整
-                      const { height } = event.nativeEvent.contentSize;
-                      setNoteInputHeight(
-                        Math.max(100, Math.min(height + 24, 300)),
-                      ); // 加上 padding
-                    }}
-                    onFocus={() => {
-                      setTimeout(() => {
-                        modalScrollViewRef.current?.scrollToEnd({
-                          animated: true,
-                        });
-                      }, 100);
-                    }}
                   />
                 </View>
+
+                {/* Delete button (edit mode only) */}
                 {editingTask && (
-                  <IOSButton
-                    title={t.delete}
+                  <TouchableOpacity
                     onPress={showDeleteConfirm}
-                    theme={theme}
-                    variant="destructive"
-                    style={{ width: "100%", paddingBottom: 0, borderWidth: 1, borderColor: theme.error }}
-                  />
+                    style={{
+                      marginHorizontal: 20,
+                      marginTop: 8,
+                      marginBottom: 8,
+                      paddingVertical: 14,
+                      alignItems: "center",
+                      borderWidth: StyleSheet.hairlineWidth,
+                      borderColor: theme.error,
+                      borderRadius: theme.radius?.lg || 8,
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: theme.typography?.headline?.fontFamily,
+                        fontSize: 13,
+                        fontWeight: "600",
+                        color: theme.error,
+                        letterSpacing: isZH ? 0 : 0.4,
+                        textTransform: isZH ? "none" : "uppercase",
+                      }}
+                    >
+                      {isZH ? "刪除任務" : "Delete task"}
+                    </Text>
+                  </TouchableOpacity>
                 )}
-              </View>
-            </ScrollView>
-            {isIOS26Plus ? null : (
-              <View
-                style={[
-                  styles.modalButtons,
-                  {
-                    backgroundColor:
-                      theme.mode === "dark" ? theme.background : "#fff",
-                    borderTopColor:
-                      theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
-                    justifyContent: "flex-end",
-                  },
-                ]}
-              >
-                <IOSButton
-                  title={editingTask ? t.update : t.save}
-                  onPress={saveTask}
-                  theme={theme}
-                  variant="primary"
-                />
-              </View>
-            )}
-          </View>
-        </KeyboardAvoidingView>
-        {renderDatePickerOverlay()}
-        {renderTimePickerOverlay()}
-      </View>
-    </Modal>
-  );
+              </ScrollView>
+            </View>
+          </KeyboardAvoidingView>
+          {renderDatePickerOverlay()}
+          {renderTimePickerOverlay()}
+        </View>
+      </Modal>
+    );
+  };
 
   const renderDeleteConfirmModal = () => {
     console.log(
@@ -2460,7 +2414,7 @@ function CalendarScreen({ navigation, route }) {
         <TouchableOpacity
           style={{
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: theme.modalOverlay || "rgba(26,31,46,0.55)",
             justifyContent: "flex-end",
           }}
           activeOpacity={1}
@@ -2468,35 +2422,65 @@ function CalendarScreen({ navigation, route }) {
         >
           <View
             style={{
-              backgroundColor:
-                theme.mode === "dark" ? theme.background : "#fff",
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
+              backgroundColor: theme.backgroundSecondary,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
               paddingBottom: insets.bottom,
             }}
             onStartShouldSetResponder={() => true}
           >
+            {/* Grabber */}
+            <View
+              style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}
+            >
+              <View
+                style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: theme.textTertiary,
+                  opacity: 0.5,
+                }}
+              />
+            </View>
+            {/* Cancel / Title / Done */}
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
                 paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor:
-                  theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
+                paddingVertical: 10,
               }}
             >
-              <IOSButton
-                title={t.cancel}
+              <TouchableOpacity
                 onPress={() => setDatePickerVisible(false)}
-                theme={theme}
-                variant="secondary"
-                style={{ flex: 1, marginRight: 8 }}
-              />
-              <IOSButton
-                title={t.confirm}
+                style={{ padding: 6, minWidth: 60 }}
+              >
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    fontSize: 14,
+                    fontWeight: "500",
+                    letterSpacing: -0.2,
+                    color: theme.textSecondary,
+                  }}
+                >
+                  {t.cancel}
+                </Text>
+              </TouchableOpacity>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.callout?.fontFamily,
+                  fontSize: 14,
+                  fontWeight: "600",
+                  letterSpacing: -0.2,
+                  color: theme.text,
+                }}
+              >
+                {isZH ? "日期" : "Date"}
+              </Text>
+              <TouchableOpacity
                 onPress={() => {
                   if (tempDate) {
                     const year = tempDate.getFullYear();
@@ -2509,13 +2493,31 @@ function CalendarScreen({ navigation, route }) {
                   }
                   setDatePickerVisible(false);
                 }}
-                theme={theme}
-                variant="primary"
-                style={{ flex: 1, marginLeft: 8 }}
-              />
+                style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
+              >
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    fontSize: 14,
+                    fontWeight: "600",
+                    letterSpacing: -0.2,
+                    color: theme.primary,
+                  }}
+                >
+                  {t.confirm || (isZH ? "完成" : "Done")}
+                </Text>
+              </TouchableOpacity>
             </View>
             {tempDate && (
-              <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  alignItems: "center",
+                  width: "100%",
+                  backgroundColor: theme.background,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: theme.divider,
+                }}
+              >
                 <DateTimePicker
                   value={tempDate}
                   mode="date"
@@ -2540,6 +2542,13 @@ function CalendarScreen({ navigation, route }) {
   const renderTimePickerOverlay = () => {
     if (!timePickerVisible || Platform.OS === "web") return null;
 
+    const displayH = tempTime
+      ? String(tempTime.getHours()).padStart(2, "0")
+      : "00";
+    const displayM = tempTime
+      ? String(tempTime.getMinutes()).padStart(2, "0")
+      : "00";
+
     return (
       <View
         style={{
@@ -2554,7 +2563,7 @@ function CalendarScreen({ navigation, route }) {
         <TouchableOpacity
           style={{
             flex: 1,
-            backgroundColor: "rgba(0,0,0,0.5)",
+            backgroundColor: theme.modalOverlay || "rgba(26,31,46,0.55)",
             justifyContent: "flex-end",
           }}
           activeOpacity={1}
@@ -2562,35 +2571,65 @@ function CalendarScreen({ navigation, route }) {
         >
           <View
             style={{
-              backgroundColor:
-                theme.mode === "dark" ? theme.background : "#fff",
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
+              backgroundColor: theme.backgroundSecondary,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
               paddingBottom: insets.bottom,
             }}
             onStartShouldSetResponder={() => true}
           >
+            {/* Grabber */}
+            <View
+              style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}
+            >
+              <View
+                style={{
+                  width: 36,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: theme.textTertiary,
+                  opacity: 0.5,
+                }}
+              />
+            </View>
+            {/* Cancel / Title / Done */}
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
                 paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor:
-                  theme.mode === "dark" ? "#2a2a2a" : "#f0f0f0",
+                paddingVertical: 10,
               }}
             >
-              <IOSButton
-                title={t.cancel}
+              <TouchableOpacity
                 onPress={() => setTimePickerVisible(false)}
-                theme={theme}
-                variant="secondary"
-                style={{ flex: 1, marginRight: 8 }}
-              />
-              <IOSButton
-                title={t.confirm}
+                style={{ padding: 6, minWidth: 60 }}
+              >
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    fontSize: 14,
+                    fontWeight: "500",
+                    letterSpacing: -0.2,
+                    color: theme.textSecondary,
+                  }}
+                >
+                  {t.cancel}
+                </Text>
+              </TouchableOpacity>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.callout?.fontFamily,
+                  fontSize: 14,
+                  fontWeight: "600",
+                  letterSpacing: -0.2,
+                  color: theme.text,
+                }}
+              >
+                {displayH}:{displayM}
+              </Text>
+              <TouchableOpacity
                 onPress={() => {
                   if (tempTime) {
                     const hours = String(tempTime.getHours()).padStart(2, "0");
@@ -2602,25 +2641,39 @@ function CalendarScreen({ navigation, route }) {
                   }
                   setTimePickerVisible(false);
                 }}
-                theme={theme}
-                variant="primary"
-                style={{ flex: 1, marginLeft: 8 }}
-              />
+                style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
+              >
+                <Text
+                  style={{
+                    fontFamily: theme.typography?.callout?.fontFamily,
+                    fontSize: 14,
+                    fontWeight: "600",
+                    letterSpacing: -0.2,
+                    color: theme.primary,
+                  }}
+                >
+                  {t.confirm || (isZH ? "完成" : "Done")}
+                </Text>
+              </TouchableOpacity>
             </View>
             {tempTime && (
-              <View style={{ alignItems: "center", width: "100%" }}>
+              <View
+                style={{
+                  alignItems: "center",
+                  backgroundColor: theme.background,
+                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopColor: theme.divider,
+                }}
+              >
                 <DateTimePicker
                   value={tempTime}
                   mode="time"
-                  display="spinner"
+                  display={Platform.OS === "ios" ? "spinner" : "clock"}
                   themeVariant={themeMode === "dark" ? "dark" : "light"}
                   accentColor={theme.primary}
-                  onChange={(event, selectedTime) => {
-                    if (selectedTime) {
-                      setTempTime(selectedTime);
-                    }
+                  onChange={(_, selected) => {
+                    if (selected) setTempTime(selected);
                   }}
-                  style={{ width: "100%" }}
                 />
               </View>
             )}
@@ -2703,39 +2756,137 @@ function CalendarScreen({ navigation, route }) {
     // User is just browsing different months, not selecting a new date
   };
 
+  const EN_MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const secondaryMonthName = language !== "en" ? EN_MONTHS[visibleMonth] : null;
+
   const header = (
-    <View style={styles.fixedHeader}>
-      <View style={styles.headerContainer}>
+    <View
+      style={[
+        styles.fixedHeader,
+        {
+          borderBottomWidth: StyleSheet.hairlineWidth * 2,
+          borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+        },
+      ]}
+    >
+      <View
+        style={[styles.headerContainer, { paddingTop: 12, paddingBottom: 12 }]}
+      >
         <View style={styles.headerLeftContainer}>
-          <Text
-            style={[
-              styles.currentMonthTitle,
-              { color: theme.text, marginRight: 4 },
-            ]}
-          >
-            {year} {monthName}
-          </Text>
-          <TouchableOpacity
-            onPress={goToPrevMonth}
-            style={styles.dayNavButton}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="chevron-left" size={24} color={theme.text} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={goToNextMonth}
-            style={styles.dayNavButton}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="chevron-right" size={24} color={theme.text} />
-          </TouchableOpacity>
+          <View>
+            <Text
+              style={{
+                fontFamily:
+                  theme.typography?.monoKicker?.fontFamily ||
+                  "JetBrainsMono_500Medium",
+                fontSize: 10,
+                fontWeight: "500",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                color: theme.primary,
+                marginBottom: 4,
+              }}
+            >
+              {year}
+            </Text>
+            <View
+              style={{ flexDirection: "row", alignItems: "baseline", gap: 10 }}
+            >
+              <Text
+                style={{
+                  fontFamily:
+                    theme.typography?.largeTitle?.fontFamily ||
+                    "InterTight_600SemiBold",
+                  fontSize: 34,
+                  fontWeight: "600",
+                  letterSpacing: -1.3,
+                  lineHeight: 42,
+                  color: theme.text,
+                }}
+              >
+                {monthName}
+              </Text>
+              {secondaryMonthName ? (
+                <Text
+                  style={{
+                    fontFamily:
+                      theme.typography?.callout?.fontFamily ||
+                      "InterTight_500Medium",
+                    fontSize: 14,
+                    fontWeight: "500",
+                    letterSpacing: -0.15,
+                    color: theme.textTertiary,
+                  }}
+                >
+                  {secondaryMonthName}
+                </Text>
+              ) : null}
+            </View>
+          </View>
         </View>
-        <View style={styles.headerRightContainer}>
+        <View
+          style={[
+            styles.headerRightContainer,
+            { alignSelf: "flex-end", gap: 10 },
+          ]}
+        >
+          <View style={{ flexDirection: "row", gap: 4 }}>
+            <TouchableOpacity
+              onPress={goToPrevMonth}
+              style={[
+                styles.dayNavButton,
+                {
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+                },
+              ]}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="chevron-left" size={16} color={theme.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={goToNextMonth}
+              style={[
+                styles.dayNavButton,
+                {
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+                },
+              ]}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons
+                name="chevron-right"
+                size={16}
+                color={theme.text}
+              />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={[
               styles.todayButton,
               {
-                backgroundColor: theme.primary,
+                backgroundColor: theme.primaryTint || "#E6E9F2",
+                marginLeft: 4,
               },
             ]}
             onPress={() => {
@@ -2745,7 +2896,7 @@ function CalendarScreen({ navigation, route }) {
               setVisibleYear(new Date(today).getFullYear());
             }}
           >
-            <Text style={[styles.todayButtonText, { color: "#ffffff" }]}>
+            <Text style={[styles.todayButtonText, { color: theme.primary }]}>
               {t.today}
             </Text>
           </TouchableOpacity>
@@ -2778,8 +2929,13 @@ function CalendarScreen({ navigation, route }) {
         style={[
           styles.taskAreaContainer,
           {
-            backgroundColor: theme.backgroundSecondary,
-            paddingBottom: !loadingUserType && userType === "general" ? 58 : 0,
+            backgroundColor: theme.background,
+            // 僅在廣告實際會顯示時才保留底部空間；ADS_PAUSED 時 AdBanner 回傳 null，
+            // 若仍保留 58px 會出現一塊空白色塊（無廣告卻佔位）
+            paddingBottom:
+              !ADS_PAUSED && !loadingUserType && userType === "general"
+                ? 58
+                : 0,
           },
         ]}
       >
@@ -2840,7 +2996,7 @@ const styles = StyleSheet.create({
   },
   taskTextChecked: {
     textDecorationLine: "line-through",
-    color: "#bbb",
+    color: "#8E94AA",
   },
   fabAddButton: {
     position: "absolute",
@@ -2880,11 +3036,6 @@ const styles = StyleSheet.create({
   taskArea: {
     flex: 1,
     // backgroundColor moved to inline style to use theme
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 16,
   },
   fixedHeader: {
     backgroundColor: "transparent",
@@ -2899,8 +3050,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 16, // 8 (original) + 8 (to compensate for marginHorizontal)
-    paddingBottom: 6, // Reduced from 8
-    marginHorizontal: -8, // Extend border line to edges (matches customCalendar marginHorizontal)
+    paddingBottom: 4, // Reduced from 8
+    marginHorizontal: -12, // Extend border line to edges (matches customCalendar marginHorizontal)
     borderBottomWidth: 1,
   },
   // Scroll container
@@ -2923,19 +3074,16 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   customCalendar: {
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 2,
     padding: 4,
-    paddingBottom: 6, // Extra bottom padding to ensure task dots are visible
+    paddingBottom: 6,
     marginHorizontal: 8,
   },
   weekDayText: {
     flex: 1,
     textAlign: "center",
-    color: "#666",
-    fontSize: 14,
-    fontWeight: "400",
+    fontSize: 9,
+    fontWeight: "500",
+    letterSpacing: 1.5,
     minWidth: 40,
     maxWidth: 40,
   },
@@ -2943,7 +3091,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    height: 44, // Reduced from 50 to make calendar more compact
+    height: 50,
     paddingHorizontal: 4,
   },
   emptyDate: {
@@ -2956,7 +3104,6 @@ const styles = StyleSheet.create({
   },
   calendarDay: {
     flex: 1,
-    aspectRatio: 1,
     alignItems: "center",
     justifyContent: "center",
     margin: 1,
@@ -2964,17 +3111,25 @@ const styles = StyleSheet.create({
     zIndex: 1,
     minWidth: 40,
     maxWidth: 40,
-    minHeight: 40,
-    maxHeight: 40,
-    overflow: "visible", // Ensure task dots are visible
+    minHeight: 48,
+    maxHeight: 48,
+    overflow: "visible",
   },
   calendarDayContent: {
     width: "100%",
     height: "100%",
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-    overflow: "visible", // Ensure task dots are visible
+    flexDirection: "column",
+    overflow: "visible",
+  },
+  dayCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
   },
   dateContainer: {
     width: "100%",
@@ -2985,11 +3140,9 @@ const styles = StyleSheet.create({
     overflow: "visible", // Ensure task dots are visible
   },
   calendarDayText: {
-    fontSize: 16,
-    color: "#333",
+    fontSize: 13,
     fontWeight: "500",
     textAlign: "center",
-    lineHeight: 16,
   },
   selectedDay: {
     backgroundColor: "#e8e7fc", // Light mode selected background
@@ -3001,8 +3154,8 @@ const styles = StyleSheet.create({
     maxHeight: 40,
   },
   selectedDayText: {
-    color: PRIMARY, // Light mode selected text color
-    fontWeight: "700",
+    color: PRIMARY,
+    fontWeight: "600",
     zIndex: 4,
   },
   otherMonthText: {
@@ -3013,23 +3166,25 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   taskDot: {
-    position: "absolute",
-    bottom: 0,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: PRIMARY,
-    zIndex: 10,
   },
   todayCircle: {
     width: 22,
     height: 22,
-    borderRadius: 11,
+    borderRadius: 16,
+  },
+  taskDotsRow: {
+    position: "absolute",
+    bottom: 1,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 2.5,
   },
   todayText: {
-    color: "#ffffff", // Always white for better contrast on purple background
+    color: "#F2F1EB",
     fontWeight: "600",
     fontSize: 14,
   },
@@ -3062,7 +3217,7 @@ const styles = StyleSheet.create({
     lineHeight: 56,
   },
   selectedDayLarge: {
-    backgroundColor: "#e8e7fc",
+    backgroundColor: "#3B4B7A",
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -3074,7 +3229,7 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   todayTextLarge: {
-    color: "white",
+    color: "#F2F1EB",
     fontWeight: "700",
   },
   selectedDateLarge: {
@@ -3096,32 +3251,9 @@ const styles = StyleSheet.create({
   selectedDate: {
     // No background color, just text color change
   },
-  selectedDayText: {
-    color: PRIMARY, // Same as add button color
-    fontWeight: "600",
-  },
   tasksContainer: {
     flex: 1,
     backgroundColor: "#f7f7fa",
-  },
-  taskAreaContainer: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
-    overflow: "hidden",
-  },
-  taskArea: {
-    flex: 1,
-    backgroundColor: "#f7f7fa",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
   },
   tasksHeaderRow: {
     flexDirection: "row",
@@ -3834,11 +3966,17 @@ const styles = StyleSheet.create({
   },
   modalScrollView: {
     flex: 1,
-    paddingHorizontal: 24,
     ...(Platform.OS === "web" && {
       overflowY: "auto",
       WebkitOverflowScrolling: "touch",
     }),
+  },
+  modalFieldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    minHeight: 44,
   },
   modalTitle: {
     fontSize: 20,
@@ -3904,16 +4042,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     ...(Platform.OS !== "web" && {
-      borderBottomWidth: 1,
-      borderBottomColor: "#f0f0f0",
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: "rgba(26,31,46,0.12)",
     }),
     ...(Platform.OS === "web" && {
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
+      shadowOpacity: 0.08,
       shadowRadius: 4,
     }),
-    backgroundColor: "#fff",
+    backgroundColor: "#F2F1EB",
     zIndex: 10,
   },
   modalBackButton: {
@@ -3935,17 +4073,17 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: "transparent",
-    borderRadius: 12,
+    borderRadius: 8,
     paddingVertical: 16,
     paddingHorizontal: 16,
     minHeight: 50,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: "rgba(26,31,46,0.22)",
     alignItems: "center",
   },
   deleteButtonText: {
-    color: "#ff5a5f",
+    color: "#B14A3E",
     fontWeight: "500",
     fontSize: 14,
   },
@@ -4282,8 +4420,6 @@ const styles = StyleSheet.create({
     paddingRight: 0,
   },
   dayNavButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 2,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -4327,14 +4463,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
   },
   todayButtonText: {
     color: "#fff",
@@ -4346,8 +4474,8 @@ const styles = StyleSheet.create({
   },
   tasksScrollContent: {
     flexGrow: 1,
-    paddingTop: 8,
-    paddingBottom: 80, // Padding so last task is not hidden by gradient
+    paddingTop: 0,
+    paddingBottom: 80,
   },
 });
 

@@ -1,0 +1,49 @@
+default_platform(:ios)
+
+platform :ios do
+  def api_key
+    app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_filepath: ENV["ASC_KEY_PATH"]
+    )
+  end
+
+  desc "上傳 App Store metadata（不上傳 binary）"
+  lane :metadata do
+    deliver(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      precheck_include_in_app_purchases: false,
+      force: true
+    )
+  end
+
+  desc "更新 live 版本的 metadata（description / keywords / promotional_text）"
+  lane :live_metadata do
+    deliver(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      submit_for_review: false,
+      edit_live: true,
+      skip_app_version_update: true,
+      force: true
+    )
+  end
+
+  desc "上傳 metadata 並送審"
+  lane :submit do
+    deliver(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      submit_for_review: true,
+      automatic_release: false,
+      precheck_include_in_app_purchases: false,
+      force: true
+    )
+  end
+end

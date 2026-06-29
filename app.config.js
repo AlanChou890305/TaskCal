@@ -13,12 +13,12 @@ const getEnvironmentConfig = () => {
   return {
     name: "TaskCal",
     slug: "taskcal",
-    version: "1.3.2",
+    version: "2.0.2",
     description: "Simple and intuitive task management app with Google SSO",
     scheme: "taskcal",
     bundleIdentifier: "com.cty0305.too.doo.list",
     package: "com.cty0305.too.doo.list",
-    iosBuildNumber: "32",
+    iosBuildNumber: "41",
   };
 };
 
@@ -129,9 +129,13 @@ module.exports = {
 
     // Splash screen configuration
     splash: {
-      image: "./assets/splash-light.jpg",
-      resizeMode: "contain",
-      backgroundColor: "#ffffff",
+      image: "./assets/splash-light.png",
+      dark: {
+        image: "./assets/splash-dark.png",
+        backgroundColor: "#14182A",
+      },
+      resizeMode: "cover",
+      backgroundColor: "#F2F1EB",
     },
 
     // Asset bundle patterns
@@ -162,6 +166,16 @@ module.exports = {
         {
           iosAppId: "ca-app-pub-6912116995419220~3944964842",
           // androidAppId: "ca-app-pub-6912116995419220~XXXXXXXX", // 建立 Android App 後填入
+        },
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          // 用於 build 時上傳 source map，讓 JS stack trace 可讀
+          // 請核對與你建立的 Sentry org / project slug 一致
+          organization: "hububble",
+          project: "taskcal",
+          // SENTRY_AUTH_TOKEN 從環境變數讀取（build 時），未設定則略過 source map 上傳
         },
       ],
     ],

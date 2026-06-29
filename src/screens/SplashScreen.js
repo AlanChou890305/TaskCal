@@ -6,10 +6,10 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Modal,
   Linking,
   Platform,
 } from "react-native";
+import Svg, { Path, Rect } from "react-native-svg";
 import * as Application from "expo-application";
 import * as WebBrowser from "expo-web-browser";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -20,37 +20,67 @@ import { ThemeContext, LanguageContext, UserContext } from "../contexts";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";
 import { UserService } from "../services/userService";
-import TermsScreen from "./TermsScreen";
-import PrivacyScreen from "./PrivacyScreen";
 
 const getAppDisplayName = () => {
   return "TaskCal";
 };
 
+// MarkM1: calendar cell + check — matches Indigo design spec exactly
+const MarkM1 = ({ size = 44, color = "#F2F1EB" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round"/>
+    <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={color} strokeWidth="1.7"/>
+    <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+// App icon tile matching design spec MTile
+const LogoTile = ({ size, bg, corner }) => (
+  <View style={{
+    width: size, height: size,
+    borderRadius: corner,
+    backgroundColor: bg,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 4,
+  }}>
+    <MarkM1 size={Math.round(size * 0.52)} color="#F2F1EB" />
+  </View>
+);
+
 const SplashScreen = ({ navigation }) => {
   const { theme, themeMode, loadTheme: reloadTheme } = useContext(ThemeContext);
+  const isDark = theme.mode === "dark";
   const { t } = useContext(LanguageContext);
   const { loadUserType } = useContext(UserContext);
   const [hasNavigated, setHasNavigated] = useState(false);
   // On web, show loading indicator while OAuth code exchange is in progress
   const [isCheckingSession, setIsCheckingSession] = useState(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return false;
-    const url = new URL(window.location.href);
-    const hasOAuthInUrl = url.search.includes("code=") || url.hash.includes("access_token");
-    if (hasOAuthInUrl) {
-      // Mark OAuth in progress in sessionStorage so remounts also stay in loading state
-      sessionStorage.setItem("oauth_in_progress", "true");
-      return true;
+    // 無痕模式下 new URL / sessionStorage 可能 throw，包 try-catch 避免 render 白屏
+    try {
+      const url = new URL(window.location.href);
+      const hasOAuthInUrl =
+        url.search.includes("code=") || url.hash.includes("access_token");
+      if (hasOAuthInUrl) {
+        // Mark OAuth in progress in sessionStorage so remounts also stay in loading state
+        sessionStorage.setItem("oauth_in_progress", "true");
+        return true;
+      }
+      // Check if a previous mount already detected OAuth (e.g. after SIGNED_OUT remount)
+      return sessionStorage.getItem("oauth_in_progress") === "true";
+    } catch (e) {
+      return false;
     }
-    // Check if a previous mount already detected OAuth (e.g. after SIGNED_OUT remount)
-    return sessionStorage.getItem("oauth_in_progress") === "true";
   });
+  // Show Splash loading screen while doing initial session check (all platforms)
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isAppleSigningIn, setIsAppleSigningIn] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
-  const [termsModalVisible, setTermsModalVisible] = useState(false);
-  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
-
   // Check if Apple Authentication is available
   useEffect(() => {
     const checkAppleAvailability = async () => {
@@ -375,7 +405,7 @@ const SplashScreen = ({ navigation }) => {
     const navigateToMainApp = (options = {}) => {
       console.log("📍 [navigateToMainApp] Function called", options);
 
-      if (hasNavigated && !options.focusToday) {
+      if (hasNavigated) {
         console.log("📍 [navigateToMainApp] ⚠️ Already navigated, skipping");
         return;
       }
@@ -390,7 +420,7 @@ const SplashScreen = ({ navigation }) => {
       // Check if already in MainTabs to avoid resetting navigation
       const currentRoute =
         navigation.getState?.()?.routes?.[navigation.getState?.()?.index];
-      if (currentRoute?.name === "MainTabs" && !options.focusToday) {
+      if (currentRoute?.name === "MainTabs") {
         console.log(
           "📍 [navigateToMainApp] ⚠️ Already in MainTabs, skipping reset to preserve current tab",
         );
@@ -463,6 +493,7 @@ const SplashScreen = ({ navigation }) => {
               // INITIAL_SESSION with no session means user is not logged in — show login buttons
               if (event === "INITIAL_SESSION") {
                 setIsCheckingSession(false);
+                setIsInitializing(false);
               }
               return;
             }
@@ -733,11 +764,13 @@ const SplashScreen = ({ navigation }) => {
           );
           // No session confirmed — reveal login buttons
           setIsCheckingSession(false);
+          setIsInitializing(false);
         }
       } catch (error) {
         console.error("[checkSession] Unexpected error:", error);
         console.error("[checkSession] Error stack:", error.stack);
         setIsCheckingSession(false);
+        setIsInitializing(false);
       }
     };
 
@@ -963,67 +996,44 @@ const SplashScreen = ({ navigation }) => {
         // If no auth callback in initial URL, check for existing session with retry
         console.log("No auth callback in initial URL, checking for session...");
 
-        // Try multiple times with delays to handle OAuth callback timing
-        for (let attempt = 1; attempt <= 3; attempt++) {
-          try {
-            console.log(`Session check attempt ${attempt}/3...`);
+        // Single session check — auth state listener handles the rest
+        try {
+          console.log("Session check attempt 1/1...");
 
-            const {
-              data: { session },
-              error,
-            } = await supabase.auth.getSession();
+          const {
+            data: { session },
+            error,
+          } = await supabase.auth.getSession();
 
-            if (error) {
-              console.error(
-                `Error checking session (attempt ${attempt}):`,
-                error,
-              );
-            } else if (session) {
-              console.log(
-                `Mobile: Session found on attempt ${attempt}, navigating to main app`,
-              );
+          if (error) {
+            console.error("Error checking session:", error);
+          } else if (session) {
+            console.log("Mobile: Session found, navigating to main app");
 
-              // 立即開始預載入所有數據（不等待完成，在背景執行）
-              dataPreloadService.preloadAllData().catch((preloadError) => {
-                console.error("❌ Error preloading data:", preloadError);
+            dataPreloadService.preloadAllData().catch((preloadError) => {
+              console.error("❌ Error preloading data:", preloadError);
+            });
+
+            const currentRoute =
+              navigation.getState?.()?.routes?.[
+                navigation.getState?.()?.index
+              ];
+            if (currentRoute?.name !== "MainTabs") {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "MainTabs" }],
               });
-
-              // Check if already in MainTabs to avoid resetting navigation
-              const currentRoute =
-                navigation.getState?.()?.routes?.[
-                  navigation.getState?.()?.index
-                ];
-              if (currentRoute?.name !== "MainTabs") {
-                navigation.reset({
-                  index: 0,
-                  routes: [{ name: "MainTabs" }],
-                });
-              } else {
-                console.log(
-                  "⚠️ [checkSession] Already in MainTabs, skipping reset to preserve current tab",
-                );
-              }
-              return;
-            } else {
-              console.log(`No session found on attempt ${attempt}`);
             }
-
-            // Wait before next attempt (except on last attempt)
-            if (attempt < 3) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, 1000 * attempt),
-              );
-            }
-          } catch (error) {
-            console.error(
-              `Error in mobile session check (attempt ${attempt}):`,
-              error,
-            );
+            return;
+          } else {
+            console.log("No session found");
           }
+        } catch (error) {
+          console.error("Error in mobile session check:", error);
         }
 
         console.log(
-          "All session check attempts completed, proceeding to check existing session",
+          "Session check completed, proceeding to auth state listener",
         );
       }
 
@@ -1041,6 +1051,7 @@ const SplashScreen = ({ navigation }) => {
     // Safety fallback: if OAuth exchange takes too long, reveal login buttons
     const oauthCheckingTimeout = setTimeout(() => {
       setIsCheckingSession(false);
+      setIsInitializing(false);
     }, 10000);
 
     const fallbackChecks = [
@@ -1088,6 +1099,7 @@ const SplashScreen = ({ navigation }) => {
         } else {
           // Truly no session — OAuth must have failed, reveal login buttons
           setIsCheckingSession(false);
+          setIsInitializing(false);
           return false;
         }
       } catch (error) {
@@ -1937,226 +1949,257 @@ const SplashScreen = ({ navigation }) => {
     }
   };
 
+  const monoKicker = {
+    fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+    fontSize: 10,
+    fontWeight: "500",
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+  };
+
+  // ── Splash (loading) ────────────────────────────────────────────────────────
+  if (isInitializing) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+        {/* Centred mark */}
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 22 }}>
+          <LogoTile size={108} bg={theme.primary} corner={24} />
+          <View style={{ alignItems: "center", gap: 6 }}>
+            <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontSize: 38,
+                  fontWeight: "600",
+                  letterSpacing: -1.4,
+                  color: theme.text,
+                }}
+              >Task</Text>
+              <Text
+                style={{
+                  fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+                  fontSize: 38,
+                  fontWeight: "600",
+                  letterSpacing: -1.4,
+                  color: theme.primary,
+                }}
+              >Cal</Text>
+            </View>
+            <Text
+              style={{
+                fontFamily: theme.typography?.body?.fontFamily || "InterTight_400Regular",
+                fontSize: 13,
+                fontWeight: "400",
+                color: theme.textSecondary,
+                letterSpacing: -0.1,
+              }}
+            >
+              Your day, on one page.
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer: version stamp + 3-dot progress */}
+        <View style={{ paddingHorizontal: 22, paddingBottom: 36 }}>
+          <View style={{ height: 1, backgroundColor: theme.rule || theme.divider, marginBottom: 14 }} />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={[monoKicker, { color: theme.textTertiary }]}>
+              {"v" + (Application.nativeApplicationVersion || "1.5.0")}
+            </Text>
+            <View style={{ flexDirection: "row", gap: 4 }}>
+              {[0, 1, 2].map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 5, height: 5, borderRadius: 2.5,
+                    backgroundColor: theme.primary,
+                    opacity: i === 1 ? 1 : 0.35,
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Login ────────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView
       style={{
         flex: 1,
         backgroundColor: theme.background,
-        justifyContent: "center",
-        alignItems: "center",
+        flexDirection: "column",
+        width: "100%",
       }}
     >
+      {/* Welcome kicker */}
+      <View style={{ paddingHorizontal: 22, paddingTop: 16 }}>
+        <Text style={[monoKicker, { color: theme.primary, letterSpacing: 2 }]}>
+          Welcome
+        </Text>
+      </View>
+
       <View
         style={{
           flex: 1,
           justifyContent: "center",
-          alignItems: "center",
+          alignItems: "flex-start",
           width: "100%",
+          paddingHorizontal: 22,
+          gap: 26,
         }}
       >
-        <Image
-          source={require("../../assets/logo-login.png")}
-          style={{ width: 120, height: 120, marginBottom: 16 }}
-          resizeMode="contain"
-        />
-        <Text
+        <LogoTile size={84} bg={theme.primary} corner={19} />
+        <View>
+          <Text
+            style={{
+              fontFamily: theme.typography?.largeTitle?.fontFamily || "InterTight_600SemiBold",
+              fontSize: 40,
+              fontWeight: "600",
+              letterSpacing: -1.6,
+              lineHeight: 42,
+              marginBottom: 14,
+              color: theme.text,
+            }}
+          >
+            {"Sign in to\nTask"}
+            <Text style={{ color: theme.primary }}>Cal</Text>
+            {"."}
+          </Text>
+          <Text
+            style={{
+              fontFamily: theme.typography?.body?.fontFamily,
+              fontSize: 15,
+              fontWeight: "400",
+              letterSpacing: -0.15,
+              lineHeight: 23,
+              color: theme.textSecondary,
+              maxWidth: 280,
+            }}
+          >
+            {"Pick a way in. We'll sync your tasks across every device you carry."}
+          </Text>
+        </View>
+      </View>
+
+      {/* SSO buttons */}
+      <View style={{ width: "100%", paddingHorizontal: 22, paddingBottom: 18, gap: 10 }}>
+        <TouchableOpacity
           style={{
-            fontSize: 32,
-            fontWeight: "bold",
-            color: theme.text,
-            marginBottom: 48,
-            letterSpacing: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: theme.background,
+            borderColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+            borderWidth: 1,
+            borderRadius: 10,
+            height: 54,
+            justifyContent: "center",
+            width: "100%",
+            opacity: isSigningIn ? 0.5 : 1,
           }}
+          onPress={handleGoogleSignIn}
+          disabled={isSigningIn || isAppleSigningIn}
         >
-          {Platform.OS === "web"
-            ? getAppDisplayName()
-            : Application.applicationName || getAppDisplayName()}
-        </Text>
-        {isCheckingSession ? (
-          <ActivityIndicator size="small" color={theme.textSecondary} />
-        ) : (
-        <View style={{ width: 260 }}>
+          <Image
+            source={require("../../assets/google-logo.png")}
+            style={{ width: 22, height: 22, marginRight: 12 }}
+            resizeMode="contain"
+          />
+          <Text
+            style={{
+              fontFamily: theme.typography?.headline?.fontFamily,
+              color: theme.text,
+              fontWeight: "600",
+              fontSize: 15,
+              letterSpacing: -0.2,
+            }}
+          >
+            {isSigningIn && !isAppleSigningIn
+              ? "Signing in…"
+              : (t.signInWithGoogle || "Continue with Google")}
+          </Text>
+        </TouchableOpacity>
+
+        {isAppleAvailable && (
           <TouchableOpacity
             style={{
               flexDirection: "row",
               alignItems: "center",
-              backgroundColor: theme.card,
-              borderColor: theme.cardBorder,
-              borderWidth: 1,
-              borderRadius: 4,
-              paddingVertical: 12,
+              backgroundColor: theme.text,
+              borderRadius: 10,
+              height: 54,
               justifyContent: "center",
-              marginBottom: 10,
               width: "100%",
-              shadowColor: theme.shadow,
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: theme.shadowOpacity,
-              shadowRadius: 2,
-              elevation: 1,
-              opacity: isSigningIn ? 0.5 : 1,
+              opacity: isAppleSigningIn ? 0.5 : 1,
             }}
-            onPress={handleGoogleSignIn}
-            disabled={isSigningIn || isAppleSigningIn}
+            onPress={handleAppleSignIn}
+            disabled={isAppleSigningIn || isSigningIn}
           >
-            {isSigningIn && !isAppleSigningIn ? (
-              <>
-                <Image
-                  source={require("../../assets/google-logo.png")}
-                  style={{ width: 28, height: 28, marginRight: 4 }}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    color: theme.mode === "dark" ? theme.text : "#4285F4",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Signing in...
-                </Text>
-              </>
-            ) : (
-              <>
-                <Image
-                  source={require("../../assets/google-logo.png")}
-                  style={{ width: 28, height: 28, marginRight: 4 }}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    color: theme.mode === "dark" ? theme.text : "#4285F4",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                  }}
-                >
-                  {t.signInWithGoogle || "Sign in with Google"}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-          {isAppleAvailable && (
-            <TouchableOpacity
+            <Image
+              source={isDark ? require("../../assets/apple-90(light).png") : require("../../assets/apple-100(dark).png")}
+              style={{ width: 20, height: 20, marginRight: 12 }}
+              resizeMode="contain"
+            />
+            <Text
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                backgroundColor: theme.card,
-                borderColor: theme.cardBorder,
-                borderWidth: 1,
-                borderRadius: 4,
-                paddingVertical: 12,
-                justifyContent: "center",
-                marginBottom: 10,
-                width: "100%",
-                shadowColor: theme.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: theme.shadowOpacity,
-                shadowRadius: 2,
-                elevation: 1,
-                opacity: isAppleSigningIn ? 0.5 : 1,
+                fontFamily: theme.typography?.headline?.fontFamily,
+                color: theme.buttonText || "#F2F1EB",
+                fontWeight: "600",
+                fontSize: 15,
+                letterSpacing: -0.2,
               }}
-              onPress={handleAppleSignIn}
-              disabled={isAppleSigningIn || isSigningIn}
             >
-              {isAppleSigningIn && !isSigningIn ? (
-                <>
-                  <Image
-                    source={
-                      theme.mode === "dark"
-                        ? require("../../assets/apple-100(dark).png")
-                        : require("../../assets/apple-90(light).png")
-                    }
-                    style={{ width: 24, height: 24, marginRight: 8 }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      color: theme.mode === "dark" ? theme.text : "#000000",
-                      fontWeight: "bold",
-                      fontSize: 16,
-                    }}
-                  >
-                    Signing in...
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Image
-                    source={
-                      theme.mode === "dark"
-                        ? require("../../assets/apple-100(dark).png")
-                        : require("../../assets/apple-90(light).png")
-                    }
-                    style={{ width: 24, height: 24, marginRight: 8 }}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      color: theme.mode === "dark" ? theme.text : "#000000",
-                      fontWeight: "bold",
-                      fontSize: 16,
-                    }}
-                  >
-                    {t.signInWithApple || "Sign in with Apple"}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+              {isAppleSigningIn && !isSigningIn
+                ? "Signing in…"
+                : (t.signInWithApple || "Continue with Apple")}
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
-      <View
-        style={{
-          position: "absolute",
-          bottom: 24,
-          left: 0,
-          right: 0,
-          alignItems: "center",
-          paddingHorizontal: 24,
-        }}
-      >
-        <Text
+
+      {/* Footer: Terms + Privacy + version */}
+      <View style={{ paddingHorizontal: 22, paddingBottom: 32 }}>
+        <View
           style={{
-            color: theme.textSecondary,
-            fontSize: 13,
-            textAlign: "center",
+            height: 1,
+            backgroundColor: theme.divider || "rgba(26,31,46,0.12)",
+            marginBottom: 14,
           }}
-        >
-          {t.byContinuing}{" "}
+        />
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", gap: 14 }}>
           <Text
-            style={{ color: theme.primary, fontWeight: "bold" }}
-            onPress={() => setTermsModalVisible(true)}
+            style={{
+              fontFamily: theme.typography?.footnote?.fontFamily,
+              fontSize: 11,
+              lineHeight: 17,
+              letterSpacing: -0.05,
+              color: theme.textTertiary,
+              flex: 1,
+            }}
           >
-            {t.terms}
-          </Text>{" "}
-          {t.and}{" "}
-          <Text
-            style={{ color: theme.primary, fontWeight: "bold" }}
-            onPress={() => setPrivacyModalVisible(true)}
-          >
-            {t.privacy}
+            {"By continuing, you agree to our "}
+            <Text
+              style={{ color: theme.primary, textDecorationLine: "underline" }}
+              onPress={() => navigation.navigate("Terms")}
+            >
+              {"Terms"}
+            </Text>
+            {" and "}
+            <Text
+              style={{ color: theme.primary, textDecorationLine: "underline" }}
+              onPress={() => navigation.navigate("Privacy")}
+            >
+              {"Privacy"}
+            </Text>
+            {"."}
           </Text>
-          .
-        </Text>
+          <Text style={[monoKicker, { color: theme.textTertiary, letterSpacing: 1.5 }]}>
+            {"v" + (Application.nativeApplicationVersion || "1.5.0")}
+          </Text>
+        </View>
       </View>
-      <Modal
-        visible={termsModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setTermsModalVisible(false)}
-      >
-        <TermsScreen onClose={() => setTermsModalVisible(false)} />
-      </Modal>
-      <Modal
-        visible={privacyModalVisible}
-        transparent={false}
-        animationType="slide"
-        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
-        onRequestClose={() => setPrivacyModalVisible(false)}
-      >
-        <PrivacyScreen onClose={() => setPrivacyModalVisible(false)} />
-      </Modal>
     </SafeAreaView>
   );
 };

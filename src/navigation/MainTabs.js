@@ -1,15 +1,14 @@
-import React, { useContext } from "react";
-import { Platform } from "react-native";
+import React, { useCallback, useContext } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LanguageContext, ThemeContext } from "../contexts";
-import CalendarScreen from "../screens/CalendarScreen";
-import SettingScreen from "../screens/SettingScreen";
-import { isIOS26Plus } from "../utils/platform";
+import CalendarStack from "./CalendarStack";
+import SettingsStack from "./SettingsStack";
 
 const Tab = createBottomTabNavigator();
-const TabView = Platform.OS !== "web" ? require("react-native-bottom-tabs").default : null;
 
 const getAppDisplayName = () => {
   return "TaskCal";
@@ -18,7 +17,6 @@ const getAppDisplayName = () => {
 export default function MainTabs() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
-  const [tabIndex, setTabIndex] = React.useState(0);
   const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
@@ -29,56 +27,49 @@ export default function MainTabs() {
     }
   });
 
-  // iOS 26+: stable references to prevent native tab bar appearance flicker
-  const ios26Routes = React.useMemo(() => [
-    {
-      key: "calendar",
-      title: t.tasks || "Tasks",
-      focusedIcon: { sfSymbol: "checkmark.square.fill" },
-      unfocusedIcon: { sfSymbol: "checkmark.square" },
-    },
-    {
-      key: "settings",
-      title: t.settings || "Settings",
-      focusedIcon: { sfSymbol: "gearshape.fill" },
-      unfocusedIcon: { sfSymbol: "gearshape" },
-    },
-  ], [t.tasks, t.settings]);
-
-  const ios26RenderScene = React.useCallback(({ route }) => {
-    switch (route.key) {
-      case "calendar":
-        return <CalendarScreen />;
-      case "settings":
-        return <SettingScreen />;
-      default:
-        return null;
-    }
-  }, []);
-
-  const ios26TabBarStyle = React.useMemo(() => ({ backgroundColor: "transparent" }), []);
-
-  // iOS 26+: native UITabBar with Liquid Glass
-  if (isIOS26Plus) {
-    return (
-      <TabView
-        navigationState={{ index: tabIndex, routes: ios26Routes }}
-        onIndexChange={setTabIndex}
-        renderScene={ios26RenderScene}
-        scrollEdgeAppearance="transparent"
-        tabBarActiveTintColor={theme?.tabBarActive}
-        tabBarInactiveTintColor={theme?.tabBarInactive}
-        tabBarStyle={ios26TabBarStyle}
-      />
-    );
-  }
-
-  // iOS < 26: standard React Navigation bottom tabs (proper centering)
   const verticalPad = Math.round(insets.bottom * 0.5);
   const isDark = theme?.mode === "dark";
-  const tabBgColor = theme?.tabBarBackground || (isDark ? "#1c1c1e" : "#f9f9f9");
-  const tabActiveColor = theme?.tabBarActive || (isDark ? "#60A5FA" : "#3B82F6");
-  const tabInactiveColor = theme?.tabBarInactive || (isDark ? "#636366" : "#999999");
+  const tabBgColor = theme?.tabBarBackground || (isDark ? "#14182A" : "#F2F1EB");
+  const tabActiveColor = theme?.tabBarActive || (isDark ? "#8B98D0" : "#3B4B7A");
+  const tabInactiveColor = theme?.tabBarInactive || (isDark ? "#7C8198" : "#8E94AA");
+  const tabBorderColor = isDark ? "#48484a" : "rgba(0,0,0,0.12)";
+
+  const TabButton = useCallback(
+    (props) => {
+      const isSelected = props.accessibilityState?.selected;
+      return (
+        <Pressable
+          testID={props.testID}
+          accessibilityLabel={props.accessibilityLabel}
+          accessibilityRole="tab"
+          accessibilityState={props.accessibilityState}
+          onPress={props.onPress}
+          onLongPress={props.onLongPress}
+          style={props.style}
+        >
+          {props.children}
+          <View style={{
+            position: "absolute",
+            bottom: 0,
+            alignSelf: "center",
+            width: 28,
+            height: 3,
+            borderRadius: 1.5,
+            backgroundColor: isSelected ? tabActiveColor : "transparent",
+          }} />
+        </Pressable>
+      );
+    },
+    [tabActiveColor]
+  );
+
+  const tabBarStyleBase = {
+    backgroundColor: tabBgColor,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: tabBorderColor,
+    paddingTop: verticalPad,
+    paddingBottom: verticalPad,
+  };
 
   return (
     <Tab.Navigator
@@ -88,7 +79,7 @@ export default function MainTabs() {
           if (route.name === "Calendar") {
             return (
               <MaterialCommunityIcons
-                name="checkbox-marked-outline"
+                name="check"
                 size={size}
                 color={color}
               />
@@ -96,32 +87,44 @@ export default function MainTabs() {
           } else {
             return (
               <MaterialCommunityIcons
-                name={focused ? "cog" : "cog-outline"}
+                name="cog-outline"
                 size={size}
                 color={color}
               />
             );
           }
         },
+        tabBarButton: TabButton,
         tabBarActiveTintColor: tabActiveColor,
         tabBarInactiveTintColor: tabInactiveColor,
-        tabBarStyle: {
-          backgroundColor: tabBgColor,
-          borderTopColor: isDark ? "#1c1c1e" : "#e0e0e0",
-          paddingTop: verticalPad,
-          paddingBottom: verticalPad,
+        tabBarStyle: tabBarStyleBase,
+        tabBarLabelStyle: {
+          textTransform: "uppercase",
+          fontSize: 10,
+          fontWeight: "600",
+          letterSpacing: 0.5,
         },
       })}
     >
       <Tab.Screen
         name="Calendar"
-        component={CalendarScreen}
-        options={{ title: t.tasks || "Tasks" }}
+        component={CalendarStack}
+        options={({ route }) => ({
+          title: t.tasks || "Tasks",
+          tabBarStyle: getFocusedRouteNameFromRoute(route) === "TaskDetail"
+            ? { display: "none" }
+            : tabBarStyleBase,
+        })}
       />
       <Tab.Screen
         name="Settings"
-        component={SettingScreen}
-        options={{ title: t.settings || "Settings" }}
+        component={SettingsStack}
+        options={({ route }) => ({
+          title: t.settings || "Settings",
+          tabBarStyle: ["Terms", "Privacy", "Support"].includes(getFocusedRouteNameFromRoute(route))
+            ? { display: "none" }
+            : tabBarStyleBase,
+        })}
       />
     </Tab.Navigator>
   );

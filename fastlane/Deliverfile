@@ -1,0 +1,15 @@
+app_identifier "com.cty0305.too.doo.list"
+
+# 只上傳 metadata，不上傳 binary 或截圖
+skip_binary_upload true
+skip_screenshots true
+
+# 自動提交審核（改成 true 才會送審）
+submit_for_review false
+automatic_release false
+
+# 語系清單
+languages ["en-US", "zh-Hant", "es-ES"]
+
+# metadata 來自 fastlane/metadata/ 目錄
+metadata_path "./fastlane/metadata"

@@ -1,256 +1,169 @@
 import React, { useContext } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
-} from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import Svg, { Line } from "react-native-svg";
 import { LanguageContext, ThemeContext } from "../contexts";
-import Section from "../components/Section";
-import LiquidGlassButton from "../components/LiquidGlassButton";
-import { isIOS26Plus } from "../utils/platform";
+import SheetNav from "../components/SheetNav";
 
-function TermsScreen({ onClose }) {
+const Clause = ({ index, title, content, theme, isLast }) => {
+  const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
+  const sansFamily = theme.typography?.headline?.fontFamily;
+  const bodyFamily = theme.typography?.body?.fontFamily;
+
+  return (
+    <View
+      style={{
+        paddingHorizontal: 22,
+        paddingTop: 20,
+        paddingBottom: 12,
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: theme.divider,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+        <Text
+          style={{
+            fontFamily: monoFamily,
+            fontSize: 11,
+            fontWeight: "500",
+            letterSpacing: 1.5,
+            color: theme.primary,
+          }}
+        >
+          § {index}
+        </Text>
+        <Text
+          style={{
+            fontFamily: sansFamily,
+            fontSize: 15,
+            fontWeight: "600",
+            letterSpacing: -0.3,
+            color: theme.text,
+            flex: 1,
+          }}
+        >
+          {title}
+        </Text>
+      </View>
+      <Text
+        style={{
+          fontFamily: bodyFamily,
+          fontSize: 13,
+          fontWeight: "400",
+          lineHeight: 21,
+          letterSpacing: -0.05,
+          color: theme.textSecondary,
+        }}
+      >
+        {content}
+      </Text>
+    </View>
+  );
+};
+
+function TermsScreen() {
   const { t } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const handleClose = () => (onClose ? onClose() : navigation.goBack());
+  const handleClose = () => navigation.goBack();
+
+  const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
+  const sansFamily = theme.typography?.title1?.fontFamily;
+  const bodyFamily = theme.typography?.body?.fontFamily;
+
+  const clauses = [
+    { title: t.termsAcceptance,    content: t.termsAcceptanceText },
+    { title: t.termsDescription,   content: t.termsDescriptionText },
+    { title: t.termsAccounts,      content: t.termsAccountsText },
+    { title: t.termsContent,       content: t.termsContentText },
+    { title: t.termsAcceptableUse, content: t.termsAcceptableUseText },
+    { title: t.termsPrivacy,       content: t.termsPrivacyText },
+    { title: t.termsAvailability,  content: t.termsAvailabilityText },
+    { title: t.termsLiability,     content: t.termsLiabilityText },
+    { title: t.termsChanges,       content: t.termsChangesText },
+    { title: t.termsContact,       content: t.termsContactText },
+  ];
+
   return (
     <SafeAreaView
       edges={[]}
-      style={{ flex: 1, backgroundColor: theme.modalBackground }}
-      accessibilityViewIsModal={true}
+      style={{ flex: 1, backgroundColor: theme.background }}
       accessibilityLabel="Terms of Use Screen"
     >
-      {Platform.OS === "ios" && (
+      <SheetNav
+        title={t.termsTitle}
+        backLabel={t.settingsTitle || "Settings"}
+        onBack={handleClose}
+        theme={theme}
+      />
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 16 + insets.bottom }}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
+        {/* Hero block */}
         <View
-          style={{ alignItems: "center", paddingTop: 16, paddingBottom: 4 }}
+          style={{
+            paddingHorizontal: 22,
+            paddingTop: 24,
+            paddingBottom: 16,
+            borderBottomWidth: 2,
+            borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
+          }}
         >
-          <View
-            style={{
-              width: 36,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor:
-                theme.mode === "dark"
-                  ? "rgba(255,255,255,0.25)"
-                  : "rgba(0,0,0,0.18)",
-            }}
-          />
-        </View>
-      )}
-      {isIOS26Plus ? (
-        <View
-          style={{ height: 52, justifyContent: "center", alignItems: "center" }}
-        >
-          <LiquidGlassButton
-            style={{ position: "absolute", left: 16, width: 44, height: 44 }}
-            buttonIcon="xmark"
-            primaryColor={theme.text}
-            onPress={handleClose}
-          />
           <Text
             style={{
-              fontSize: 17,
+              fontFamily: monoFamily,
+              fontSize: 10,
+              fontWeight: "500",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: theme.primary,
+              marginBottom: 4,
+            }}
+          >
+            {t.termsLastUpdated} {new Date().toLocaleDateString()}
+          </Text>
+          <Text
+            style={{
+              fontFamily: sansFamily,
+              fontSize: 26,
               fontWeight: "600",
+              letterSpacing: -0.8,
+              lineHeight: 30,
               color: theme.text,
-              letterSpacing: -0.3,
+              marginBottom: 10,
             }}
           >
             {t.termsTitle}
           </Text>
-        </View>
-      ) : (
-        <View
-          style={
-            Platform.OS === "web"
-              ? {
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 4,
-                  paddingTop: 20,
-                  paddingBottom: 16,
-                  paddingHorizontal: 20,
-                  zIndex: 1,
-                }
-              : {
-                  backgroundColor: theme.backgroundSecondary,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: theme.mode === "dark" ? 0.4 : 0.1,
-                  shadowRadius: 4,
-                  elevation: 4,
-                  paddingTop: 8,
-                  paddingBottom: 16,
-                  paddingHorizontal: 20,
-                  zIndex: 1,
-                }
-          }
-        >
-          <View style={{ position: "relative" }}>
-            <TouchableOpacity
-              onPress={handleClose}
-              style={{
-                position: "absolute",
-                left: -10,
-                top: 0,
-                padding: 10,
-                zIndex: 1,
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Svg width={18} height={18}>
-                <Line
-                  x1={4}
-                  y1={4}
-                  x2={14}
-                  y2={14}
-                  stroke={theme.text}
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                />
-                <Line
-                  x1={14}
-                  y1={4}
-                  x2={4}
-                  y2={14}
-                  stroke={theme.text}
-                  strokeWidth={2.2}
-                  strokeLinecap="round"
-                />
-              </Svg>
-            </TouchableOpacity>
-            <View style={{ alignItems: "center", paddingHorizontal: 40 }}>
-              <Text
-                style={{
-                  fontSize: 24,
-                  color: theme.text,
-                  fontWeight: "bold",
-                  letterSpacing: -0.5,
-                  textAlign: "center",
-                }}
-              >
-                {t.termsTitle}
-              </Text>
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: theme.textSecondary,
-                  marginTop: 4,
-                  textAlign: "center",
-                }}
-              >
-                {t.termsLastUpdated} {new Date().toLocaleDateString()}
-              </Text>
-            </View>
-          </View>
-        </View>
-      )}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: 16 + insets.bottom,
-        }}
-        contentInset={{ top: 12 }}
-        contentOffset={{ x: 0, y: -12 }}
-        scrollIndicatorInsets={{ top: 12 }}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-      >
-        {/* One big card with all sections */}
-        <View
-          style={{
-            backgroundColor: theme.card || theme.backgroundSecondary,
-            borderRadius: 12,
-            padding: 20,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 4,
-            elevation: 2,
-          }}
-        >
-          <Section
-            title={t.termsAcceptance}
-            content={t.termsAcceptanceText}
-            theme={theme}
-            isFirst={true}
-          />
-
-          <Section
-            title={t.termsDescription}
-            content={t.termsDescriptionText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsAccounts}
-            content={t.termsAccountsText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsContent}
-            content={t.termsContentText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsAcceptableUse}
-            content={t.termsAcceptableUseText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsPrivacy}
-            content={t.termsPrivacyText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsAvailability}
-            content={t.termsAvailabilityText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsLiability}
-            content={t.termsLiabilityText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsChanges}
-            content={t.termsChangesText}
-            theme={theme}
-          />
-
-          <Section
-            title={t.termsContact}
-            content={t.termsContactText}
-            theme={theme}
-          />
+          <Text
+            style={{
+              fontFamily: bodyFamily,
+              fontSize: 13,
+              lineHeight: 21,
+              letterSpacing: -0.1,
+              color: theme.textSecondary,
+            }}
+          >
+            {t.termsAcknowledgment}
+          </Text>
         </View>
 
-        <Text
-          style={{
-            fontSize: 14,
-            color: theme.textSecondary,
-            marginTop: 16,
-            lineHeight: 22,
-            textAlign: "center",
-          }}
-        >
-          {t.termsAcknowledgment}
-        </Text>
+        {/* Clauses with § index */}
+        {clauses.map((c, i) => (
+          <Clause
+            key={i}
+            index={i + 1}
+            title={c.title}
+            content={c.content}
+            theme={theme}
+            isLast={i === clauses.length - 1}
+          />
+        ))}
       </ScrollView>
     </SafeAreaView>
   );

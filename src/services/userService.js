@@ -57,8 +57,9 @@ export class UserService {
     try {
       let user = cachedUser;
       if (!user) {
-        const { data } = await supabase.auth.getUser();
-        user = data?.user;
+        // 用 getSession() 確保 JWT 已載入 client，讓後續 DB 請求正確帶上 access_token
+        const { data: { session } } = await supabase.auth.getSession();
+        user = session?.user ?? null;
       }
       if (!user) {
         console.warn("No authenticated user found");
@@ -243,12 +244,14 @@ export class UserService {
     // 創建新的更新請求
     const updatePromise = (async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
+        // 使用 getSession()（而非 getUser()）確保 JWT 已載入 client 狀態，
+        // 讓後續 DB 請求的 Authorization header 正確帶上 access_token。
+        // getUser() 只驗證 token，不保證 client session 狀態已同步。
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
           throw new Error("No authenticated user found");
         }
+        const user = session.user;
 
         // 先確保 user_settings 記錄存在
         // 如果記錄不存在，getUserSettings 會自動創建，但如果創建失敗，我們仍然可以嘗試更新
@@ -289,12 +292,18 @@ export class UserService {
           .select()
           .single();
 
-        // 如果 update 失敗且是因為記錄不存在，嘗試使用 upsert
+        // 如果 update 失敗且是因為 RLS 暫時失效（42501）或記錄不存在（PGRST116），
+        // 嘗試 refreshSession 後以 upsert 重試
         if (
           error &&
-          (error.code === "PGRST116" || error.message?.includes("No rows"))
+          (error.code === "PGRST116" ||
+            error.code === "42501" ||
+            error.message?.includes("No rows"))
         ) {
-          console.log("📝 Record not found, creating with upsert...");
+          if (error.code === "42501") {
+            // RLS 失效通常代表 session 在 DB 層尚未同步，先 refresh 再重試
+            await supabase.auth.refreshSession();
+          }
           const upsertData = {
             user_id: user.id,
             ...updateData,
@@ -306,6 +315,10 @@ export class UserService {
             .single();
 
           if (upsertResult.error) {
+            // 42501 在 upsert 後仍失敗代表 session 確實無效，降級為靜默失敗（不 throw）
+            if (upsertResult.error.code === "42501") {
+              return settings; // 返回傳入的設定值，避免 UI 報錯
+            }
             console.error("Error upserting user settings:", {
               code: upsertResult.error.code,
               message: upsertResult.error.message,
@@ -505,9 +518,8 @@ export class UserService {
   // Get user settings with authentication info (direct from user_settings table)
   static async getUserSettingsWithAuth() {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (!user) {
         console.warn("No authenticated user found");
         return null;
@@ -596,8 +608,8 @@ export class UserService {
     try {
       let user = cachedUser;
       if (!user) {
-        const { data } = await supabase.auth.getUser();
-        user = data?.user;
+        const { data: { session } } = await supabase.auth.getSession();
+        user = session?.user ?? null;
       }
       if (!user) {
         return;
