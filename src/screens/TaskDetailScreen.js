@@ -20,6 +20,7 @@ import { TaskService } from "../services/taskService";
 import { mixpanelService } from "../services/mixpanelService";
 import { invokeCallback } from "../utils/navigationCallbacks";
 import { formatTimeDisplay } from "../utils/dateUtils";
+import { cancelTaskNotification } from "../services/notificationService";
 
 const DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_NAMES_ZH = ["日", "一", "二", "三", "四", "五", "六"];
@@ -53,12 +54,17 @@ export default function TaskDetailScreen({ navigation, route }) {
   const [tempDate, setTempDate] = useState(null);
   const [tempTime, setTempTime] = useState(null);
   const [noteInputHeight, setNoteInputHeight] = useState(80);
+  // 追蹤最新輸入值，供 goBack / unmount（依賴為空的 cleanup）讀取，避免拿到過期 state
+  const titleValueRef = useRef(titleValue);
+  const noteValueRef = useRef(noteValue);
+  const linkValueRef = useRef(linkValue);
+  titleValueRef.current = titleValue;
+  noteValueRef.current = noteValue;
+  linkValueRef.current = linkValue;
   const saveDebounceRef = useRef(null);
   const pendingWriteRef = useRef(null); // accumulated fields awaiting debounced DB write
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
   const deletedRef = useRef(false); // 標記已刪除，避免 unmount 的 onUpdate 復活任務
-
-  const isZH = language === "zh-Hant";
 
   // 缺少有效任務（無 id）時直接返回，避免後續操作未定義資料
   useEffect(() => {
@@ -82,14 +88,19 @@ export default function TaskDetailScreen({ navigation, route }) {
     setTask(optimistic);
   };
 
-  // background DB write with rollback to the pre-edit snapshot on failure
+  // background DB write; on failure revert ONLY the fields this write touched.
+  // 回退整個 task 快照會吃掉寫入期間對其他欄位的並發編輯，故只還原本次欄位。
   const writeRemote = async (fields, previous) => {
     try {
       await TaskService.updateTask(taskRef.current.id, fields);
     } catch (err) {
       console.error("updateTask error:", err);
-      taskRef.current = previous;
-      setTask(previous);
+      const reverted = { ...taskRef.current };
+      Object.keys(fields).forEach((key) => {
+        reverted[key] = previous[key];
+      });
+      taskRef.current = reverted;
+      setTask(reverted);
     }
   };
 
@@ -125,9 +136,24 @@ export default function TaskDetailScreen({ navigation, route }) {
     saveDebounceRef.current = setTimeout(flushPendingWrite, 300);
   };
 
+  // 提交仍在輸入框中、尚未透過 onBlur 存檔的值。
+  // 返回鍵 / 右滑返回時輸入框可能未 blur，若不在此強制提交，剛打的備註會遺失。
+  const commitInputs = () => {
+    const cur = taskRef.current;
+    const fields = {};
+    const titleTrim = titleValueRef.current.trim();
+    if (titleTrim && titleTrim !== (cur.title || "")) fields.title = titleTrim;
+    const noteTrim = noteValueRef.current.trim();
+    if (noteTrim !== (cur.note || "")) fields.note = noteTrim || null;
+    const linkTrim = linkValueRef.current.trim();
+    if (linkTrim !== (cur.link || "")) fields.link = linkTrim || null;
+    if (Object.keys(fields).length) saveField(fields);
+  };
+
   // flush pending write on unmount (covers iOS swipe-back gesture, which bypasses handleGoBack)
   useEffect(() => {
     return () => {
+      commitInputs();
       flushPendingWrite();
       // 已刪除則不可再觸發 onUpdate，否則會把刪掉的任務重新塞回日曆
       if (deletedRef.current) return;
@@ -157,7 +183,40 @@ export default function TaskDetailScreen({ navigation, route }) {
     }
   };
 
+  // 切換完成狀態：樂觀更新 + 背景寫入，失敗時只回退完成相關欄位（保留並發編輯）
+  const handleToggleComplete = () => {
+    const previous = taskRef.current;
+    const newState = !(previous.is_completed || previous.checked);
+    applyLocal({
+      is_completed: newState,
+      checked: newState,
+      completed_at: newState ? new Date().toISOString() : null,
+    });
+    (async () => {
+      try {
+        // 標記完成時取消該任務的待發通知（用 taskId 查找，與 CalendarScreen 一致）
+        if (newState) {
+          await cancelTaskNotification(null, taskRef.current.id);
+        }
+        await TaskService.toggleTaskChecked(taskRef.current.id, newState);
+        mixpanelService.track(newState ? "Task Completed" : "Task Uncompleted", {
+          task_id: previous.id,
+          platform: Platform.OS,
+        });
+      } catch (err) {
+        console.error("toggleTaskChecked error:", err);
+        const reverted = { ...taskRef.current };
+        reverted.is_completed = previous.is_completed;
+        reverted.checked = previous.checked;
+        reverted.completed_at = previous.completed_at;
+        taskRef.current = reverted;
+        setTask(reverted);
+      }
+    })();
+  };
+
   const handleGoBack = () => {
+    commitInputs();
     flushPendingWrite();
     invokeCallback(route.params.callbackId, "onUpdate", taskRef.current);
     navigation.goBack();
@@ -220,7 +279,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                 </Text>
               </TouchableOpacity>
               <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
-                {isZH ? "日期" : "Date"}
+                {t.date}
               </Text>
               <TouchableOpacity
                 onPress={() => {
@@ -236,7 +295,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                 style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
               >
                 <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
-                  {t.confirm || (isZH ? "完成" : "Done")}
+                  {t.confirm}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -288,7 +347,7 @@ export default function TaskDetailScreen({ navigation, route }) {
               style={{ padding: 6, minWidth: 60 }}
             >
               <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "500", letterSpacing: -0.2, color: theme.textSecondary }}>
-                {isZH ? "清除" : "Clear"}
+                {t.clear}
               </Text>
             </TouchableOpacity>
             <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
@@ -306,7 +365,7 @@ export default function TaskDetailScreen({ navigation, route }) {
               style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
             >
               <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
-                {t.confirm || (isZH ? "完成" : "Done")}
+                {t.confirm}
               </Text>
             </TouchableOpacity>
           </View>
@@ -339,10 +398,38 @@ export default function TaskDetailScreen({ navigation, route }) {
         >
           <MaterialIcons name="chevron-left" size={18} color={theme.textSecondary} />
           <Text style={{ fontFamily: theme.typography?.footnote?.fontFamily, fontSize: 13, fontWeight: "500", color: theme.textSecondary, letterSpacing: -0.1 }}>
-            {isZH ? "返回" : "Back"}
+            {t.back}
           </Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }} />
+        {(() => {
+          const done = !!(task.is_completed || task.checked);
+          return (
+            <TouchableOpacity
+              onPress={handleToggleComplete}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 14,
+                marginRight: 4,
+                backgroundColor: done ? (theme.primarySoft || "rgba(90,110,240,0.12)") : "transparent",
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <MaterialIcons
+                name={done ? "check-circle" : "radio-button-unchecked"}
+                size={18}
+                color={done ? theme.primary : theme.textSecondary}
+              />
+              <Text style={{ fontFamily: theme.typography?.footnote?.fontFamily, fontSize: 13, fontWeight: "500", letterSpacing: -0.1, color: done ? theme.primary : theme.textSecondary }}>
+                {done ? t.completedLabel : t.completeAction}
+              </Text>
+            </TouchableOpacity>
+          );
+        })()}
         <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <MaterialIcons name="delete-outline" size={22} color={theme.textSecondary} />
         </TouchableOpacity>
@@ -368,7 +455,7 @@ export default function TaskDetailScreen({ navigation, route }) {
             borderBottomColor: theme.ruleStrong || "rgba(26,31,46,0.22)",
           }}>
             <Text style={[monoKicker, { color: theme.primary, marginBottom: 6, letterSpacing: 2, fontSize: 10 }]}>
-              {isZH ? "標題" : "TITLE"}
+              {t.titleLabel}
             </Text>
             <TextInput
               style={{
@@ -384,7 +471,12 @@ export default function TaskDetailScreen({ navigation, route }) {
               onChangeText={setTitleValue}
               onBlur={() => {
                 const trimmed = titleValue.trim();
-                if (trimmed && trimmed !== task.title) saveField({ title: trimmed });
+                // 任務不可無標題：清空後失焦則還原舊值，避免輸入框顯示空白但實際未存
+                if (!trimmed) {
+                  setTitleValue(taskRef.current.title || "");
+                  return;
+                }
+                if (trimmed !== taskRef.current.title) saveField({ title: trimmed });
               }}
               multiline
               returnKeyType="done"
@@ -396,7 +488,7 @@ export default function TaskDetailScreen({ navigation, route }) {
           {/* Meta rows */}
           <MetaRow
             icon="calendar-today"
-            labelKey={isZH ? "日期" : "DATE"}
+            labelKey={t.dateLabel}
             value={formatDetailDate(task.date, language)}
             onPress={() => {
               Keyboard.dismiss();
@@ -407,8 +499,8 @@ export default function TaskDetailScreen({ navigation, route }) {
           <RowDivider />
           <MetaRow
             icon="access-time"
-            labelKey={isZH ? "時間" : "TIME"}
-            value={formatTimeDisplay(task.time) || (isZH ? "無" : "None")}
+            labelKey={t.timeLabel}
+            value={formatTimeDisplay(task.time) || t.none}
             isPlaceholder={!task.time}
             onPress={() => {
               Keyboard.dismiss();
@@ -432,7 +524,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                 <MaterialIcons name="link" size={18} color={theme.textSecondary} />
               </View>
               <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[monoKicker, { color: theme.textTertiary, marginBottom: 1 }]}>LINK</Text>
+                <Text style={[monoKicker, { color: theme.textTertiary, marginBottom: 1 }]}>{t.linkLabel}</Text>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                   <TextInput
                     style={{
@@ -451,7 +543,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                       const prev = task.link || "";
                       if (trimmed !== prev) saveField({ link: trimmed || null });
                     }}
-                    placeholder={isZH ? "貼上連結…" : "Paste a link…"}
+                    placeholder={t.pasteLinkPlaceholder}
                     placeholderTextColor={theme.textTertiary}
                     keyboardType="url"
                     autoCapitalize="none"
@@ -479,7 +571,7 @@ export default function TaskDetailScreen({ navigation, route }) {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <MaterialIcons name="notes" size={16} color={theme.textSecondary} />
                 <Text style={[monoKicker, { color: theme.textSecondary, letterSpacing: 2 }]}>
-                  {isZH ? "備註" : "NOTES"}
+                  {t.notesLabel}
                 </Text>
               </View>
               <TextInput
@@ -501,7 +593,7 @@ export default function TaskDetailScreen({ navigation, route }) {
                   const prev = task.note || "";
                   if (trimmed !== prev) saveField({ note: trimmed || null });
                 }}
-                placeholder={isZH ? "新增備註…" : "Add context, links, or anything useful…"}
+                placeholder={t.addNotePlaceholder}
                 placeholderTextColor={theme.textTertiary}
                 multiline
                 onContentSizeChange={(e) => {
