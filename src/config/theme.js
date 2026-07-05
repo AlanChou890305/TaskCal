@@ -3,6 +3,8 @@
  * 設計方向：ink-blue 墨水色 (#3B4B7A) 搭配暖奶油紙色 (#F2F1EB)
  */
 
+import { Platform } from "react-native";
+
 // ============================================================
 // 品牌常數
 // ============================================================
@@ -17,7 +19,10 @@ export const PRIMARY_WASH  = "#3B4B7A";  // onboarding hero bg (rides on accent)
 // ============================================================
 export const FONT_SANS = "InterTight_400Regular";
 export const FONT_MONO = "JetBrainsMono_500Medium";
-export const FONT_TC   = "NotoSansTC_400Regular";
+// 中文改用系統字型（iOS: PingFang TC / Android: system default）。
+// 過去打包的 NotoSansTC 每重 6.8MB、於啟動時同步載入會阻塞主執行緒 (App Hanging)，
+// 且從未被任何 style 引用（中文一直靠系統字型 fallback 渲染），故移除。
+export const FONT_TC = Platform.select({ ios: "PingFang TC", default: undefined });
 
 // ============================================================
 // Indigo 字型 scale（editorial，全面負向 tracking）

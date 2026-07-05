@@ -16,11 +16,9 @@ import {
   JetBrainsMono_400Regular,
   JetBrainsMono_500Medium,
 } from "@expo-google-fonts/jetbrains-mono";
-import {
-  NotoSansTC_400Regular,
-  NotoSansTC_500Medium,
-  NotoSansTC_700Bold,
-} from "@expo-google-fonts/noto-sans-tc";
+// NotoSansTC 已移除：每字重 6.8MB、啟動時同步載入約 20MB 會阻塞主執行緒
+// (Sentry「App Hanging ≥ 2000ms」)，且無任何 style 引用它。
+// 中文由系統字型 (iOS: PingFang TC) fallback 渲染，視覺不受影響。
 
 // Side-effect: handle OAuth redirect before React initializes (web only)
 import "./src/utils/oauthRedirect";
@@ -94,9 +92,6 @@ function App() {
     InterTight_700Bold,
     JetBrainsMono_400Regular,
     JetBrainsMono_500Medium,
-    NotoSansTC_400Regular,
-    NotoSansTC_500Medium,
-    NotoSansTC_700Bold,
   });
 
   const {
