@@ -45,11 +45,7 @@ import { TaskService } from "../services/taskService";
 import { widgetService } from "../services/widgetService";
 import { mixpanelService } from "../services/mixpanelService";
 import { reviewService } from "../services/reviewService";
-import {
-  scheduleTaskNotification,
-  cancelTaskNotification,
-} from "../services/notificationService";
-import { getActiveReminderMinutes } from "../config/notificationConfig";
+import { cancelTaskNotification } from "../services/notificationService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { registerCallbacks, clearCallbacks } from "../utils/navigationCallbacks";
 import { format } from "date-fns";
@@ -994,48 +990,12 @@ function CalendarScreen({ navigation, route }) {
           return; // Skip API call, the create flow will handle the sync
         }
 
-        // Cancel old notifications
-        if (currentEditingTask.notificationIds) {
-          await cancelTaskNotification(currentEditingTask.notificationIds);
-        } else if (currentEditingTask.notificationId) {
-          await cancelTaskNotification(currentEditingTask.notificationId);
-        }
-
-        // API Call
+        // API Call — TaskService.updateTask 內部會處理提醒通知的取消/重新排程
         const updatedTaskFromServer = await TaskService.updateTask(
           currentEditingTask.id,
           taskData,
+          t,
         );
-
-        // Schedule new notification
-        if (Platform.OS !== "web") {
-          const notificationIds = await scheduleTaskNotification(
-            {
-              id: updatedTaskFromServer.id,
-              title: taskText,
-              date: targetDate,
-              time: taskTime,
-              notificationIds: currentEditingTask.notificationIds,
-            },
-            t.taskReminder,
-            getActiveReminderMinutes(),
-            null,
-            t,
-          );
-
-          // Update local state with new notification IDs (silent update)
-          if (notificationIds.length > 0) {
-            setTasks((currentTasks) => {
-              const dayTasks = currentTasks[targetDate] || [];
-              const updatedDayTasks = dayTasks.map((t) =>
-                t.id === updatedTaskFromServer.id
-                  ? { ...t, notificationIds }
-                  : t,
-              );
-              return { ...currentTasks, [targetDate]: updatedDayTasks };
-            });
-          }
-        }
 
         // Mixpanel
         mixpanelService.track("Task Updated", {
@@ -1051,11 +1011,14 @@ function CalendarScreen({ navigation, route }) {
         clearTaskCache();
       } else {
         // --- CREATE TASK ---
-        // API Call
-        const createdTask = await TaskService.addTask({
-          ...taskData,
-          is_completed: false,
-        });
+        // API Call — TaskService.addTask 內部會處理提醒通知的排程
+        const createdTask = await TaskService.addTask(
+          {
+            ...taskData,
+            is_completed: false,
+          },
+          t,
+        );
 
         // Clear cache after creation
         clearTaskCache();
@@ -1147,33 +1110,6 @@ function CalendarScreen({ navigation, route }) {
 
           return updatedTasksState;
         });
-
-        // Schedule notification for new task (native only)
-        if (Platform.OS !== "web") {
-          const notificationIds = await scheduleTaskNotification(
-            {
-              id: createdTask.id,
-              title: taskText,
-              date: targetDate,
-              time: taskTime,
-            },
-            t.taskReminder,
-            getActiveReminderMinutes(),
-            null,
-            t,
-          );
-
-          if (notificationIds.length > 0) {
-            // Update local state with notification IDs
-            setTasks((currentTasks) => {
-              const dayTasks = currentTasks[targetDate] || [];
-              const updatedDayTasks = dayTasks.map((t) =>
-                t.id === createdTask.id ? { ...t, notificationIds } : t,
-              );
-              return { ...currentTasks, [targetDate]: updatedDayTasks };
-            });
-          }
-        }
 
         // Mixpanel
         mixpanelService.track("Task Created", {
@@ -1276,12 +1212,8 @@ function CalendarScreen({ navigation, route }) {
 
     try {
       // 2. Perform Background Operation
-      // Cancel notification if exists
-      if (editingTask.notificationIds) {
-        await cancelTaskNotification(editingTask.notificationIds);
-      } else if (editingTask.notificationId) {
-        await cancelTaskNotification(editingTask.notificationId);
-      }
+      // Cancel notification if exists（用確定性 ID 查找，不依賴本地是否記錄過 notificationIds）
+      await cancelTaskNotification(null, editingTask.id);
 
       await TaskService.deleteTask(editingTask.id);
 

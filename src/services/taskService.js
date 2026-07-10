@@ -236,7 +236,7 @@ export class TaskService {
   }
 
   // Add a new task
-  static async addTask(task) {
+  static async addTask(task, translations = null) {
     try {
       const user = await TaskService._getAuthUser();
       if (!user) {
@@ -311,9 +311,10 @@ export class TaskService {
             // 這裡不需要手動保存 notificationIds，因為我們現在使用確定性 ID
             await scheduleTaskNotification(
               taskResult,
-              "Task Reminder", // 這裡可以根據語言設定調整
+              "Task Reminder",
               null, // 使用用戶設定
-              reminderSettings
+              reminderSettings,
+              translations
             );
           } else {
             console.log(
@@ -333,7 +334,7 @@ export class TaskService {
   }
 
   // Update a task
-  static async updateTask(taskId, updates) {
+  static async updateTask(taskId, updates, translations = null) {
     try {
       // 樂觀建立但尚未同步的暫存任務只存在於本地，沒有對應的 DB row。
       // 直接送 temp id 給 Supabase 會因 uuid 型別不符而報 22P02；
@@ -421,7 +422,8 @@ export class TaskService {
               taskResult,
               "Task Reminder",
               null,
-              reminderSettings
+              reminderSettings,
+              translations
             );
           } else {
             console.log(

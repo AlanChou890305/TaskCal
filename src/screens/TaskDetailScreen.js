@@ -129,7 +129,7 @@ export default function TaskDetailScreen({ navigation, route }) {
   // 回退整個 task 快照會吃掉寫入期間對其他欄位的並發編輯，故只還原本次欄位。
   const writeRemote = async (fields, previous) => {
     try {
-      await TaskService.updateTask(taskRef.current.id, fields);
+      await TaskService.updateTask(taskRef.current.id, fields, t);
     } catch (err) {
       console.error("updateTask error:", err);
       const reverted = { ...taskRef.current };

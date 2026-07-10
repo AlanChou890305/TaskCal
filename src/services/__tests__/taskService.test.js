@@ -157,6 +157,53 @@ describe("TaskService.updateTask — title guard (F4)", () => {
   });
 });
 
+describe("TaskService notification translations threading (F2)", () => {
+  it("addTask passes translations through to scheduleTaskNotification", async () => {
+    supabase.from.mockReturnValue(
+      createQueryBuilder({
+        data: {
+          id: "t1",
+          title: "Buy milk",
+          time: "09:00",
+          date: "2026-07-10",
+          is_completed: false,
+        },
+        error: null,
+      })
+    );
+    const translations = { taskReminder: "工作提醒" };
+
+    await TaskService.addTask(
+      { title: "Buy milk", time: "09:00", date: "2026-07-10" },
+      translations
+    );
+
+    expect(scheduleTaskNotification).toHaveBeenCalledTimes(1);
+    expect(scheduleTaskNotification.mock.calls[0][4]).toBe(translations);
+  });
+
+  it("updateTask passes translations through to scheduleTaskNotification when time changes", async () => {
+    supabase.from.mockReturnValue(
+      createQueryBuilder({
+        data: {
+          id: "t1",
+          title: "Buy milk",
+          time: "10:00",
+          date: "2026-07-10",
+          is_completed: false,
+        },
+        error: null,
+      })
+    );
+    const translations = { taskReminder: "工作提醒" };
+
+    await TaskService.updateTask("t1", { time: "10:00" }, translations);
+
+    expect(scheduleTaskNotification).toHaveBeenCalledTimes(1);
+    expect(scheduleTaskNotification.mock.calls[0][4]).toBe(translations);
+  });
+});
+
 describe("TaskService.toggleTaskChecked", () => {
   const completedTask = {
     id: "real-1",
