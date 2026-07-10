@@ -8,7 +8,6 @@ import SharedGroupPreferences from "react-native-shared-group-preferences";
 class WidgetService {
   constructor() {
     this.appGroupIdentifier = "group.com.cty0305.too.doo.list.data";
-    this.widgetDataKey = "todayTasks";
     this.syncTimeout = null;
     this.lastSyncTime = 0;
     this.pendingSyncData = null;
@@ -169,25 +168,42 @@ class WidgetService {
   }
 
   /**
-   * Clear widget data
+   * Clear widget data (e.g. on logout, so the previous user's tasks don't
+   * linger on the home screen). Goes through the same write path as
+   * _performSync so the key/format always matches what the Swift widget reads.
    */
   async clearWidgetData() {
     if (Platform.OS !== "ios") {
       return;
     }
 
+    // 取消任何待處理的 debounced 同步，避免清除後又被舊資料覆蓋
+    if (this.syncTimeout) {
+      clearTimeout(this.syncTimeout);
+      this.syncTimeout = null;
+    }
+    this.pendingSyncData = null;
+
+    const emptyJson = JSON.stringify({});
+
     try {
-      // Check if SharedGroupPreferences is available (not available in Expo Go)
-      if (SharedGroupPreferences && SharedGroupPreferences.setItem) {
+      const { WidgetReloader } = NativeModules;
+      if (WidgetReloader && WidgetReloader.reloadWidgetWithData) {
+        WidgetReloader.reloadWidgetWithData(emptyJson);
+        console.log("✅ [Widget] Cleared widget data");
+      } else if (SharedGroupPreferences && SharedGroupPreferences.setItem) {
         await SharedGroupPreferences.setItem(
-          this.widgetDataKey,
-          JSON.stringify([]),
+          "widgetTasksByDate",
+          emptyJson,
           this.appGroupIdentifier
         );
-        console.log("✅ [Widget] Cleared widget data");
+        if (WidgetReloader) {
+          WidgetReloader.reloadAllWidgets();
+        }
+        console.log("✅ [Widget] Cleared widget data (fallback path)");
       } else {
         console.warn(
-          "⚠️ [Widget] SharedGroupPreferences not available (Expo Go environment)"
+          "⚠️ [Widget] No widget bridge available (Expo Go environment)"
         );
       }
     } catch (error) {

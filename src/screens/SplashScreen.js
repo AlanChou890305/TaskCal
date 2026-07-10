@@ -20,6 +20,7 @@ import { ThemeContext, LanguageContext, UserContext } from "../contexts";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { mixpanelService } from "../services/mixpanelService";
 import { UserService } from "../services/userService";
+import { widgetService } from "../services/widgetService";
 
 const getAppDisplayName = () => {
   return "TaskCal";
@@ -601,6 +602,10 @@ const SplashScreen = ({ navigation }) => {
         } else if (event === "SIGNED_OUT") {
           // 清除預載入緩存
           dataPreloadService.clearCache();
+          // 清除 Widget 資料，避免登出後 Widget 仍殘留上一位使用者的任務
+          widgetService.clearWidgetData().catch((error) => {
+            console.error("Failed to clear widget data on sign out:", error);
+          });
 
           // If OAuth is in progress (e.g. TOKEN_REFRESH_FAILED during OAuth login),
           // don't reset navigation — the incoming SIGNED_IN event will navigate to MainTabs
