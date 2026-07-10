@@ -37,7 +37,7 @@
 | 完成任務不取消提醒通知 | `toggleTaskChecked` 只更新 `is_completed`，未觸發通知取消邏輯，導致使用者完成任務後仍收到提醒；已修正為完成時取消、取消完成且仍有時間時視設定重新排程 | `a8c45ca` |
 | Widget 登出後未清除（key/格式錯誤） | `clearWidgetData()` 原本寫錯 key（`"todayTasks"` 而非實際的 `"widgetTasksByDate"`）、格式也不對（陣列而非物件） | `1d5e7a2` |
 | Widget 登出後未清除（根因：監聽器已卸載） | 清除邏輯原本掛在 `SplashScreen` 的 `SIGNED_OUT` 監聽器上，但 `SplashScreen` 在登入成功後會被 `navigation.reset()` 卸載，之後從 `SettingScreen` 登出時監聽器早已不存在，事件無人接收。改為直接寫在 `SettingScreen.handleLogout`、dev Force Logout 按鈕、`UserService.deleteUser` 三處實際觸發登出的地方 | `64466d2`（已實機驗證：登出後 Widget 正確顯示 "All clear today"） |
-| F3｜查詢失敗與空資料無法區分 | `taskService.getTasksByDateRange` 查詢失敗一律回傳 `{}`，`{}` 同時代表「失敗」與「這段時間真的沒任務」，呼叫端無法區分，網路失敗時會把 Widget 洗成空白。改為失敗回傳 `null`（`{}` 只保留給真正的空資料）；`dataPreloadService.preloadAllData` 收到 `null` 時保留舊快取並跳過 Widget 同步；`CalendarScreen` 的區間抓取收到 `null` 時不標記為已抓取，下次會重試 | 待補（本次） |
+| F3｜查詢失敗與空資料無法區分 | `taskService.getTasksByDateRange` 查詢失敗一律回傳 `{}`，`{}` 同時代表「失敗」與「這段時間真的沒任務」，呼叫端無法區分，網路失敗時會把 Widget 洗成空白。改為失敗回傳 `null`（`{}` 只保留給真正的空資料）；`dataPreloadService.preloadAllData` 收到 `null` 時保留舊快取並跳過 Widget 同步；`CalendarScreen` 的區間抓取收到 `null` 時不標記為已抓取，下次會重試 | `9c896a5` |
 
 ### ⚡ 效能
 
