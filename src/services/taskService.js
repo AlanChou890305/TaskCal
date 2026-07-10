@@ -355,8 +355,15 @@ export class TaskService {
         "User";
 
       // 清理更新資料，確保空字串轉為 null
+      // title 是必填欄位，例外處理：空字串不寫入，避免呼叫端忘記擋空值時把標題清空
       const cleanedUpdates = {};
       Object.entries(updates).forEach(([key, value]) => {
+        if (key === "title") {
+          if (typeof value === "string" && value.trim() !== "") {
+            cleanedUpdates[key] = value;
+          }
+          return;
+        }
         if (typeof value === "string" && value.trim() === "") {
           cleanedUpdates[key] = null;
         } else {

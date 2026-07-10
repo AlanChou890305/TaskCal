@@ -128,6 +128,35 @@ describe("temp- id guard (optimistic tasks not yet synced to DB)", () => {
   });
 });
 
+describe("TaskService.updateTask — title guard (F4)", () => {
+  it("does not send an empty title to the database, preventing title from being nulled out", async () => {
+    const builder = createQueryBuilder({
+      data: { id: "real-1", title: "Existing title", date: "2026-07-10" },
+      error: null,
+    });
+    supabase.from.mockReturnValue(builder);
+
+    await TaskService.updateTask("real-1", { title: "", note: "" });
+
+    const updatePayload = builder.update.mock.calls[0][0];
+    expect(updatePayload).not.toHaveProperty("title");
+    expect(updatePayload.note).toBeNull();
+  });
+
+  it("still writes a non-empty title", async () => {
+    const builder = createQueryBuilder({
+      data: { id: "real-1", title: "New title", date: "2026-07-10" },
+      error: null,
+    });
+    supabase.from.mockReturnValue(builder);
+
+    await TaskService.updateTask("real-1", { title: "New title" });
+
+    const updatePayload = builder.update.mock.calls[0][0];
+    expect(updatePayload.title).toBe("New title");
+  });
+});
+
 describe("TaskService.toggleTaskChecked", () => {
   const completedTask = {
     id: "real-1",
