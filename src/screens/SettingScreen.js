@@ -822,7 +822,10 @@ function SettingScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.modalBackground }}>
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: theme.modalBackground }}
+    >
       <View
         style={{
           backgroundColor: theme.modalBackground,
