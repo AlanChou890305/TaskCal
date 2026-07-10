@@ -805,6 +805,11 @@ function SettingScreen() {
       // Call deleteUser service
       await UserService.deleteUser();
 
+      // 清除預載入緩存和啟動快取，避免刪帳號後短時間內登入其他帳號
+      // 讀到已刪除用戶殘留在記憶體快取中的設定/任務（cache TTL 內都會命中）
+      dataPreloadService.clearCache();
+      clearSessionCache();
+
       // Navigate back to splash screen after successful deletion
       navigation.reset({
         index: 0,
