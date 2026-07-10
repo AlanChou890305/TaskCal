@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -57,7 +57,9 @@ const SplashScreen = ({ navigation }) => {
   const isDark = theme.mode === "dark";
   const { t } = useContext(LanguageContext);
   const { loadUserType } = useContext(UserContext);
-  const [hasNavigated, setHasNavigated] = useState(false);
+  // ref, 而非 state：所有讀取點都在 useEffect(deps=[navigation]) 內的 closure 裡，
+  // state 只會停留在 effect 第一次執行時的值，之後的檢查會永遠讀到過期的 false
+  const hasNavigatedRef = useRef(false);
   // On web, show loading indicator while OAuth code exchange is in progress
   const [isCheckingSession, setIsCheckingSession] = useState(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return false;
@@ -406,7 +408,7 @@ const SplashScreen = ({ navigation }) => {
     const navigateToMainApp = (options = {}) => {
       console.log("📍 [navigateToMainApp] Function called", options);
 
-      if (hasNavigated) {
+      if (hasNavigatedRef.current) {
         console.log("📍 [navigateToMainApp] ⚠️ Already navigated, skipping");
         return;
       }
@@ -425,7 +427,7 @@ const SplashScreen = ({ navigation }) => {
         console.log(
           "📍 [navigateToMainApp] ⚠️ Already in MainTabs, skipping reset to preserve current tab",
         );
-        setHasNavigated(true);
+        hasNavigatedRef.current = true;
         return;
       }
 
@@ -434,7 +436,7 @@ const SplashScreen = ({ navigation }) => {
       );
 
       try {
-        setHasNavigated(true);
+        hasNavigatedRef.current = true;
         // Clear OAuth in-progress flag on successful navigation
         if (Platform.OS === "web" && typeof window !== "undefined") {
           sessionStorage.removeItem("oauth_in_progress");
@@ -454,7 +456,7 @@ const SplashScreen = ({ navigation }) => {
       } catch (error) {
         console.error("📍 [navigateToMainApp] ❌ Navigation error:", error);
         console.error("📍 [navigateToMainApp] Error stack:", error.stack);
-        setHasNavigated(false); // Reset flag on error
+        hasNavigatedRef.current = false; // Reset flag on error
       }
     };
     // Set up auth state change listener
@@ -577,7 +579,7 @@ const SplashScreen = ({ navigation }) => {
 
             // 導向主畫面後才關閉 Signing in，避免按鈕已還原但畫面還卡住
             console.log("🚀 Navigating to main app...");
-            if (!hasNavigated) {
+            if (!hasNavigatedRef.current) {
               setIsSigningIn(false);
               setIsAppleSigningIn(false);
               navigateToMainApp({ focusToday: true });
@@ -593,7 +595,7 @@ const SplashScreen = ({ navigation }) => {
           // Refresh token is invalid or expired — clear local session and sign out
           console.log("[Auth] Token refresh failed, signing out...");
           dataPreloadService.clearCache();
-          setHasNavigated(false);
+          hasNavigatedRef.current = false;
           try {
             await supabase.auth.signOut({ scope: "local" });
           } catch (e) {
@@ -614,12 +616,12 @@ const SplashScreen = ({ navigation }) => {
             typeof window !== "undefined" &&
             sessionStorage.getItem("oauth_in_progress") === "true"
           ) {
-            setHasNavigated(false);
+            hasNavigatedRef.current = false;
             return;
           }
 
           // Navigate back to splash screen when user logs out
-          setHasNavigated(false); // Reset navigation flag
+          hasNavigatedRef.current = false; // Reset navigation flag
           navigation.reset({
             index: 0,
             routes: [{ name: "Splash" }],
@@ -711,7 +713,7 @@ const SplashScreen = ({ navigation }) => {
                 "[checkSession] Session expired, navigating to today page...",
               );
               // Session expired, navigate to MainTabs with today focus
-              if (!hasNavigated) {
+              if (!hasNavigatedRef.current) {
                 navigateToMainApp({ focusToday: true });
               }
               return;
@@ -756,7 +758,7 @@ const SplashScreen = ({ navigation }) => {
 
           console.log("[checkSession] Navigating to main app...");
           // Check if already navigated to prevent double navigation
-          if (!hasNavigated) {
+          if (!hasNavigatedRef.current) {
             navigateToMainApp({ focusToday: true });
           } else {
             console.log(
@@ -878,7 +880,7 @@ const SplashScreen = ({ navigation }) => {
 
               // Fallback: If navigation hasn't happened after 2 seconds, navigate manually
               setTimeout(() => {
-                if (!hasNavigated) {
+                if (!hasNavigatedRef.current) {
                   console.log(
                     "🔗🔗🔗 [App.js Deep Link] Fallback: Navigating to main app...",
                   );
@@ -927,7 +929,7 @@ const SplashScreen = ({ navigation }) => {
 
               // Fallback: If navigation hasn't happened after 2 seconds, navigate manually
               setTimeout(() => {
-                if (!hasNavigated) {
+                if (!hasNavigatedRef.current) {
                   console.log(
                     "🔗🔗🔗 [App.js Deep Link] Fallback: Navigating to main app...",
                   );
