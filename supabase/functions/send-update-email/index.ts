@@ -1,9 +1,11 @@
 import { serve } from "http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { signUid } from "../_shared/hmac.ts";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const UNSUBSCRIBE_SECRET = Deno.env.get("UNSUBSCRIBE_SECRET");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -173,8 +175,12 @@ serve(async (req: Request) => {
     const results = [];
 
     for (const recipient of recipients) {
-      // Generate Unsubscribe Link
-      const unsubscribeUrl = `${SUPABASE_URL}/functions/v1/unsubscribe?uid=${recipient.id}`;
+      // Generate Unsubscribe Link (signed so the endpoint can verify authenticity)
+      if (!UNSUBSCRIBE_SECRET) {
+        throw new Error("UNSUBSCRIBE_SECRET is not configured");
+      }
+      const sig = await signUid(recipient.id, UNSUBSCRIBE_SECRET);
+      const unsubscribeUrl = `${SUPABASE_URL}/functions/v1/unsubscribe?uid=${recipient.id}&sig=${sig}`;
 
       // Inject Link into HTML
       // We replace {unsubscribe_url} with the actual link

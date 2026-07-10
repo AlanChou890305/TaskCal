@@ -1,19 +1,27 @@
 import { serve } from "http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyUidSignature } from "../_shared/hmac.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const UNSUBSCRIBE_SECRET = Deno.env.get("UNSUBSCRIBE_SECRET");
 
 serve(async (req: Request) => {
   const url = new URL(req.url);
   const uid = url.searchParams.get("uid");
+  const sig = url.searchParams.get("sig");
 
-  if (!uid) {
-    return new Response("Missing User ID", { status: 400 });
+  if (!uid || !sig) {
+    return new Response("Missing or invalid unsubscribe link", { status: 400 });
   }
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !UNSUBSCRIBE_SECRET) {
     return new Response("Server Configuration Error", { status: 500 });
+  }
+
+  const isValid = await verifyUidSignature(uid, sig, UNSUBSCRIBE_SECRET);
+  if (!isValid) {
+    return new Response("Invalid or expired unsubscribe link", { status: 403 });
   }
 
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -24,7 +32,7 @@ serve(async (req: Request) => {
   });
 
   if (error) {
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    return new Response("Unable to process unsubscribe request", { status: 500 });
   }
 
   // Return a simple success HTML page
