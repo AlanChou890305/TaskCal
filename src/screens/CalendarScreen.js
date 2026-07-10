@@ -149,6 +149,90 @@ const TaskSkeleton = ({ theme, widthIndex = 0 }) => {
   );
 };
 
+// 單一任務列。以 React.memo 包裝，配合上層穩定的 handler 引用與逐項不變的
+// item 參考，切換某一項任務時只會重繪該項，而非整份清單。
+const TaskItem = React.memo(function TaskItem({
+  item,
+  theme,
+  t,
+  isMoveTarget,
+  onToggle,
+  onEdit,
+  onLongPress,
+}) {
+  const done = !!(item.is_completed || item.checked);
+  return (
+    <View
+      style={[
+        styles.taskItemRow,
+        {
+          backgroundColor: theme.background,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: theme.rule || theme.divider,
+          paddingVertical: 16,
+          paddingHorizontal: 16,
+        },
+      ]}
+    >
+      <IOSCheckbox
+        checked={done}
+        onPress={() => onToggle(item)}
+        theme={theme}
+      />
+      <TouchableOpacity
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          marginLeft: 12,
+          backgroundColor: "transparent",
+        }}
+        onPress={() => onEdit(item)}
+        onLongPress={() => onLongPress(item)}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={{
+            flex: 1,
+            fontFamily: theme.typography?.callout?.fontFamily,
+            fontSize: 14,
+            fontWeight: "500",
+            letterSpacing: -0.2,
+            color: done ? theme.textTertiary : theme.text,
+            textDecorationLine: done ? "line-through" : "none",
+          }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {item.title}
+        </Text>
+        {item.time ? (
+          <Text
+            style={{
+              fontFamily:
+                theme.typography?.monoTime?.fontFamily ||
+                "JetBrainsMono_500Medium",
+              fontSize: 13,
+              fontWeight: "500",
+              letterSpacing: -0.2,
+              color: done ? theme.textTertiary : theme.primary,
+              marginLeft: 8,
+              flexShrink: 0,
+            }}
+          >
+            {formatTimeDisplay(item.time)}
+          </Text>
+        ) : null}
+        {isMoveTarget ? (
+          <Text style={[styles.moveHint, { color: theme.primary }]}>
+            {t.moveHint}
+          </Text>
+        ) : null}
+      </TouchableOpacity>
+    </View>
+  );
+});
+
 function CalendarScreen({ navigation, route }) {
   const { language, t } = useContext(LanguageContext);
   const isZH = language === "zh";
@@ -165,6 +249,10 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const [tasks, setTasks] = useState({});
+  // 鏡射最新 tasks，讓任務操作 handler 可讀取即時值而不必把 tasks 放進
+  // useCallback 依賴（否則 handler 每次 tasks 變動就重建，破壞 TaskItem memo）。
+  // 同時比原本讀 render 快照更正確：連續快速操作不會吃到過期的 tasks。
+  const tasksRef = useRef({});
   const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [selectedDate, setSelectedDate] = useState(getCurrentDate());
   const [modalVisible, setModalVisible] = useState(false);
@@ -203,6 +291,13 @@ function CalendarScreen({ navigation, route }) {
   const scrollStartY = useRef(0); // Track scroll start position for swipe detection
   const isScrolling = useRef(false); // Track if user is actively scrolling
   const keyboardVisibleRef = useRef(false); // 追蹤鍵盤是否顯示中
+
+  // 保持 tasksRef 與 tasks 同步（涵蓋外部 functional setState 來源：資料
+  // 載入 effect、預載入監聽等）。handler 內同步寫入的值會在此被相同值覆蓋，
+  // 屬冪等操作。
+  useEffect(() => {
+    tasksRef.current = tasks;
+  }, [tasks]);
 
   // 追蹤鍵盤顯示狀態，供 picker 掛載時序判斷使用
   useEffect(() => {
@@ -739,7 +834,13 @@ function CalendarScreen({ navigation, route }) {
     setModalVisible(true);
   };
 
-  const openEditTask = (task) => {
+  // Helper function to clear task cache when tasks are modified
+  const clearTaskCache = useCallback(() => {
+    fetchedRangesRef.current.clear();
+    console.log("🗑️ [Cache] Cleared task cache");
+  }, []);
+
+  const openEditTask = useCallback((task) => {
     const callbackId = `task_${task.id}`;
     registerCallbacks(callbackId, {
       onDelete: (deletedId, deletedDate) => {
@@ -786,16 +887,10 @@ function CalendarScreen({ navigation, route }) {
     });
     navigation.navigate("TaskDetail", {
       task,
-      dayTasks: tasks[task.date] || [],
+      dayTasks: tasksRef.current[task.date] || [],
       callbackId,
     });
-  };
-
-  // Helper function to clear task cache when tasks are modified
-  const clearTaskCache = () => {
-    fetchedRangesRef.current.clear();
-    console.log("🗑️ [Cache] Cleared task cache");
-  };
+  }, [navigation, clearTaskCache]);
 
   const saveTask = async () => {
     if (taskText.trim() === "") return;
@@ -1185,11 +1280,14 @@ function CalendarScreen({ navigation, route }) {
     }
   };
 
-  const startMoveTask = (task) => {
-    setMoveMode(true);
-    setTaskToMove(task);
-    Alert.alert(t.moveTask, t.moveTaskAlert, [{ text: t.confirm }]);
-  };
+  const startMoveTask = useCallback(
+    (task) => {
+      setMoveMode(true);
+      setTaskToMove(task);
+      Alert.alert(t.moveTask, t.moveTaskAlert, [{ text: t.confirm }]);
+    },
+    [t],
+  );
 
   const moveTaskToDate = async (task, toDate) => {
     if (task.date === toDate) return;
@@ -1462,12 +1560,14 @@ function CalendarScreen({ navigation, route }) {
     );
   };
 
-  const toggleTaskChecked = async (task) => {
+  const toggleTaskChecked = useCallback(async (task) => {
     const newCompletedState = !(task.is_completed || task.checked);
-    const previousTasks = { ...tasks }; // Backup for rollback
+    const previousTasks = tasksRef.current; // Backup for rollback（即時值）
 
     // 1. Optimistic Update: Update UI immediately
-    const dayTasks = tasks[task.date] ? [...tasks[task.date]] : [];
+    const dayTasks = previousTasks[task.date]
+      ? [...previousTasks[task.date]]
+      : [];
     const updatedTasksList = dayTasks.map((t) =>
       t.id === task.id
         ? {
@@ -1477,8 +1577,9 @@ function CalendarScreen({ navigation, route }) {
           }
         : t,
     );
-    const newTasksState = { ...tasks, [task.date]: updatedTasksList };
+    const newTasksState = { ...previousTasks, [task.date]: updatedTasksList };
 
+    tasksRef.current = newTasksState; // 同步更新，確保連續操作以最新狀態為基準
     setTasks(newTasksState);
     widgetService.syncTodayTasks(newTasksState);
 
@@ -1517,85 +1618,27 @@ function CalendarScreen({ navigation, route }) {
     } catch (error) {
       console.error("Error toggling task:", error);
       // 3. Rollback on Failure
+      tasksRef.current = previousTasks;
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
       Alert.alert(t.error, t.updateTaskFailed);
     }
-  };
+  }, [t]);
 
-  const renderTask = ({ item }) => {
-    const done = !!(item.is_completed || item.checked);
-    return (
-      <View
-        style={[
-          styles.taskItemRow,
-          {
-            backgroundColor: theme.background,
-            borderBottomWidth: StyleSheet.hairlineWidth,
-            borderBottomColor: theme.rule || theme.divider,
-            paddingVertical: 16,
-            paddingHorizontal: 16,
-          },
-        ]}
-      >
-        <IOSCheckbox
-          checked={done}
-          onPress={() => toggleTaskChecked(item)}
-          theme={theme}
-        />
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            marginLeft: 12,
-            backgroundColor: "transparent",
-          }}
-          onPress={() => openEditTask(item)}
-          onLongPress={() => startMoveTask(item)}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={{
-              flex: 1,
-              fontFamily: theme.typography?.callout?.fontFamily,
-              fontSize: 14,
-              fontWeight: "500",
-              letterSpacing: -0.2,
-              color: done ? theme.textTertiary : theme.text,
-              textDecorationLine: done ? "line-through" : "none",
-            }}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.title}
-          </Text>
-          {item.time ? (
-            <Text
-              style={{
-                fontFamily:
-                  theme.typography?.monoTime?.fontFamily ||
-                  "JetBrainsMono_500Medium",
-                fontSize: 13,
-                fontWeight: "500",
-                letterSpacing: -0.2,
-                color: done ? theme.textTertiary : theme.primary,
-                marginLeft: 8,
-                flexShrink: 0,
-              }}
-            >
-              {formatTimeDisplay(item.time)}
-            </Text>
-          ) : null}
-          {moveMode && taskToMove && taskToMove.id === item.id ? (
-            <Text style={[styles.moveHint, { color: theme.primary }]}>
-              {t.moveHint}
-            </Text>
-          ) : null}
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const renderTask = useCallback(
+    ({ item }) => (
+      <TaskItem
+        item={item}
+        theme={theme}
+        t={t}
+        isMoveTarget={moveMode && taskToMove?.id === item.id}
+        onToggle={toggleTaskChecked}
+        onEdit={openEditTask}
+        onLongPress={startMoveTask}
+      />
+    ),
+    [theme, t, moveMode, taskToMove, toggleTaskChecked, openEditTask, startMoveTask],
+  );
 
   // Helper to get previous/next day in YYYY-MM-DD (local time)
   const getAdjacentDate = (dateStr, diff) => {
