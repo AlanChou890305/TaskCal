@@ -439,34 +439,6 @@ export default function TaskDetailScreen({ navigation, route }) {
           </Text>
         </TouchableOpacity>
         <View style={{ flex: 1 }} />
-        {(() => {
-          const done = !!(task.is_completed || task.checked);
-          return (
-            <TouchableOpacity
-              onPress={handleToggleComplete}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 5,
-                paddingVertical: 5,
-                paddingHorizontal: 10,
-                borderRadius: 14,
-                marginRight: 4,
-                backgroundColor: done ? (theme.primarySoft || "rgba(90,110,240,0.12)") : "transparent",
-              }}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <MaterialIcons
-                name={done ? "check-circle" : "radio-button-unchecked"}
-                size={18}
-                color={done ? theme.primary : theme.textSecondary}
-              />
-              <Text style={{ fontFamily: theme.typography?.footnote?.fontFamily, fontSize: 13, fontWeight: "500", letterSpacing: -0.1, color: done ? theme.primary : theme.textSecondary }}>
-                {done ? t.completedLabel : t.completeAction}
-              </Text>
-            </TouchableOpacity>
-          );
-        })()}
         <TouchableOpacity onPress={handleDelete} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <MaterialIcons name="delete-outline" size={22} color={theme.textSecondary} />
         </TouchableOpacity>
@@ -479,7 +451,7 @@ export default function TaskDetailScreen({ navigation, route }) {
       >
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -641,6 +613,60 @@ export default function TaskDetailScreen({ navigation, route }) {
         </ScrollView>
 
       </KeyboardAvoidingView>
+
+      {/* Bottom action — Mark done */}
+      {(() => {
+        const done = !!(task.is_completed || task.checked);
+        return (
+          <View
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: insets.bottom + 12,
+              backgroundColor: theme.background,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              borderTopColor: theme.rule,
+            }}
+          >
+            <TouchableOpacity
+              onPress={handleToggleComplete}
+              activeOpacity={0.85}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                height: 52,
+                borderRadius: 14,
+                backgroundColor: done ? (theme.primarySoft || "rgba(59,75,122,0.12)") : theme.primary,
+                borderWidth: done ? 1 : 0,
+                borderColor: done ? theme.primary : "transparent",
+              }}
+            >
+              <MaterialIcons
+                name={done ? "check-circle" : "check"}
+                size={20}
+                color={done ? theme.primary : "#FFFFFF"}
+              />
+              <Text
+                style={{
+                  fontFamily: theme.typography?.footnote?.fontFamily,
+                  fontSize: 15,
+                  fontWeight: "600",
+                  letterSpacing: 0.5,
+                  color: done ? theme.primary : "#FFFFFF",
+                }}
+              >
+                {done ? t.completedLabel : t.completeAction}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })()}
 
       {renderDatePickerOverlay()}
       {renderTimePickerOverlay()}

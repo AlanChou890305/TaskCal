@@ -45,7 +45,7 @@ export default {
   clear: "Clear",
   back: "Back",
   completedLabel: "Done",
-  completeAction: "Complete",
+  completeAction: "Mark Done",
   titleLabel: "TITLE",
   dateLabel: "DATE",
   timeLabel: "TIME",
