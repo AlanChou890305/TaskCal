@@ -74,7 +74,7 @@ function SettingScreen() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const shimmerLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, {
           toValue: 1,
@@ -87,7 +87,9 @@ function SettingScreen() {
           useNativeDriver: true,
         }),
       ]),
-    ).start();
+    );
+    shimmerLoop.start();
+    return () => shimmerLoop.stop();
   }, []);
   const [languageDropdownVisible, setLanguageDropdownVisible] = useState(false);
   const [themeDropdownVisible, setThemeDropdownVisible] = useState(false);
