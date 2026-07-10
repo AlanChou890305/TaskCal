@@ -35,6 +35,7 @@ import { getUpdateUrl } from "../config/updateUrls";
 import { mixpanelService } from "../services/mixpanelService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { clearSessionCache } from "../services/sessionCache";
+import { widgetService } from "../services/widgetService";
 import {
   cancelAllNotifications,
   registerForPushNotificationsAsync,
@@ -714,6 +715,12 @@ function SettingScreen() {
       clearSessionCache();
       UserService.clearCachedAuthUser();
       AsyncStorage.removeItem("APP_SETTINGS_CACHE").catch(() => {});
+      // 清除 Widget 資料，避免登出後 Widget 仍殘留上一位使用者的任務。
+      // 直接呼叫而非依賴 onAuthStateChange 監聽器：SplashScreen 在登入成功後
+      // 會被 navigation.reset 卸載，之後從此處登出時它的監聽器早已不存在。
+      widgetService.clearWidgetData().catch((error) => {
+        console.error("Failed to clear widget data on logout:", error);
+      });
 
       // Try to log out (using Supabase's signOut API)
       // Even if this fails (e.g., network error), we should still navigate to splash
@@ -1221,6 +1228,7 @@ function SettingScreen() {
                     mixpanelService.reset();
                     dataPreloadService.clearCache();
                     UserService.clearCachedAuthUser();
+                    widgetService.clearWidgetData().catch(() => {});
                     try {
                       await supabase.auth.signOut({ scope: "local" });
                     } catch (e) {

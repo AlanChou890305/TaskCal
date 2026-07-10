@@ -2,6 +2,7 @@ import { supabase } from "./supabaseClient";
 import { Platform } from "react-native";
 import { getSupabaseConfig } from "../config/environment";
 import { versionService } from "./versionService";
+import { widgetService } from "./widgetService";
 import * as Localization from "expo-localization";
 
 export class UserService {
@@ -721,6 +722,11 @@ export class UserService {
 
       // Clear cached user
       UserService.clearCachedAuthUser();
+
+      // 清除 Widget 資料，避免帳號刪除後 Widget 仍殘留該使用者的任務
+      widgetService.clearWidgetData().catch((error) => {
+        console.error("Failed to clear widget data on account deletion:", error);
+      });
 
       // Sign out after successful deletion
       await supabase.auth.signOut();
