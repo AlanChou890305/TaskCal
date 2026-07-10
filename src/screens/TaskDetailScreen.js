@@ -65,6 +65,43 @@ export default function TaskDetailScreen({ navigation, route }) {
   const pendingWriteRef = useRef(null); // accumulated fields awaiting debounced DB write
   const taskRef = useRef(initialTask); // always tracks latest task for goBack sync
   const deletedRef = useRef(false); // 標記已刪除，避免 unmount 的 onUpdate 復活任務
+  const keyboardVisibleRef = useRef(false); // 追蹤鍵盤是否顯示中
+
+  // 追蹤鍵盤顯示狀態，供 picker 掛載時序判斷使用
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardVisibleRef.current = false;
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // 若鍵盤正顯示，先收鍵盤並等其完全收起後再掛載 picker overlay。
+  // 避免鍵盤收起動畫進行中同時變動 native view 樹，導致 subview 陣列越界
+  // (NSRangeException: -[__NSArrayM objectAtIndexedSubscript:]) 而 crash。
+  const openPickerAfterKeyboard = (setVisible) => {
+    if (!keyboardVisibleRef.current) {
+      setVisible(true);
+      return;
+    }
+    let fallback = null;
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      if (fallback) clearTimeout(fallback);
+      sub.remove();
+      setVisible(true);
+    });
+    // 保底：極少數情況 keyboardDidHide 未觸發時仍能開啟 picker
+    fallback = setTimeout(() => {
+      sub.remove();
+      setVisible(true);
+    }, 500);
+    Keyboard.dismiss();
+  };
 
   // 缺少有效任務（無 id）時直接返回，避免後續操作未定義資料
   useEffect(() => {
@@ -491,9 +528,8 @@ export default function TaskDetailScreen({ navigation, route }) {
             labelKey={t.dateLabel}
             value={formatDetailDate(task.date, language)}
             onPress={() => {
-              Keyboard.dismiss();
               setTempDate(task.date ? new Date(task.date + "T00:00:00") : new Date());
-              setDatePickerVisible(true);
+              openPickerAfterKeyboard(setDatePickerVisible);
             }}
           />
           <RowDivider />
@@ -503,14 +539,13 @@ export default function TaskDetailScreen({ navigation, route }) {
             value={formatTimeDisplay(task.time) || t.none}
             isPlaceholder={!task.time}
             onPress={() => {
-              Keyboard.dismiss();
               const now = new Date();
               setTempTime(
                 task.time
                   ? new Date(2024, 0, 1, parseInt(task.time.split(":")[0]) || 0, parseInt(task.time.split(":")[1]) || 0)
                   : now
               );
-              setTimePickerVisible(true);
+              openPickerAfterKeyboard(setTimePickerVisible);
             }}
           />
 

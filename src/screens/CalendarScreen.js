@@ -202,6 +202,43 @@ function CalendarScreen({ navigation, route }) {
   const isScrollingProgrammatically = useRef(false); // Prevent infinite scroll loop
   const scrollStartY = useRef(0); // Track scroll start position for swipe detection
   const isScrolling = useRef(false); // Track if user is actively scrolling
+  const keyboardVisibleRef = useRef(false); // 追蹤鍵盤是否顯示中
+
+  // 追蹤鍵盤顯示狀態，供 picker 掛載時序判斷使用
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardVisibleRef.current = false;
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // 若鍵盤正顯示，先收鍵盤並等其完全收起後再掛載 picker overlay。
+  // 避免鍵盤收起動畫進行中同時變動 native view 樹，導致 subview 陣列越界
+  // (NSRangeException: -[__NSArrayM objectAtIndexedSubscript:]) 而 crash。
+  const openPickerAfterKeyboard = useCallback((setVisible) => {
+    if (!keyboardVisibleRef.current) {
+      setVisible(true);
+      return;
+    }
+    let fallback = null;
+    const sub = Keyboard.addListener("keyboardDidHide", () => {
+      if (fallback) clearTimeout(fallback);
+      sub.remove();
+      setVisible(true);
+    });
+    // 保底：極少數情況 keyboardDidHide 未觸發時仍能開啟 picker
+    fallback = setTimeout(() => {
+      sub.remove();
+      setVisible(true);
+    }, 500);
+    Keyboard.dismiss();
+  }, []);
 
   // 格式化日期輸入 (YYYY-MM-DD)
   const formatDateInput = (text) => {
@@ -2085,9 +2122,8 @@ function CalendarScreen({ navigation, route }) {
                       }
                       isPlaceholder={!taskDate}
                       onPress={() => {
-                        Keyboard.dismiss();
                         setTempDate(taskDate ? new Date(taskDate) : new Date());
-                        setDatePickerVisible(true);
+                        openPickerAfterKeyboard(setDatePickerVisible);
                       }}
                     />
                   )}
@@ -2136,7 +2172,6 @@ function CalendarScreen({ navigation, route }) {
                       value={taskTime || (isZH ? "無" : "None")}
                       isPlaceholder={!taskTime}
                       onPress={() => {
-                        Keyboard.dismiss();
                         const now = new Date();
                         setTempTime(
                           taskTime
@@ -2149,7 +2184,7 @@ function CalendarScreen({ navigation, route }) {
                               )
                             : now,
                         );
-                        setTimePickerVisible(true);
+                        openPickerAfterKeyboard(setTimePickerVisible);
                       }}
                     />
                   )}
