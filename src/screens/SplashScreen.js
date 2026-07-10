@@ -674,6 +674,29 @@ const SplashScreen = ({ navigation }) => {
 
         if (hasAuthCallback) {
           console.log("Initial URL is an auth callback:", url.href);
+
+          // detectSessionInUrl only turns a `code=`/`access_token=` callback into a
+          // session — it silently ignores an `error=` callback (e.g. user denied
+          // consent, provider/backend failure), so surface that here or the user
+          // just lands on the login screen with no explanation.
+          const hashParams = url.hash
+            ? new URLSearchParams(url.hash.replace(/^#/, ""))
+            : null;
+          const oauthError = url.searchParams.get("error") || hashParams?.get("error");
+          if (oauthError) {
+            const errorDescription =
+              url.searchParams.get("error_description") ||
+              hashParams?.get("error_description");
+            console.error("Initial URL: OAuth error detected:", {
+              error: oauthError,
+              errorDescription,
+            });
+            alert(
+              `Authentication error: ${decodeURIComponent(errorDescription || oauthError)}`,
+            );
+            window.history.replaceState({}, document.title, url.pathname);
+          }
+
           console.log(
             "OAuth callback already handled at module level, skipping",
           );
