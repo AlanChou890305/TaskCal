@@ -98,6 +98,9 @@ function SettingScreen() {
     enabled: true,
     times: [30, 10, 5], // 預設30分鐘、10分鐘和5分鐘前提醒
   });
+  // 遞增序號：只有「最新一次」updateReminderSettings 呼叫的背景回應/錯誤回退
+  // 可以覆蓋 UI，避免使用者連續切換時，較舊的回應晚到蓋掉較新的操作意圖
+  const reminderUpdateSeqRef = useRef(0);
   const [reminderDropdownVisible, setReminderDropdownVisible] = useState(false);
   const [dailySummaryEnabled, setDailySummaryEnabled] = useState(false);
   const [versionInfo, setVersionInfo] = useState(null);
@@ -622,6 +625,9 @@ function SettingScreen() {
     // 保存之前的設定，以便錯誤時恢復
     const previousSettings = { ...reminderSettings };
 
+    // 標記這次呼叫的序號；之後只有仍是「最新一次」呼叫時才允許覆蓋 UI
+    const mySeq = ++reminderUpdateSeqRef.current;
+
     // 樂觀更新：先更新 UI，讓用戶立即看到變化
     setReminderSettings(normalizedSettings);
 
@@ -645,6 +651,12 @@ function SettingScreen() {
       // 更新緩存，確保語言切換時不會讀取到舊的 reminder 設定
       if (result) {
         dataPreloadService.updateCachedUserSettings(result);
+      }
+
+      // 這次呼叫還在等待背景回應時，使用者已經又觸發了更新的一次呼叫，
+      // 代表這裡拿到的是舊的回應，不該再覆蓋已經更新過的 UI
+      if (reminderUpdateSeqRef.current !== mySeq) {
+        return;
       }
 
       // 如果 Supabase 返回的結果與我們保存的不同，使用 Supabase 的結果
@@ -673,6 +685,11 @@ function SettingScreen() {
         }
       }
     } catch (error) {
+      // 同上：這次呼叫已經不是最新一次，不該用它的錯誤回退覆蓋更新過的 UI
+      if (reminderUpdateSeqRef.current !== mySeq) {
+        return;
+      }
+
       // 檢查是否為網絡錯誤
       const isNetworkError =
         error.message?.includes("Network request failed") ||
