@@ -488,13 +488,43 @@ export class TaskService {
   // Toggle task completed status
   static async toggleTaskChecked(taskId, isCompleted) {
     try {
-      // 如果任務完成，取消通知；如果未完成，updateTask 會重新安排（如果需要）
-      // 但為了簡單起見，我們讓 updateTask 處理所有邏輯
-      // 這裡我們只更新狀態
-      return await this.updateTask(taskId, {
+      const taskResult = await this.updateTask(taskId, {
         is_completed: isCompleted,
         completed_at: isCompleted ? new Date().toISOString() : null,
       });
+
+      // updateTask 只在 time/date 變動時才處理通知，勾選完成/取消完成不會
+      // 觸發那段邏輯，所以這裡另外處理：完成時取消提醒，取消完成時視需要恢復提醒
+      if (isCompleted) {
+        try {
+          await cancelTaskNotification(null, taskId);
+        } catch (error) {
+          console.error(
+            "Error cancelling notification for completed task:",
+            error
+          );
+        }
+      } else if (taskResult.time && taskResult.date) {
+        try {
+          const userSettings = await UserService.getUserSettings();
+          const reminderSettings = userSettings.reminder_settings;
+          if (reminderSettings && reminderSettings.enabled === true) {
+            await scheduleTaskNotification(
+              taskResult,
+              "Task Reminder",
+              null,
+              reminderSettings
+            );
+          }
+        } catch (error) {
+          console.error(
+            "Error rescheduling notification for uncompleted task:",
+            error
+          );
+        }
+      }
+
+      return taskResult;
     } catch (error) {
       console.error("Error in toggleTaskChecked:", error);
       throw error;
