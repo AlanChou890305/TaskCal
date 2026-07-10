@@ -160,7 +160,7 @@ const TaskItem = React.memo(function TaskItem({
   onEdit,
   onLongPress,
 }) {
-  const done = !!(item.is_completed || item.checked);
+  const done = !!item.is_completed;
   return (
     <View
       style={[
@@ -959,7 +959,6 @@ function CalendarScreen({ navigation, route }) {
         id: tempId,
         ...taskData,
         is_completed: false,
-        checked: false,
       };
 
       const dayTasks = tasks[targetDate] || [];
@@ -1581,7 +1580,7 @@ function CalendarScreen({ navigation, route }) {
   };
 
   const toggleTaskChecked = useCallback(async (task) => {
-    const newCompletedState = !(task.is_completed || task.checked);
+    const newCompletedState = !task.is_completed;
     const previousTasks = tasksRef.current; // Backup for rollback（即時值）
 
     // 1. Optimistic Update: Update UI immediately
@@ -1592,7 +1591,6 @@ function CalendarScreen({ navigation, route }) {
       t.id === task.id
         ? {
             ...t,
-            checked: newCompletedState,
             is_completed: newCompletedState,
           }
         : t,
@@ -1717,9 +1715,7 @@ function CalendarScreen({ navigation, route }) {
       : isZH
         ? `${selM} 月 ${selD} 日`
         : `${selMonthName} ${selD}`;
-    const completedCount = dayTasks.filter(
-      (t) => t.is_completed || t.checked,
-    ).length;
+    const completedCount = dayTasks.filter((t) => t.is_completed).length;
     const totalCount = dayTasks.length;
 
     const taskAreaContent = (
@@ -1860,8 +1856,8 @@ function CalendarScreen({ navigation, route }) {
               <FlatList
                 data={dayTasks.slice().sort((a, b) => {
                   // 已完成的任務排到最底下
-                  const aCompleted = a.is_completed || a.checked;
-                  const bCompleted = b.is_completed || b.checked;
+                  const aCompleted = a.is_completed;
+                  const bCompleted = b.is_completed;
                   if (aCompleted !== bCompleted) {
                     return aCompleted ? 1 : -1;
                   }

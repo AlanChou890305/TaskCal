@@ -33,12 +33,13 @@ describe("createTaskObject", () => {
     expect(result[TASK_FIELDS.NOTE]).toBeNull();
   });
 
-  it("supports the legacy `checked` field as a fallback for is_completed", () => {
+  it("only reads is_completed, ignoring a stray `checked` field", () => {
     const result = createTaskObject({
       user_id: "u1",
       title: "Buy milk",
       date: "2026-07-10",
-      checked: true,
+      is_completed: true,
+      checked: false,
     });
 
     expect(result[TASK_FIELDS.IS_COMPLETED]).toBe(true);

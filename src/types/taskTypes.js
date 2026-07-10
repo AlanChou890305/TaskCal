@@ -79,9 +79,7 @@ export const createTaskObject = (taskData) => {
     [TASK_FIELDS.LINK]: cleanString(taskData.link),
     [TASK_FIELDS.NOTE]: cleanString(taskData.note),
     [TASK_FIELDS.DATE]: taskData.date,
-    // 移除 CHECKED 欄位，只使用 IS_COMPLETED
-    [TASK_FIELDS.IS_COMPLETED]:
-      taskData.is_completed || taskData.checked || false,
+    [TASK_FIELDS.IS_COMPLETED]: taskData.is_completed || false,
     [TASK_FIELDS.COMPLETED_AT]: taskData.completed_at || null,
     // [TASK_FIELDS.PRIORITY]: taskData.priority || TASK_PRIORITIES.MEDIUM, // 已移除 priority 欄位
     // [TASK_FIELDS.DESCRIPTION]: cleanString(taskData.description), // 已移除 description 欄位

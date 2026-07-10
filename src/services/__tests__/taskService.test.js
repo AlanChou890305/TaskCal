@@ -60,11 +60,11 @@ beforeEach(() => {
 });
 
 describe("TaskService.getTasksByDateRange", () => {
-  it("groups tasks by date and merges legacy `checked` into is_completed", async () => {
+  it("groups tasks by date and normalizes is_completed", async () => {
     supabase.from.mockReturnValue(
       createQueryBuilder({
         data: [
-          { id: "t1", title: "A", date: "2026-07-10", checked: true },
+          { id: "t1", title: "A", date: "2026-07-10", is_completed: true },
           { id: "t2", title: "B", date: "2026-07-10", is_completed: false },
           { id: "t3", title: "C", date: "2026-07-11", is_completed: true },
         ],

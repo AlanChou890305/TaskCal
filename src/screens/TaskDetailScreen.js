@@ -223,10 +223,9 @@ export default function TaskDetailScreen({ navigation, route }) {
   // 切換完成狀態：樂觀更新 + 背景寫入，失敗時只回退完成相關欄位（保留並發編輯）
   const handleToggleComplete = () => {
     const previous = taskRef.current;
-    const newState = !(previous.is_completed || previous.checked);
+    const newState = !previous.is_completed;
     applyLocal({
       is_completed: newState,
-      checked: newState,
       completed_at: newState ? new Date().toISOString() : null,
     });
     (async () => {
@@ -244,7 +243,6 @@ export default function TaskDetailScreen({ navigation, route }) {
         console.error("toggleTaskChecked error:", err);
         const reverted = { ...taskRef.current };
         reverted.is_completed = previous.is_completed;
-        reverted.checked = previous.checked;
         reverted.completed_at = previous.completed_at;
         taskRef.current = reverted;
         setTask(reverted);
@@ -628,7 +626,7 @@ export default function TaskDetailScreen({ navigation, route }) {
 
       {/* Bottom action — Mark done */}
       {(() => {
-        const done = !!(task.is_completed || task.checked);
+        const done = !!task.is_completed;
         return (
           <View
             style={{

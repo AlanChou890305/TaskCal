@@ -67,8 +67,7 @@ export class TaskService {
           link: task.link,
           note: task.note,
           date: task.date,
-          checked: task.is_completed || task.checked || false, // 支援新舊欄位
-          is_completed: task.is_completed || task.checked || false,
+          is_completed: task.is_completed || false,
           user: {
             id: user.id,
             email: user.email,
@@ -160,8 +159,7 @@ export class TaskService {
             link: task.link,
             note: task.note,
             date: date,
-            checked: task.is_completed || task.checked || false, // 支援新舊欄位
-            is_completed: task.is_completed || task.checked || false,
+            is_completed: task.is_completed || false,
             user: {
               id: user.id,
               email: user.email,
@@ -222,8 +220,7 @@ export class TaskService {
           link: task.link,
           note: task.note,
           date: task.date,
-          checked: task.is_completed || task.checked || false, // 支援新舊欄位
-          is_completed: task.is_completed || task.checked || false,
+          is_completed: task.is_completed || false,
           user: {
             id: user.id,
             email: user.email,
@@ -262,7 +259,7 @@ export class TaskService {
         link: task.link && task.link.trim() !== "" ? task.link : null,
         note: task.note && task.note.trim() !== "" ? task.note : null,
         date: task.date,
-        is_completed: task.is_completed || task.checked || false, // 支援舊的 checked 欄位
+        is_completed: task.is_completed || false,
         completed_at: task.completed_at || null,
         // priority, description, tags, order_index 欄位已移除，因為介面上不使用
       };
@@ -299,8 +296,7 @@ export class TaskService {
         link: data.link,
         note: data.note,
         date: data.date,
-        checked: data.is_completed || data.checked || false, // 支援新舊欄位
-        is_completed: data.is_completed || data.checked || false,
+        is_completed: data.is_completed || false,
       };
 
       // 如果任務有時間設定，安排通知
@@ -393,8 +389,7 @@ export class TaskService {
         link: data.link,
         note: data.note,
         date: data.date,
-        checked: data.is_completed || data.checked || false, // 支援新舊欄位
-        is_completed: data.is_completed || data.checked || false,
+        is_completed: data.is_completed || false,
       };
 
       // 如果任務時間被更新，重新安排通知

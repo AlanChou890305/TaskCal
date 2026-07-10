@@ -98,7 +98,7 @@ class WidgetService {
             id: task.id,
             title: task.title,
             time: task.time || "",
-            completed: task.checked || task.is_completed || false,
+            completed: task.is_completed || false,
           }))
           .sort((a, b) => {
             // Sort completed tasks to the bottom
