@@ -44,6 +44,10 @@
 | Session 失效未自動登出 | 針對 `SettingScreen`/`SplashScreen` 深入調查時發現：`TOKEN_REFRESH_FAILED`/`SIGNED_OUT` 的清理與導回登入頁邏輯整包掛在 `SplashScreen` 的 `onAuthStateChange` 監聽器上，但 `SplashScreen` 登入成功後會被 `navigation.reset()` 卸載，全專案沒有其他地方訂閱這個事件。Session 若在 `MainTabs` 停留期間失效（換裝置登入、伺服器端撤銷等），App 不會自動登出，會卡在已失效的 session 上讓後續 API 呼叫靜默失敗——與先前 widget 清理 bug 同一種架構缺陷。新增 `App.js` 根層級的 `onAuthStateChange` 監聽（透過 `navigationRef` 操作導航），永遠不會被卸載，作為保底 | `4a548e9` |
 | SettingScreen shimmer 動畫迴圈洩漏 | `Animated.loop(...).start()` 回傳值沒保存、`useEffect` 沒有 cleanup。因為是 `useNativeDriver` 動畫，元件卸載不會自動停止，使用者反覆切換設定分頁會累積孤兒動畫持續耗電。保存回傳值並在 cleanup 呼叫 `.stop()` | `ff18070` |
 | SettingScreen 提醒設定 race condition | `updateReminderSettings` 樂觀更新後背景打 Supabase，回應時會拿「自己捕捉到的設定」跟伺服器結果比對來決定要不要修正 UI，但沒有任何機制判斷回應是否已經被使用者之後的操作蓋過去。快速連續切換時，較舊請求的回應可能較晚抵達並覆蓋掉使用者最新意圖。新增 `reminderUpdateSeqRef` 遞增序號，非最新一次呼叫的回應/錯誤回退直接跳過 | `4c7c9c9` |
+| `hasNavigated` 過期閉包 | `SplashScreen` 主 `useEffect` deps 為 `[navigation]`，內部多處讀取 `hasNavigated` 的 closure 只會拿到 effect 第一次執行時的初始值 `false`，之後永遠讀不到最新狀態；原本靠另一段即時檢查 `navigation.getState()` 意外救回，但屬於脆弱寫法。改用 `hasNavigatedRef`（`useRef`）取代 `useState`，所有讀寫點改看 ref | `e7058b6` |
+| `handleOAuthCallback` 死程式碼 | `SplashScreen.js` 內一段約 300 行的函式全檔案沒有任何地方呼叫，實際生效的 web OAuth 流程是 supabase client 的 `detectSessionInUrl`（module 層自動處理）＋ `checkInitialUrl`／auth 監聽器；確認後整段移除 | `3cddf68` |
+| web OAuth 錯誤參數被忽略 | 手機 deep link 有正確處理 OAuth `error=` 參數並跳提示，但 `SplashScreen.checkInitialUrl` 的 web 分支偵測到 auth callback（含帶 `error=` 的 URL）就直接 return，`detectSessionInUrl` 不會把 `error` 參數轉成任何提示，使用者拒絕授權或後端出錯時完全沒有提示、無聲落到登入畫面。比照 mobile deep link 的作法，偵測到 `error` 時跳出 alert 並清掉 URL 參數 | `c717fe8` |
+| `toggleDailySummary` 沒有 try/catch | 除了通知權限被拒有明確 Alert，其餘拋出的例外只會被外層 `.catch` 印 log，Switch 會無聲彈回原位、不會告訴使用者發生了什麼。改為內部 try/catch，失敗時還原開關狀態並跳出提示（新增三語系 `dailySummaryToggleError` 文案） | `d9707b6` |
 
 ### 🗄️ 資料結構
 
@@ -74,11 +78,7 @@
 
 ### 功能與風險（🟡 中低風險，深入調查 SettingScreen/SplashScreen 時發現）
 
-- **web OAuth 錯誤參數被忽略**：手機 deep link 有正確處理 OAuth 錯誤並跳提示，但 `SplashScreen.checkInitialUrl` 的 web 分支沒檢查 `error=` 參數，使用者拒絕授權或後端出錯時完全沒有提示，直接落到登入畫面。
-- **`toggleDailySummary` 沒有 try/catch**：除了通知權限被拒有明確 Alert，其餘拋出的例外只會被外層 `.catch` 印 log，Switch 會無聲彈回原位、不會告訴使用者發生了什麼。
-- **`hasNavigated` 是過期閉包**：`SplashScreen` 主 `useEffect` deps 為 `[navigation]`，`hasNavigated` 的判斷永遠讀到初始值 `false`，目前靠另一段即時檢查 `navigation.getState()` 意外救回，脆弱但無害。
-- **dev-only Force Logout 按鈕邏輯跟正式登出不完全一致**：`__DEV__` 限定，不影響正式環境。
-- **`handleOAuthCallback`（SplashScreen.js:108-403）疑似死程式碼**：全檔案沒有任何地方呼叫它，實際生效的是 `checkInitialUrl`；待確認是否可以整段移除。
+- **dev-only Force Logout 按鈕邏輯跟正式登出不完全一致**：`__DEV__` 限定，不影響正式環境，評估後無需處理。
 
 ---
 
