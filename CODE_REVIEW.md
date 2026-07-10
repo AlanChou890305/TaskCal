@@ -11,10 +11,10 @@
 | 面向 | 評分 | 一句話 |
 |------|------|--------|
 | 安全性 | 🟢 已修復關鍵項 | unsubscribe IDOR、trigger function 公開權限已修 |
-| 功能穩健性 | 🟡 部分修復 | 通知/Widget 清除已修，仍有中低風險項待處理 |
+| 功能穩健性 | 🟡 部分修復 | 通知/Widget 清除/查詢失敗誤判已修，仍有中低風險項待處理 |
 | 資料結構 | 🟡 待處理 | `checked`/`is_completed` 雙欄位歷史包袱仍在 |
 | 效能 | 🟢 已修復熱點 | CalendarScreen 任務列表已 memo 化 |
-| 可維護性 | 🟡 已建立測試基礎 | 有 jest 環境 + 18 個測試，巨型檔案拆分未做 |
+| 可維護性 | 🟡 已建立測試基礎 | 有 jest 環境 + 19 個測試，巨型檔案拆分未做 |
 
 ---
 
@@ -37,6 +37,7 @@
 | 完成任務不取消提醒通知 | `toggleTaskChecked` 只更新 `is_completed`，未觸發通知取消邏輯，導致使用者完成任務後仍收到提醒；已修正為完成時取消、取消完成且仍有時間時視設定重新排程 | `a8c45ca` |
 | Widget 登出後未清除（key/格式錯誤） | `clearWidgetData()` 原本寫錯 key（`"todayTasks"` 而非實際的 `"widgetTasksByDate"`）、格式也不對（陣列而非物件） | `1d5e7a2` |
 | Widget 登出後未清除（根因：監聽器已卸載） | 清除邏輯原本掛在 `SplashScreen` 的 `SIGNED_OUT` 監聽器上，但 `SplashScreen` 在登入成功後會被 `navigation.reset()` 卸載，之後從 `SettingScreen` 登出時監聽器早已不存在，事件無人接收。改為直接寫在 `SettingScreen.handleLogout`、dev Force Logout 按鈕、`UserService.deleteUser` 三處實際觸發登出的地方 | `64466d2`（已實機驗證：登出後 Widget 正確顯示 "All clear today"） |
+| F3｜查詢失敗與空資料無法區分 | `taskService.getTasksByDateRange` 查詢失敗一律回傳 `{}`，`{}` 同時代表「失敗」與「這段時間真的沒任務」，呼叫端無法區分，網路失敗時會把 Widget 洗成空白。改為失敗回傳 `null`（`{}` 只保留給真正的空資料）；`dataPreloadService.preloadAllData` 收到 `null` 時保留舊快取並跳過 Widget 同步；`CalendarScreen` 的區間抓取收到 `null` 時不標記為已抓取，下次會重試 | 待補（本次） |
 
 ### ⚡ 效能
 
@@ -63,7 +64,6 @@
 ### 功能與風險（🟡 中風險）
 
 - **F2｜新增任務可能重複排程通知**：`taskService.addTask` 內部會排通知，`CalendarScreen` 在呼叫後又排一次，兩處傳入參數來源不同（雖然因為排程本身有 cancel-then-reschedule 機制，結果通常一致，但屬冗余邏輯，建議收斂到單一排程點）。
-- **F3｜查詢失敗與空資料無法區分**：`taskService` 查詢失敗一律回傳 `{}`，呼叫端（含 Widget 同步）會誤判為「今天沒任務」，網路失敗時可能把 Widget 清成空白。
 - **F4｜`updateTask` 把空字串 title 轉成 null**：若使用者把標題清空後儲存，可能寫入 `title: null`。建議在 UI 層擋掉空值。
 
 ### 可維護性（🔴 高工作量，未做）

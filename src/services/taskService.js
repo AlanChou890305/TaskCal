@@ -133,7 +133,8 @@ export class TaskService {
           endDate,
           userId: user?.id || "unknown",
         });
-        return {};
+        // null 代表查詢失敗，與「範圍內真的沒有任務」({}) 區分，避免呼叫端誤判為空資料
+        return null;
       }
 
       // 預先提取用戶顯示名稱（只提取一次）
@@ -181,7 +182,8 @@ export class TaskService {
         startDate: dateRange.startDate,
         endDate: dateRange.endDate,
       });
-      return {};
+      // null 代表查詢失敗，與「範圍內真的沒有任務」({}) 區分，避免呼叫端誤判為空資料
+      return null;
     }
   }
 

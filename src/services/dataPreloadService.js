@@ -69,11 +69,27 @@ class DataPreloadService {
         }
 
         // 並行載入：用戶設定、用戶資料、三個月任務（單次 DB query）
-        const [userSettings, userProfile, calendarTasks] = await Promise.all([
+        const [userSettings, userProfile, calendarTasksResult] = await Promise.all([
           this.preloadUserSettings(user),
           this.preloadUserProfile(user),
           this.preloadThreeMonthTasks(user),
         ]);
+
+        if (calendarTasksResult === null) {
+          // 任務查詢失敗（非「真的沒有任務」）：保留舊快取、不同步 Widget，避免把失敗誤判為空資料
+          console.warn(
+            "⚠️ [DataPreload] Task fetch failed, keeping previous cache and skipping widget sync",
+          );
+          this.isPreloading = false;
+          this.preloadPromise = null;
+          return {
+            userSettings,
+            userProfile,
+            calendarTasks: this.preloadCache.calendarTasks,
+          };
+        }
+
+        const calendarTasks = calendarTasksResult;
 
         // 從結果中提取今天和當月的任務（供外部取用）
         const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -173,12 +189,16 @@ class DataPreloadService {
 
       if (__DEV__) console.log(`🚀 [DataPreload] Loading tasks: ${start} to ${end}`);
       const tasks = await TaskService.getTasksByDateRange(start, end, user);
+      if (tasks === null) {
+        // 查詢失敗，回傳 null 讓呼叫端知道這不是「真的沒有任務」
+        return null;
+      }
       if (__DEV__) console.log("✅ [DataPreload] Tasks loaded");
       this.preloadCache.preloadRange = { start, end };
       return tasks;
     } catch (error) {
       console.error("❌ [DataPreload] Error loading tasks:", error);
-      return {};
+      return null;
     }
   }
 

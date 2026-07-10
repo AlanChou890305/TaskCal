@@ -94,6 +94,22 @@ describe("TaskService.getTasksByDateRange", () => {
     expect(result).toEqual({});
     expect(supabase.from).not.toHaveBeenCalled();
   });
+
+  it("returns null (not {}) when the query itself fails, so callers can tell a failed fetch apart from a genuinely empty range", async () => {
+    supabase.from.mockReturnValue(
+      createQueryBuilder({
+        data: null,
+        error: { message: "Network request failed" },
+      })
+    );
+
+    const result = await TaskService.getTasksByDateRange(
+      "2026-07-10",
+      "2026-07-11"
+    );
+
+    expect(result).toBeNull();
+  });
 });
 
 describe("temp- id guard (optimistic tasks not yet synced to DB)", () => {

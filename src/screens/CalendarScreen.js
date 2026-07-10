@@ -587,6 +587,15 @@ function CalendarScreen({ navigation, route }) {
           endDateStr,
         );
 
+        if (newTasks === null) {
+          // 查詢失敗（非「這段時間真的沒有任務」），不要標記為已抓取，讓下次重試
+          console.warn(
+            `⚠️ [CalendarScreen] Failed to fetch tasks for ${startDateStr} to ${endDateStr}, will retry`,
+          );
+          setIsLoadingTasks(false);
+          return;
+        }
+
         // Mark this range as fetched
         fetchedRangesRef.current.add(rangeKey);
 
