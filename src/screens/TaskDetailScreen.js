@@ -295,6 +295,13 @@ export default function TaskDetailScreen({ navigation, route }) {
   // ── Date picker overlay ────────────────────────────────────────
   const renderDatePickerOverlay = () => {
     if (!datePickerVisible || Platform.OS === "web") return null;
+    const monoKicker = {
+      fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+      fontSize: 13,
+      fontWeight: "500",
+      letterSpacing: 1.0,
+      textTransform: "uppercase",
+    };
     return (
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
         <TouchableOpacity
@@ -303,19 +310,19 @@ export default function TaskDetailScreen({ navigation, route }) {
           onPress={() => setDatePickerVisible(false)}
         >
           <View
-            style={{ backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: insets.bottom }}
+            style={{ backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
             onStartShouldSetResponder={() => true}
           >
             <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}>
               <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
             </View>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingVertical: 12 }}>
               <TouchableOpacity onPress={() => setDatePickerVisible(false)} style={{ padding: 6, minWidth: 60 }}>
-                <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "500", letterSpacing: -0.2, color: theme.textSecondary }}>
+                <Text style={[monoKicker, { color: theme.textSecondary }]}>
                   {t.cancel}
                 </Text>
               </TouchableOpacity>
-              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
+              <Text style={[monoKicker, { color: theme.text }]}>
                 {t.date}
               </Text>
               <TouchableOpacity
@@ -331,13 +338,13 @@ export default function TaskDetailScreen({ navigation, route }) {
                 }}
                 style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
               >
-                <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
+                <Text style={[monoKicker, { color: theme.primary }]}>
                   {t.confirm}
                 </Text>
               </TouchableOpacity>
             </View>
             {tempDate && (
-              <View style={{ alignItems: "center", width: "100%", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }}>
+              <View style={{ alignItems: "center", width: "100%", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule, paddingBottom: insets.bottom }}>
                 <DateTimePicker
                   value={tempDate}
                   mode="date"
@@ -358,8 +365,13 @@ export default function TaskDetailScreen({ navigation, route }) {
   // ── Time picker overlay ────────────────────────────────────────
   const renderTimePickerOverlay = () => {
     if (!timePickerVisible || Platform.OS === "web") return null;
-    const displayH = tempTime ? String(tempTime.getHours()).padStart(2, "0") : "00";
-    const displayM = tempTime ? String(tempTime.getMinutes()).padStart(2, "0") : "00";
+    const monoKicker = {
+      fontFamily: theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+      fontSize: 13,
+      fontWeight: "500",
+      letterSpacing: 1.0,
+      textTransform: "uppercase",
+    };
     return (
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
         {/* Background dismiss — separate from bottom sheet to avoid touch conflicts with native spinner */}
@@ -370,12 +382,12 @@ export default function TaskDetailScreen({ navigation, route }) {
         />
         {/* Bottom sheet — NOT inside TouchableOpacity so spinner touches don't bubble up */}
         <View
-          style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: insets.bottom }}
+          style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: theme.backgroundSecondary, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
         >
           <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 2 }}>
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: theme.textTertiary, opacity: 0.5 }} />
           </View>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 10 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingVertical: 12 }}>
             <TouchableOpacity
               onPress={() => {
                 persistUpdate({ time: null });
@@ -383,12 +395,12 @@ export default function TaskDetailScreen({ navigation, route }) {
               }}
               style={{ padding: 6, minWidth: 60 }}
             >
-              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "500", letterSpacing: -0.2, color: theme.textSecondary }}>
+              <Text style={[monoKicker, { color: theme.textSecondary }]}>
                 {t.clear}
               </Text>
             </TouchableOpacity>
-            <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.text }}>
-              {displayH}:{displayM}
+            <Text style={[monoKicker, { color: theme.text }]}>
+              {t.timeLabel}
             </Text>
             <TouchableOpacity
               onPress={() => {
@@ -401,13 +413,13 @@ export default function TaskDetailScreen({ navigation, route }) {
               }}
               style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
             >
-              <Text style={{ fontFamily: theme.typography?.callout?.fontFamily, fontSize: 14, fontWeight: "600", letterSpacing: -0.2, color: theme.primary }}>
+              <Text style={[monoKicker, { color: theme.primary }]}>
                 {t.confirm}
               </Text>
             </TouchableOpacity>
           </View>
           {tempTime && (
-            <View style={{ alignItems: "center", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }}>
+            <View style={{ alignItems: "center", backgroundColor: theme.background, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule, paddingBottom: insets.bottom }}>
               <DateTimePicker
                 value={tempTime}
                 mode="time"

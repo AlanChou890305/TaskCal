@@ -2444,6 +2444,15 @@ function CalendarScreen({ navigation, route }) {
   const renderDatePickerOverlay = () => {
     if (!datePickerVisible || Platform.OS === "web") return null;
 
+    const monoKicker = {
+      fontFamily:
+        theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+      fontSize: 13,
+      fontWeight: "500",
+      letterSpacing: 1.0,
+      textTransform: "uppercase",
+    };
+
     return (
       <View
         style={{
@@ -2469,7 +2478,6 @@ function CalendarScreen({ navigation, route }) {
               backgroundColor: theme.backgroundSecondary,
               borderTopLeftRadius: 12,
               borderTopRightRadius: 12,
-              paddingBottom: insets.bottom,
             }}
             onStartShouldSetResponder={() => true}
           >
@@ -2493,35 +2501,19 @@ function CalendarScreen({ navigation, route }) {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                paddingHorizontal: 16,
-                paddingVertical: 10,
+                paddingHorizontal: 20,
+                paddingVertical: 12,
               }}
             >
               <TouchableOpacity
                 onPress={() => setDatePickerVisible(false)}
                 style={{ padding: 6, minWidth: 60 }}
               >
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    fontSize: 14,
-                    fontWeight: "500",
-                    letterSpacing: -0.2,
-                    color: theme.textSecondary,
-                  }}
-                >
+                <Text style={[monoKicker, { color: theme.textSecondary }]}>
                   {t.cancel}
                 </Text>
               </TouchableOpacity>
-              <Text
-                style={{
-                  fontFamily: theme.typography?.callout?.fontFamily,
-                  fontSize: 14,
-                  fontWeight: "600",
-                  letterSpacing: -0.2,
-                  color: theme.text,
-                }}
-              >
+              <Text style={[monoKicker, { color: theme.text }]}>
                 {isZH ? "日期" : "Date"}
               </Text>
               <TouchableOpacity
@@ -2539,15 +2531,7 @@ function CalendarScreen({ navigation, route }) {
                 }}
                 style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
               >
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    fontSize: 14,
-                    fontWeight: "600",
-                    letterSpacing: -0.2,
-                    color: theme.primary,
-                  }}
-                >
+                <Text style={[monoKicker, { color: theme.primary }]}>
                   {t.confirm || (isZH ? "完成" : "Done")}
                 </Text>
               </TouchableOpacity>
@@ -2560,6 +2544,7 @@ function CalendarScreen({ navigation, route }) {
                   backgroundColor: theme.background,
                   borderTopWidth: StyleSheet.hairlineWidth,
                   borderTopColor: theme.divider,
+                  paddingBottom: insets.bottom,
                 }}
               >
                 <DateTimePicker
@@ -2586,12 +2571,14 @@ function CalendarScreen({ navigation, route }) {
   const renderTimePickerOverlay = () => {
     if (!timePickerVisible || Platform.OS === "web") return null;
 
-    const displayH = tempTime
-      ? String(tempTime.getHours()).padStart(2, "0")
-      : "00";
-    const displayM = tempTime
-      ? String(tempTime.getMinutes()).padStart(2, "0")
-      : "00";
+    const monoKicker = {
+      fontFamily:
+        theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+      fontSize: 13,
+      fontWeight: "500",
+      letterSpacing: 1.0,
+      textTransform: "uppercase",
+    };
 
     return (
       <View
@@ -2618,7 +2605,6 @@ function CalendarScreen({ navigation, route }) {
               backgroundColor: theme.backgroundSecondary,
               borderTopLeftRadius: 12,
               borderTopRightRadius: 12,
-              paddingBottom: insets.bottom,
             }}
             onStartShouldSetResponder={() => true}
           >
@@ -2636,42 +2622,26 @@ function CalendarScreen({ navigation, route }) {
                 }}
               />
             </View>
-            {/* Cancel / Title / Done */}
+            {/* Clear / Title / Done */}
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                paddingHorizontal: 16,
-                paddingVertical: 10,
+                paddingHorizontal: 20,
+                paddingVertical: 12,
               }}
             >
               <TouchableOpacity
                 onPress={() => setTimePickerVisible(false)}
                 style={{ padding: 6, minWidth: 60 }}
               >
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    fontSize: 14,
-                    fontWeight: "500",
-                    letterSpacing: -0.2,
-                    color: theme.textSecondary,
-                  }}
-                >
+                <Text style={[monoKicker, { color: theme.textSecondary }]}>
                   {t.cancel}
                 </Text>
               </TouchableOpacity>
-              <Text
-                style={{
-                  fontFamily: theme.typography?.callout?.fontFamily,
-                  fontSize: 14,
-                  fontWeight: "600",
-                  letterSpacing: -0.2,
-                  color: theme.text,
-                }}
-              >
-                {displayH}:{displayM}
+              <Text style={[monoKicker, { color: theme.text }]}>
+                {t.timeLabel}
               </Text>
               <TouchableOpacity
                 onPress={() => {
@@ -2687,15 +2657,7 @@ function CalendarScreen({ navigation, route }) {
                 }}
                 style={{ padding: 6, minWidth: 60, alignItems: "flex-end" }}
               >
-                <Text
-                  style={{
-                    fontFamily: theme.typography?.callout?.fontFamily,
-                    fontSize: 14,
-                    fontWeight: "600",
-                    letterSpacing: -0.2,
-                    color: theme.primary,
-                  }}
-                >
+                <Text style={[monoKicker, { color: theme.primary }]}>
                   {t.confirm || (isZH ? "完成" : "Done")}
                 </Text>
               </TouchableOpacity>
@@ -2707,6 +2669,7 @@ function CalendarScreen({ navigation, route }) {
                   backgroundColor: theme.background,
                   borderTopWidth: StyleSheet.hairlineWidth,
                   borderTopColor: theme.divider,
+                  paddingBottom: insets.bottom,
                 }}
               >
                 <DateTimePicker
