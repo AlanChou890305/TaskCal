@@ -37,7 +37,7 @@ import { dataPreloadService } from "../services/dataPreloadService";
 import { clearSessionCache } from "../services/sessionCache";
 import { widgetService } from "../services/widgetService";
 import {
-  cancelAllNotifications,
+  cancelAllTaskNotifications,
   registerForPushNotificationsAsync,
   scheduleDailySummaryNotification,
   cancelDailySummaryNotification,
@@ -646,8 +646,8 @@ function SettingScreen() {
       console.log(
         "Reminder notifications disabled, cancelling all task notifications",
       );
-      // 在背景執行，不阻塞 UI
-      cancelAllNotifications().catch((error) => {
+      // 在背景執行，不阻塞 UI（只取消任務提醒，保留每日摘要通知）
+      cancelAllTaskNotifications().catch((error) => {
         console.error("Error cancelling notifications:", error);
       });
     }

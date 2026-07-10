@@ -338,7 +338,7 @@ export async function cancelTaskNotification(notificationIds, taskId = null) {
 }
 
 /**
- * 取消所有通知
+ * 取消所有通知（包含每日摘要，謹慎使用）
  */
 export async function cancelAllNotifications() {
   try {
@@ -346,6 +346,30 @@ export async function cancelAllNotifications() {
     console.log("✅ All notifications cancelled");
   } catch (error) {
     console.error("Error cancelling all notifications:", error);
+  }
+}
+
+/**
+ * 取消所有任務提醒通知，但保留每日摘要通知
+ * 用於「關閉任務提醒」情境：使用者關閉的是任務提醒，不代表要連帶關閉
+ * 每日摘要（那是獨立的開關，由 dailySummaryEnabled 控制）
+ */
+export async function cancelAllTaskNotifications() {
+  try {
+    const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const taskNotifications = allScheduled.filter(
+      (n) => n.identifier !== DAILY_SUMMARY_IDENTIFIER
+    );
+
+    for (const notification of taskNotifications) {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+
+    console.log(
+      `✅ Cancelled ${taskNotifications.length} task notifications (daily summary preserved)`
+    );
+  } catch (error) {
+    console.error("Error cancelling task notifications:", error);
   }
 }
 
