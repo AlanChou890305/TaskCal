@@ -190,10 +190,12 @@ export default function TaskDetailScreen({ navigation, route }) {
   // flush pending write on unmount (covers iOS swipe-back gesture, which bypasses handleGoBack)
   useEffect(() => {
     return () => {
+      // 已刪除則不可再觸發 onUpdate（否則會把刪掉的任務重新塞回日曆），也不需要再
+      // flush 任何待寫入欄位——task row 已經被 deleteTask 刪除，此時送出的 updateTask
+      // 會因為 0 rows 而報 PGRST116（與 deleteTask 競態，刪除先完成）。
+      if (deletedRef.current) return;
       commitInputs();
       flushPendingWrite();
-      // 已刪除則不可再觸發 onUpdate，否則會把刪掉的任務重新塞回日曆
-      if (deletedRef.current) return;
       // 右滑返回不會經過 handleGoBack，需在此同步 onUpdate 並清除 callback；
       // 與 Back 鈕路徑冪等（onUpdate 內會 clearCallbacks，第二次呼叫為 no-op）
       invokeCallback(route.params?.callbackId, "onUpdate", taskRef.current);
