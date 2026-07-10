@@ -3,7 +3,10 @@ import { Platform, View, Text, Image, ActivityIndicator, useColorScheme, Appeara
 import Svg, { Path, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  NavigationContainer,
+  createNavigationContainerRef,
+} from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useFonts } from "expo-font";
 import {
@@ -26,8 +29,10 @@ import "./src/utils/oauthRedirect";
 import * as Sentry from "@sentry/react-native";
 
 // Services
+import { supabase } from "./src/services/supabaseClient";
 import { UserService } from "./src/services/userService";
 import { dataPreloadService } from "./src/services/dataPreloadService";
+import { widgetService } from "./src/services/widgetService";
 import { versionService } from "./src/services/versionService";
 import {
   scheduleDailySummaryNotification,
@@ -84,6 +89,11 @@ const Stack = createStackNavigator();
 const getRedirectUrl = () => "https://to-do-mvp.vercel.app";
 const getAppDisplayName = () => "TaskCal";
 const APP_START_TIME = Date.now();
+
+// 掛在 App 根層級（不會像 SplashScreen 一樣被 navigation.reset() 卸載），
+// 確保 session 過期時無論使用者停留在哪個畫面都能收到 SIGNED_OUT/TOKEN_REFRESH_FAILED
+// 並被導回登入頁。navigate 需透過 ref 呼叫，因為這段邏輯在 NavigationContainer 之外。
+const navigationRef = createNavigationContainerRef();
 
 function App() {
   const [fontsLoaded] = useFonts({
@@ -201,6 +211,51 @@ function App() {
     };
   }, [loadingLang, language]);
 
+  // Session 失效時的清理與導回登入頁：掛在 App 根層級，確保無論使用者
+  // 停留在哪個畫面（SplashScreen 早已因登入成功被 navigation.reset() 卸載）
+  // 都能收到通知並正確登出，不會卡在已失效的 session 上。
+  useEffect(() => {
+    const { data: { subscription } = {} } = supabase.auth.onAuthStateChange(
+      async (event) => {
+        if (event === "TOKEN_REFRESH_FAILED") {
+          console.log("[Auth] Token refresh failed, signing out...");
+          dataPreloadService.clearCache();
+          try {
+            await supabase.auth.signOut({ scope: "local" });
+          } catch (e) {
+            // Ignore sign-out errors; SIGNED_OUT event will handle cleanup/navigation
+          }
+        } else if (event === "SIGNED_OUT") {
+          dataPreloadService.clearCache();
+          widgetService.clearWidgetData().catch((error) => {
+            console.error("Failed to clear widget data on sign out:", error);
+          });
+
+          // OAuth 登入流程中途可能觸發一次 SIGNED_OUT（例如換 token 失敗後重新登入），
+          // 緊接著的 SIGNED_IN 會自己導向 MainTabs，這裡不用搶著導回登入頁
+          if (
+            Platform.OS === "web" &&
+            typeof window !== "undefined" &&
+            sessionStorage.getItem("oauth_in_progress") === "true"
+          ) {
+            return;
+          }
+
+          if (navigationRef.isReady()) {
+            navigationRef.reset({
+              index: 0,
+              routes: [{ name: "Splash" }],
+            });
+          }
+        }
+      },
+    );
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
   const actualThemeMode = useMemo(() => {
     if (themeMode === "auto") {
       const systemTheme = systemColorScheme || Appearance.getColorScheme() || "light";
@@ -269,6 +324,7 @@ function App() {
       >
         <LanguageContext.Provider value={{ language, setLanguage, t }}>
           <NavigationContainer
+            ref={navigationRef}
             linking={{
               prefixes: [
                 getRedirectUrl(),
