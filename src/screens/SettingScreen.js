@@ -554,38 +554,48 @@ function SettingScreen() {
 
   // 切換每日待辦提醒（早上 7 點）
   const toggleDailySummary = async (value) => {
-    if (value) {
-      // 開啟：先請求通知權限
-      const granted = await registerForPushNotificationsAsync();
-      if (!granted) {
-        // 權限被拒：還原開關並引導使用者到系統設定
-        setDailySummaryEnabled(false);
-        Alert.alert(
-          t.notificationPermission || "Notification Permission",
-          t.notificationPermissionMessage ||
-            "Please enable notifications in Settings to receive daily reminders.",
-          [
-            { text: t.cancel || "Cancel", style: "cancel" },
-            {
-              text: t.enableNotifications || "Enable Notifications",
-              onPress: () => Linking.openSettings(),
-            },
-          ],
-        );
-        return;
-      }
-      const ok = await scheduleDailySummaryNotification(t);
-      if (ok) {
-        await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "true");
-        setDailySummaryEnabled(true);
+    try {
+      if (value) {
+        // 開啟：先請求通知權限
+        const granted = await registerForPushNotificationsAsync();
+        if (!granted) {
+          // 權限被拒：還原開關並引導使用者到系統設定
+          setDailySummaryEnabled(false);
+          Alert.alert(
+            t.notificationPermission || "Notification Permission",
+            t.notificationPermissionMessage ||
+              "Please enable notifications in Settings to receive daily reminders.",
+            [
+              { text: t.cancel || "Cancel", style: "cancel" },
+              {
+                text: t.enableNotifications || "Enable Notifications",
+                onPress: () => Linking.openSettings(),
+              },
+            ],
+          );
+          return;
+        }
+        const ok = await scheduleDailySummaryNotification(t);
+        if (ok) {
+          await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "true");
+          setDailySummaryEnabled(true);
+        } else {
+          setDailySummaryEnabled(false);
+        }
       } else {
+        // 關閉：取消排程
+        await cancelDailySummaryNotification();
+        await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "false");
         setDailySummaryEnabled(false);
       }
-    } else {
-      // 關閉：取消排程
-      await cancelDailySummaryNotification();
-      await AsyncStorage.setItem(DAILY_SUMMARY_ENABLED_KEY, "false");
-      setDailySummaryEnabled(false);
+    } catch (error) {
+      console.error("Error toggling daily summary:", error);
+      // 還原開關並告知使用者，避免 Switch 無聲彈回原位
+      setDailySummaryEnabled(!value);
+      Alert.alert(
+        t.error || "Error",
+        t.dailySummaryToggleError || "Something went wrong. Please try again.",
+      );
     }
   };
 

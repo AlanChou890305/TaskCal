@@ -218,6 +218,7 @@ export default {
   dailySummaryCaption: "每天早上 7:00 提醒你查看今日待辦",
   dailySummaryTitle: "早安 ☀️",
   dailySummaryBody: "來看看今天的待辦事項吧！",
+  dailySummaryToggleError: "發生錯誤，請再試一次。",
   dayView: "日",
   weekView: "週",
   monthView: "月",

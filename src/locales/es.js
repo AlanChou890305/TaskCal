@@ -222,6 +222,7 @@ export default {
   dailySummaryCaption: "Un aviso a las 7:00 para revisar tus tareas de hoy",
   dailySummaryTitle: "Buenos días ☀️",
   dailySummaryBody: "¡Revisa tus tareas de hoy!",
+  dailySummaryToggleError: "Algo salió mal. Inténtalo de nuevo.",
   dayView: "Día",
   weekView: "Semana",
   monthView: "Mes",

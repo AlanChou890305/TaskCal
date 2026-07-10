@@ -219,6 +219,7 @@ export default {
   dailySummaryCaption: "A 7:00 AM nudge to check today's to-dos",
   dailySummaryTitle: "Good morning ☀️",
   dailySummaryBody: "Check out your to-dos for today!",
+  dailySummaryToggleError: "Something went wrong. Please try again.",
   dayView: "Day",
   weekView: "Week",
   monthView: "Month",
