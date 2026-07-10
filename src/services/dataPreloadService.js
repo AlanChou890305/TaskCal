@@ -266,26 +266,30 @@ class DataPreloadService {
       };
     }
 
+    // 快取已過期（超過 CACHE_DURATION）：只回傳目前擁有的最完整資料當作暫時
+    // 顯示用途，但 preloadRange 必須回 null，讓呼叫端（CalendarScreen）知道
+    // 這不是「完整涵蓋當前範圍」的保證，會改走 API 重新抓取，而不是把這份
+    // 過期的子集當成完整資料鎖住（否則會出現月份顯示空白且永不重抓的問題）。
     if (this.preloadCache.userSettings) {
       return {
         userSettings: this.preloadCache.userSettings,
         userProfile: this.preloadCache.userProfile,
         calendarTasks:
-          this.preloadCache.todayTasks ||
-          this.preloadCache.currentMonthTasks ||
           this.preloadCache.calendarTasks ||
+          this.preloadCache.currentMonthTasks ||
+          this.preloadCache.todayTasks ||
           null,
-        preloadRange: this.preloadCache.preloadRange,
+        preloadRange: null,
       };
     }
 
-    if (this.preloadCache.todayTasks || this.preloadCache.currentMonthTasks) {
+    if (this.preloadCache.currentMonthTasks || this.preloadCache.todayTasks) {
       return {
         userSettings: this.preloadCache.userSettings,
         userProfile: this.preloadCache.userProfile,
         calendarTasks:
-          this.preloadCache.todayTasks || this.preloadCache.currentMonthTasks,
-        preloadRange: this.preloadCache.preloadRange,
+          this.preloadCache.currentMonthTasks || this.preloadCache.todayTasks,
+        preloadRange: null,
       };
     }
 
