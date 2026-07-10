@@ -38,7 +38,7 @@
 | Widget 登出後未清除（key/格式錯誤） | `clearWidgetData()` 原本寫錯 key（`"todayTasks"` 而非實際的 `"widgetTasksByDate"`）、格式也不對（陣列而非物件） | `1d5e7a2` |
 | Widget 登出後未清除（根因：監聽器已卸載） | 清除邏輯原本掛在 `SplashScreen` 的 `SIGNED_OUT` 監聽器上，但 `SplashScreen` 在登入成功後會被 `navigation.reset()` 卸載，之後從 `SettingScreen` 登出時監聽器早已不存在，事件無人接收。改為直接寫在 `SettingScreen.handleLogout`、dev Force Logout 按鈕、`UserService.deleteUser` 三處實際觸發登出的地方 | `64466d2`（已實機驗證：登出後 Widget 正確顯示 "All clear today"） |
 | F3｜查詢失敗與空資料無法區分 | `taskService.getTasksByDateRange` 查詢失敗一律回傳 `{}`，`{}` 同時代表「失敗」與「這段時間真的沒任務」，呼叫端無法區分，網路失敗時會把 Widget 洗成空白。改為失敗回傳 `null`（`{}` 只保留給真正的空資料）；`dataPreloadService.preloadAllData` 收到 `null` 時保留舊快取並跳過 Widget 同步；`CalendarScreen` 的區間抓取收到 `null` 時不標記為已抓取，下次會重試 | `9c896a5` |
-| D3｜preload 快取編輯後不會回寫 | `dataPreloadService.preloadCache.calendarTasks` 有 5 分鐘 TTL，但 CalendarScreen 的任務 CRUD（新增/編輯/刪除/勾選/搬移）只更新自己的 state，沒有回寫 preload 快取；若使用者在 TTL 內切到其他 tab 再切回 CalendarScreen，會用快取覆蓋掉剛編輯過的任務。新增 `dataPreloadService.updateCachedCalendarTasks(tasksByDate)`，在 CalendarScreen 所有 13 個 CRUD 成功/樂觀更新/rollback 點（與既有 `widgetService.syncTodayTasks` 呼叫並列）同步把當下完整任務狀態 merge 回 preload 快取（含衍生的 `todayTasks`/`currentMonthTasks`） | 待 commit |
+| D3｜preload 快取編輯後不會回寫 | `dataPreloadService.preloadCache.calendarTasks` 有 5 分鐘 TTL，但 CalendarScreen 的任務 CRUD（新增/編輯/刪除/勾選/搬移）只更新自己的 state，沒有回寫 preload 快取；若使用者在 TTL 內切到其他 tab 再切回 CalendarScreen，會用快取覆蓋掉剛編輯過的任務。新增 `dataPreloadService.updateCachedCalendarTasks(tasksByDate)`，在 CalendarScreen 所有 13 個 CRUD 成功/樂觀更新/rollback 點（與既有 `widgetService.syncTodayTasks` 呼叫並列）同步把當下完整任務狀態 merge 回 preload 快取（含衍生的 `todayTasks`/`currentMonthTasks`） | `b526811` |
 
 ### ⚡ 效能
 
