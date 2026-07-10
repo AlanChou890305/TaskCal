@@ -151,7 +151,7 @@ const TaskSkeleton = ({ theme, widthIndex = 0 }) => {
 
 function CalendarScreen({ navigation, route }) {
   const { language, t } = useContext(LanguageContext);
-  const isZH = language === "zh-Hant";
+  const isZH = language === "zh";
   const { theme, themeMode } = useContext(ThemeContext);
   const { userType, loadingUserType } = useContext(UserContext);
   const insets = useSafeAreaInsets();

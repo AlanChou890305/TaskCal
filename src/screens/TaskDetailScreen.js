@@ -32,7 +32,7 @@ const MONTH_NAMES_EN = [
 function formatDetailDate(dateStr, language) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T00:00:00");
-  if (language === "zh-Hant") {
+  if (language === "zh") {
     return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日 · 星期${DAY_NAMES_ZH[d.getDay()]}`;
   }
   return `${DAY_NAMES_EN[d.getDay()]}, ${MONTH_NAMES_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
