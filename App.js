@@ -74,6 +74,7 @@ if (SENTRY_DSN) {
     dsn: SENTRY_DSN,
     enabled: !__DEV__, // 只在 production build 回報，避免開發雜訊
     tracesSampleRate: 0, // 只做 error/crash，不做 performance tracing，省免費額度
+    attachViewHierarchy: true, // crash 當下附加 view 階層樹，助於定位 native view 相關崩潰
   });
 }
 
