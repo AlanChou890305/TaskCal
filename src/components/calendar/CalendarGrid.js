@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { styles } from "../../screens/CalendarScreen.styles";
+import { parseLocalDateStr } from "../../utils/dateUtils";
 
 // Format Date to YYYY-MM-DD in local time (avoid UTC shift in getMonthDates)
 const toLocalDateStr = (d) =>
@@ -118,7 +119,7 @@ export function CalendarGrid({
           {weeks.map((week, weekIndex) => (
             <View key={weekIndex} style={styles.calendarWeekRow}>
               {week.map((dateStr) => {
-                const dateObj = new Date(dateStr);
+                const dateObj = parseLocalDateStr(dateStr);
                 const isSelected = dateStr === selectedDate;
                 const isToday = dateStr === today;
                 const isCurrentMonth = dateObj.getMonth() === visibleMonth;
@@ -374,8 +375,8 @@ export function CalendarGrid({
             onPress={() => {
               const today = getCurrentDate();
               setSelectedDate(today);
-              setVisibleMonth(new Date(today).getMonth());
-              setVisibleYear(new Date(today).getFullYear());
+              setVisibleMonth(parseLocalDateStr(today).getMonth());
+              setVisibleYear(parseLocalDateStr(today).getFullYear());
             }}
           >
             <Text style={[styles.todayButtonText, { color: theme.primary }]}>

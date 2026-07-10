@@ -1,6 +1,17 @@
 // 日期和時間格式化工具函數
 
 /**
+ * 將 "YYYY-MM-DD" 字串解析為本地時間的 Date（避免 new Date(str) 以 UTC 午夜
+ * 解析，導致負時區用戶讀取到前一天）
+ * @param {string} dateStr - "YYYY-MM-DD" 格式的日期字串
+ * @returns {Date}
+ */
+export function parseLocalDateStr(dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+/**
  * 格式化 Supabase 時間戳記為易讀格式
  * @param {string} timestamp - ISO 8601 格式的時間戳記，例如 "2025-12-21 13:49:07.803079+00"
  * @param {string} language - 語言代碼: "en", "zh-Hant", "es"

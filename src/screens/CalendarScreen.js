@@ -38,6 +38,7 @@ import { registerCallbacks, clearCallbacks } from "../utils/navigationCallbacks"
 import { format } from "date-fns";
 import {
   formatTimestamp,
+  parseLocalDateStr,
 } from "../utils/dateUtils";
 import AdBanner, { ADS_PAUSED } from "../components/AdBanner";
 import { BlurView } from "expo-blur";
@@ -87,10 +88,10 @@ function CalendarScreen({ navigation, route }) {
   });
   const [editingTask, setEditingTask] = useState(null);
   const [visibleMonth, setVisibleMonth] = useState(
-    new Date(getCurrentDate()).getMonth(),
+    parseLocalDateStr(getCurrentDate()).getMonth(),
   );
   const [visibleYear, setVisibleYear] = useState(
-    new Date(getCurrentDate()).getFullYear(),
+    parseLocalDateStr(getCurrentDate()).getFullYear(),
   );
   const [taskText, setTaskText] = useState("");
   const [taskTime, setTaskTime] = useState("");
@@ -106,8 +107,8 @@ function CalendarScreen({ navigation, route }) {
   const modalScrollViewRef = useRef(null); // Modal ScrollView
   const fetchedRangesRef = useRef(new Set()); // Track fetched date ranges for caching
   const visibleRangeRef = useRef({
-    visibleYear: new Date(getCurrentDate()).getFullYear(),
-    visibleMonth: new Date(getCurrentDate()).getMonth(),
+    visibleYear: parseLocalDateStr(getCurrentDate()).getFullYear(),
+    visibleMonth: parseLocalDateStr(getCurrentDate()).getMonth(),
   });
   const lastScrollY = useRef(0); // Track last scroll position for month detection
   const scrollTimeoutRef = useRef(null); // Debounce scroll updates
@@ -375,7 +376,7 @@ function CalendarScreen({ navigation, route }) {
           const preloadedTasks = cachedData.calendarTasks;
           const filteredTasks = {};
           Object.keys(preloadedTasks).forEach((date) => {
-            const taskDate = new Date(date);
+            const taskDate = parseLocalDateStr(date);
             if (taskDate >= startDate && taskDate <= endDate) {
               filteredTasks[date] = preloadedTasks[date];
             }
@@ -485,7 +486,7 @@ function CalendarScreen({ navigation, route }) {
       const endDate = new Date(y, m + 2, 0);
       const filtered = {};
       Object.keys(newCalendarTasks).forEach((date) => {
-        const taskDate = new Date(date);
+        const taskDate = parseLocalDateStr(date);
         if (taskDate >= startDate && taskDate <= endDate) {
           filtered[date] = newCalendarTasks[date];
         }
@@ -505,10 +506,10 @@ function CalendarScreen({ navigation, route }) {
   // Center calendar to today (only called on init, not when month changes)
   const centerToday = useCallback(() => {
     if (!scrollViewRef.current) return;
-    const todayDate = new Date(getToday());
+    const todayDate = parseLocalDateStr(getToday());
     todayDate.setHours(12, 0, 0, 0);
-    const currentMonth = new Date(getCurrentDate()).getMonth();
-    const currentYear = new Date(getCurrentDate()).getFullYear();
+    const currentMonth = parseLocalDateStr(getCurrentDate()).getMonth();
+    const currentYear = parseLocalDateStr(getCurrentDate()).getFullYear();
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
     const firstDayOfWeek = firstDayOfMonth.getDay();
     const firstSunday = new Date(firstDayOfMonth);
@@ -534,7 +535,7 @@ function CalendarScreen({ navigation, route }) {
 
     console.log("🚀 Initializing calendar to today");
     const today = getCurrentDate();
-    const todayDate = new Date(today);
+    const todayDate = parseLocalDateStr(today);
     const todayMonth = todayDate.getMonth();
     const todayYear = todayDate.getFullYear();
 
@@ -580,7 +581,7 @@ function CalendarScreen({ navigation, route }) {
         // 過濾出當前範圍的任務
         const filteredTasks = {};
         Object.keys(preloadedTasks).forEach((date) => {
-          const taskDate = new Date(date);
+          const taskDate = parseLocalDateStr(date);
           if (taskDate >= startDate && taskDate <= endDate) {
             filteredTasks[date] = preloadedTasks[date];
           }
@@ -629,7 +630,7 @@ function CalendarScreen({ navigation, route }) {
   useFocusEffect(
     React.useCallback(() => {
       const today = getCurrentDate();
-      const todayDate = new Date(today);
+      const todayDate = parseLocalDateStr(today);
       const todayMonth = todayDate.getMonth();
       const todayYear = todayDate.getFullYear();
 

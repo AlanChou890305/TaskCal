@@ -6,6 +6,7 @@ import IndigoFAB from "../IndigoFAB";
 import { isIOS26Plus } from "../../utils/platform";
 import { styles } from "../../screens/CalendarScreen.styles";
 import { TaskItem, TaskSkeleton } from "./TaskItem";
+import { parseLocalDateStr } from "../../utils/dateUtils";
 
 function getToday() {
   const today = new Date();
@@ -21,7 +22,7 @@ const toLocalDateStr = (d) =>
 
 // Helper to get previous/next day in YYYY-MM-DD (local time)
 const getAdjacentDate = (dateStr, diff) => {
-  const date = new Date(dateStr);
+  const date = parseLocalDateStr(dateStr);
   date.setDate(date.getDate() + diff);
   return toLocalDateStr(date);
 };
