@@ -12,7 +12,7 @@
 |------|------|--------|
 | 安全性 | 🟢 已修復關鍵項 | unsubscribe IDOR、trigger function 公開權限已修 |
 | 功能穩健性 | 🟡 部分修復 | 通知/Widget 清除/查詢失敗誤判已修，仍有中低風險項待處理 |
-| 資料結構 | 🟡 待處理 | `checked`/`is_completed` 雙欄位歷史包袱仍在 |
+| 資料結構 | 🟢 已修復 | `checked`/`is_completed` 雙欄位已收斂為單欄位 |
 | 效能 | 🟢 已修復熱點 | CalendarScreen 任務列表已 memo 化 |
 | 可維護性 | 🟡 已建立測試基礎 | 有 jest 環境 + 19 個測試，巨型檔案拆分未做 |
 
@@ -40,6 +40,12 @@
 | F3｜查詢失敗與空資料無法區分 | `taskService.getTasksByDateRange` 查詢失敗一律回傳 `{}`，`{}` 同時代表「失敗」與「這段時間真的沒任務」，呼叫端無法區分，網路失敗時會把 Widget 洗成空白。改為失敗回傳 `null`（`{}` 只保留給真正的空資料）；`dataPreloadService.preloadAllData` 收到 `null` 時保留舊快取並跳過 Widget 同步；`CalendarScreen` 的區間抓取收到 `null` 時不標記為已抓取，下次會重試 | `9c896a5` |
 | D3｜preload 快取編輯後不會回寫 | `dataPreloadService.preloadCache.calendarTasks` 有 5 分鐘 TTL，但 CalendarScreen 的任務 CRUD（新增/編輯/刪除/勾選/搬移）只更新自己的 state，沒有回寫 preload 快取；若使用者在 TTL 內切到其他 tab 再切回 CalendarScreen，會用快取覆蓋掉剛編輯過的任務。新增 `dataPreloadService.updateCachedCalendarTasks(tasksByDate)`，在 CalendarScreen 所有 13 個 CRUD 成功/樂觀更新/rollback 點（與既有 `widgetService.syncTodayTasks` 呼叫並列）同步把當下完整任務狀態 merge 回 preload 快取（含衍生的 `todayTasks`/`currentMonthTasks`） | `b526811` |
 
+### 🗄️ 資料結構
+
+| 項目 | 說明 | Commit |
+|------|------|--------|
+| D1｜`checked`/`is_completed` 雙欄位滲透全 codebase | `task.is_completed \|\| task.checked \|\| false` 這個 fallback pattern 在 `taskTypes.js`、`taskService.js`（5 處回傳點）、`widgetService.js`、`CalendarScreen.js`、`TaskDetailScreen.js` 共 7 個檔案重複出現。調查確認 Supabase DB 與 iOS Swift Widget 端都早已只用 `is_completed`／`completed`，雙欄位只存在於 JS 服務層回傳物件與畫面 state，沒有資料遺失風險，純粹是冗余。已移除所有 `checked` 讀取/雙寫，前端全面改為只用 `is_completed` 單一事實來源；同步更新 `taskTypes.test.js`、`taskService.test.js` 移除「legacy checked fallback」測試案例 | `c5fb44e` |
+
 ### ⚡ 效能
 
 | 項目 | 說明 | Commit |
@@ -56,10 +62,6 @@
 ---
 
 ## 🔲 尚待處理項目
-
-### 資料結構（🟡 中風險）
-
-- **D1｜`checked`/`is_completed` 雙欄位滲透全 codebase**：`task.is_completed || task.checked || false` 這個 pattern 在 taskService、widgetService、CalendarScreen 重複出現十多次。DB 已只用 `is_completed`，建議在 service 回傳層統一收斂成單欄位。
 
 ### 功能與風險（🟡 中風險）
 
