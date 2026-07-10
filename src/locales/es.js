@@ -296,6 +296,10 @@ export default {
   accountCreatedPartial: "Cuenta creada, pero no se pudieron guardar algunas configuraciones. Puedes seguir usando la app.",
   signInError: "Error de inicio de sesión",
   error: "Error",
+  saveTaskFailed: "No se pudo guardar la tarea. Los datos se han restaurado.",
+  deleteTaskFailed: "No se pudo eliminar la tarea. Los datos se han restaurado.",
+  moveTaskFailed: "No se pudo mover la tarea. Los cambios se han revertido.",
+  updateTaskFailed: "No se pudo actualizar la tarea. Inténtalo de nuevo.",
   ok: "Aceptar",
   failedToUpdateUserType: "No se pudo actualizar el tipo de usuario",
 };

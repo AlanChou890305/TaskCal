@@ -1080,7 +1080,7 @@ function CalendarScreen({ navigation, route }) {
       // 3. Rollback
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
-      Alert.alert("Error", "Failed to save task. Data has been restored.");
+      Alert.alert(t.error, t.saveTaskFailed);
     }
   };
 
@@ -1181,7 +1181,7 @@ function CalendarScreen({ navigation, route }) {
       // 3. Rollback on Failure
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
-      Alert.alert("Error", "Failed to delete task. Data has been restored.");
+      Alert.alert(t.error, t.deleteTaskFailed);
     }
   };
 
@@ -1231,7 +1231,7 @@ function CalendarScreen({ navigation, route }) {
       widgetService.syncTodayTasks(previousTasks).catch((err) => {
         console.error("Error syncing widget on rollback:", err);
       });
-      Alert.alert("Error", "Failed to move task. Changes have been reverted.");
+      Alert.alert(t.error, t.moveTaskFailed);
     }
   };
 
@@ -1519,7 +1519,7 @@ function CalendarScreen({ navigation, route }) {
       // 3. Rollback on Failure
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
-      Alert.alert("Error", "Failed to update task. Please try again.");
+      Alert.alert(t.error, t.updateTaskFailed);
     }
   };
 

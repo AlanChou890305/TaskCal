@@ -273,6 +273,10 @@ export default {
   accountCreatedPartial: "帳號已建立，但部分設定無法儲存。您可以繼續使用 App。",
   signInError: "登入錯誤",
   error: "錯誤",
+  saveTaskFailed: "任務儲存失敗,資料已還原。",
+  deleteTaskFailed: "任務刪除失敗,資料已還原。",
+  moveTaskFailed: "任務移動失敗,變更已還原。",
+  updateTaskFailed: "任務更新失敗,請再試一次。",
   ok: "確定",
   failedToUpdateUserType: "無法更新使用者類型",
   // Onboarding

@@ -274,6 +274,10 @@ export default {
   accountCreatedPartial: "Account created but some settings could not be saved. You can continue using the app.",
   signInError: "Sign In Error",
   error: "Error",
+  saveTaskFailed: "Failed to save task. Data has been restored.",
+  deleteTaskFailed: "Failed to delete task. Data has been restored.",
+  moveTaskFailed: "Failed to move task. Changes have been reverted.",
+  updateTaskFailed: "Failed to update task. Please try again.",
   ok: "OK",
   failedToUpdateUserType: "Failed to update user type",
   // Onboarding
