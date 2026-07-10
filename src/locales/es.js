@@ -77,6 +77,7 @@ export default {
     "Diciembre",
   ],
   weekDays: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+  weekDayAbbr: ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"],
   logoutSuccess: "¡Sesión cerrada exitosamente!",
   alreadyLoggedOut: "Ya ha cerrado sesión.",
   logoutError: "Error al cerrar sesión. Por favor, inténtelo de nuevo.",

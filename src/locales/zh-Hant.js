@@ -76,6 +76,7 @@ export default {
     "十二月",
   ],
   weekDays: ["日", "一", "二", "三", "四", "五", "六"],
+  weekDayAbbr: ["週日", "週一", "週二", "週三", "週四", "週五", "週六"],
   logoutSuccess: "成功登出！",
   alreadyLoggedOut: "您已經登出。",
   logoutError: "登出失敗。請再試一次。",

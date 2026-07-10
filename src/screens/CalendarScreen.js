@@ -1635,14 +1635,23 @@ function CalendarScreen({ navigation, route }) {
 
     const [selY, selM, selD] = selectedDate.split("-").map(Number);
     const selDateObj = new Date(selY, selM - 1, selD);
-    const weekDayAbbr = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
-      selDateObj.getDay()
+    const weekDayAbbrList = t.weekDayAbbr || [
+      "SUN",
+      "MON",
+      "TUE",
+      "WED",
+      "THU",
+      "FRI",
+      "SAT",
     ];
+    const weekDayAbbr = weekDayAbbrList[selDateObj.getDay()];
     const isSelectedToday = selectedDate === getToday();
     const selMonthName = t.months ? t.months[selM - 1] : String(selM);
     const bannerDateLabel = isSelectedToday
       ? t.today || "Today"
-      : `${selMonthName} ${selD}`;
+      : isZH
+        ? `${selM} 月 ${selD} 日`
+        : `${selMonthName} ${selD}`;
     const completedCount = dayTasks.filter(
       (t) => t.is_completed || t.checked,
     ).length;
