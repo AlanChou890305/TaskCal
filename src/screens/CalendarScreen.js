@@ -857,6 +857,7 @@ function CalendarScreen({ navigation, route }) {
           const dayList = (prev[deletedDate] || []).filter((t) => t.id !== deletedId);
           const newTasks = { ...prev, [deletedDate]: dayList };
           widgetService.syncTodayTasks(newTasks);
+          dataPreloadService.updateCachedCalendarTasks(newTasks);
           return newTasks;
         });
         clearTaskCache();
@@ -888,6 +889,7 @@ function CalendarScreen({ navigation, route }) {
             ];
           }
           widgetService.syncTodayTasks(newTasks);
+          dataPreloadService.updateCachedCalendarTasks(newTasks);
           return newTasks;
         });
         clearTaskCache();
@@ -938,6 +940,7 @@ function CalendarScreen({ navigation, route }) {
         };
         setTasks(newTasksState);
         widgetService.syncTodayTasks(newTasksState);
+        dataPreloadService.updateCachedCalendarTasks(newTasksState);
       } else {
         // Same date
         const dayTasks = tasks[targetDate] || [];
@@ -947,6 +950,7 @@ function CalendarScreen({ navigation, route }) {
         const newTasksState = { ...tasks, [targetDate]: updatedDayTasks };
         setTasks(newTasksState);
         widgetService.syncTodayTasks(newTasksState);
+        dataPreloadService.updateCachedCalendarTasks(newTasksState);
       }
     } else {
       // Create new task
@@ -1077,6 +1081,7 @@ function CalendarScreen({ navigation, route }) {
               [targetDate]: filteredTasks,
             };
             widgetService.syncTodayTasks(updatedTasksState);
+            dataPreloadService.updateCachedCalendarTasks(updatedTasksState);
             return updatedTasksState;
           }
 
@@ -1139,6 +1144,7 @@ function CalendarScreen({ navigation, route }) {
 
           // Sync widget again with real ID
           widgetService.syncTodayTasks(updatedTasksState);
+          dataPreloadService.updateCachedCalendarTasks(updatedTasksState);
 
           return updatedTasksState;
         });
@@ -1184,6 +1190,7 @@ function CalendarScreen({ navigation, route }) {
       // 3. Rollback
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
+      dataPreloadService.updateCachedCalendarTasks(previousTasks);
       Alert.alert(t.error, t.saveTaskFailed);
     }
   };
@@ -1248,6 +1255,7 @@ function CalendarScreen({ navigation, route }) {
 
     setTasks(newTasks);
     widgetService.syncTodayTasks(newTasks);
+    dataPreloadService.updateCachedCalendarTasks(newTasks);
 
     // Close modal immediately
     setModalVisible(false);
@@ -1285,6 +1293,7 @@ function CalendarScreen({ navigation, route }) {
       // 3. Rollback on Failure
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
+      dataPreloadService.updateCachedCalendarTasks(previousTasks);
       Alert.alert(t.error, t.deleteTaskFailed);
     }
   };
@@ -1324,6 +1333,7 @@ function CalendarScreen({ navigation, route }) {
     widgetService.syncTodayTasks(updatedTasks).catch((error) => {
       console.error("Error syncing widget:", error);
     });
+    dataPreloadService.updateCachedCalendarTasks(updatedTasks);
 
     setMoveMode(false);
     setTaskToMove(null);
@@ -1338,6 +1348,7 @@ function CalendarScreen({ navigation, route }) {
       widgetService.syncTodayTasks(previousTasks).catch((err) => {
         console.error("Error syncing widget on rollback:", err);
       });
+      dataPreloadService.updateCachedCalendarTasks(previousTasks);
       Alert.alert(t.error, t.moveTaskFailed);
     }
   };
@@ -1591,6 +1602,7 @@ function CalendarScreen({ navigation, route }) {
     tasksRef.current = newTasksState; // 同步更新，確保連續操作以最新狀態為基準
     setTasks(newTasksState);
     widgetService.syncTodayTasks(newTasksState);
+    dataPreloadService.updateCachedCalendarTasks(newTasksState);
 
     // Check if it's a temporary task
     if (String(task.id).startsWith("temp-")) {
@@ -1630,6 +1642,7 @@ function CalendarScreen({ navigation, route }) {
       tasksRef.current = previousTasks;
       setTasks(previousTasks);
       widgetService.syncTodayTasks(previousTasks);
+      dataPreloadService.updateCachedCalendarTasks(previousTasks);
       Alert.alert(t.error, t.updateTaskFailed);
     }
   }, [t]);

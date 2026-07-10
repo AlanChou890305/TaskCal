@@ -307,6 +307,50 @@ class DataPreloadService {
   }
 
   /**
+   * 更新緩存中的日曆任務（CRUD 成功後呼叫，避免 5 分鐘 TTL 內其他入口讀到編輯前的舊任務）
+   * tasksByDate 為呼叫端當下完整的 { [dateStr]: Task[] } 狀態，merge 進 cache 只會新增/覆寫涉及的日期
+   */
+  static updateCachedCalendarTasks(tasksByDate) {
+    if (!this.preloadCache.calendarTasks || !tasksByDate) return;
+
+    this.preloadCache.calendarTasks = {
+      ...this.preloadCache.calendarTasks,
+      ...tasksByDate,
+    };
+
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    if (
+      this.preloadCache.todayTasks &&
+      Object.prototype.hasOwnProperty.call(tasksByDate, todayStr)
+    ) {
+      this.preloadCache.todayTasks = {
+        ...this.preloadCache.todayTasks,
+        [todayStr]: tasksByDate[todayStr],
+      };
+    }
+
+    if (this.preloadCache.currentMonthTasks) {
+      const today = new Date();
+      const currentMonthStart = format(new Date(today.getFullYear(), today.getMonth(), 1), "yyyy-MM-dd");
+      const currentMonthEnd = format(new Date(today.getFullYear(), today.getMonth() + 1, 0), "yyyy-MM-dd");
+      const monthPatch = {};
+      Object.keys(tasksByDate).forEach((date) => {
+        if (date >= currentMonthStart && date <= currentMonthEnd) {
+          monthPatch[date] = tasksByDate[date];
+        }
+      });
+      if (Object.keys(monthPatch).length > 0) {
+        this.preloadCache.currentMonthTasks = {
+          ...this.preloadCache.currentMonthTasks,
+          ...monthPatch,
+        };
+      }
+    }
+
+    if (__DEV__) console.log("📦 [DataPreload] Cached calendar tasks updated");
+  }
+
+  /**
    * 更新緩存中的用戶設定
    */
   static updateCachedUserSettings(updatedSettings) {
