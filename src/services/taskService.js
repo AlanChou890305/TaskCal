@@ -300,30 +300,33 @@ export class TaskService {
       };
 
       // 如果任務有時間設定，安排通知
+      // 通知排程屬於次要副作用，不需要讓呼叫端等待其完成，改為 fire-and-forget
       if (data.time && data.date) {
-        try {
-          const userSettings = await UserService.getUserSettings();
-          // 如果 reminder_settings 不存在或 enabled 為 false，不安排通知
-          const reminderSettings = userSettings.reminder_settings;
+        (async () => {
+          try {
+            const userSettings = await UserService.getUserSettings();
+            // 如果 reminder_settings 不存在或 enabled 為 false，不安排通知
+            const reminderSettings = userSettings.reminder_settings;
 
-          // 只有在用戶啟用提醒時才安排通知
-          if (reminderSettings && reminderSettings.enabled === true) {
-            // 這裡不需要手動保存 notificationIds，因為我們現在使用確定性 ID
-            await scheduleTaskNotification(
-              taskResult,
-              "Task Reminder",
-              null, // 使用用戶設定
-              reminderSettings,
-              translations
-            );
-          } else {
-            console.log(
-              "Reminder notifications are disabled, skipping notification scheduling"
-            );
+            // 只有在用戶啟用提醒時才安排通知
+            if (reminderSettings && reminderSettings.enabled === true) {
+              // 這裡不需要手動保存 notificationIds，因為我們現在使用確定性 ID
+              await scheduleTaskNotification(
+                taskResult,
+                "Task Reminder",
+                null, // 使用用戶設定
+                reminderSettings,
+                translations
+              );
+            } else {
+              console.log(
+                "Reminder notifications are disabled, skipping notification scheduling"
+              );
+            }
+          } catch (error) {
+            console.error("Error scheduling notification for new task:", error);
           }
-        } catch (error) {
-          console.error("Error scheduling notification for new task:", error);
-        }
+        })();
       }
 
       return taskResult;
@@ -402,44 +405,45 @@ export class TaskService {
 
       // 如果任務時間被更新，重新安排通知
       // 只有在任務有時間時才處理通知（取消舊的並安排新的）
+      // 通知排程屬於次要副作用，不需要讓呼叫端等待其完成，改為 fire-and-forget
       if (
         (updates.time !== undefined || updates.date !== undefined) &&
         data.time &&
         data.date
       ) {
-        try {
-          const userSettings = await UserService.getUserSettings();
-          // 如果 reminder_settings 不存在或 enabled 為 false，不安排通知
-          const reminderSettings = userSettings.reminder_settings;
+        (async () => {
+          try {
+            const userSettings = await UserService.getUserSettings();
+            // 如果 reminder_settings 不存在或 enabled 為 false，不安排通知
+            const reminderSettings = userSettings.reminder_settings;
 
-          // 1. 取消舊的通知 (使用 taskId)
-          // 這會清除所有與此任務相關的通知，包括 "ghost" notifications
-          await cancelTaskNotification(null, taskId);
+            // 1. 取消舊的通知 (使用 taskId)
+            // 這會清除所有與此任務相關的通知，包括 "ghost" notifications
+            await cancelTaskNotification(null, taskId);
 
-          // 2. 只有在用戶啟用提醒時才安排新通知
-          if (reminderSettings && reminderSettings.enabled === true) {
-            await scheduleTaskNotification(
-              taskResult,
-              "Task Reminder",
-              null,
-              reminderSettings,
-              translations
-            );
-          } else {
-            console.log(
-              "Reminder notifications are disabled, skipping notification scheduling"
-            );
+            // 2. 只有在用戶啟用提醒時才安排新通知
+            if (reminderSettings && reminderSettings.enabled === true) {
+              await scheduleTaskNotification(
+                taskResult,
+                "Task Reminder",
+                null,
+                reminderSettings,
+                translations
+              );
+            } else {
+              console.log(
+                "Reminder notifications are disabled, skipping notification scheduling"
+              );
+            }
+          } catch (error) {
+            console.error("Error updating notifications for task:", error);
           }
-        } catch (error) {
-          console.error("Error updating notifications for task:", error);
-        }
+        })();
       } else if (updates.time !== undefined && !data.time) {
         // 如果時間被移除（從有時間變成沒有時間），取消舊通知
-        try {
-          await cancelTaskNotification(null, taskId);
-        } catch (error) {
+        cancelTaskNotification(null, taskId).catch((error) => {
           console.error("Error cancelling notifications for task:", error);
-        }
+        });
       }
 
       return taskResult;
@@ -501,33 +505,34 @@ export class TaskService {
 
       // updateTask 只在 time/date 變動時才處理通知，勾選完成/取消完成不會
       // 觸發那段邏輯，所以這裡另外處理：完成時取消提醒，取消完成時視需要恢復提醒
+      // 通知排程屬於次要副作用，不需要讓呼叫端等待其完成，改為 fire-and-forget
       if (isCompleted) {
-        try {
-          await cancelTaskNotification(null, taskId);
-        } catch (error) {
+        cancelTaskNotification(null, taskId).catch((error) => {
           console.error(
             "Error cancelling notification for completed task:",
             error
           );
-        }
+        });
       } else if (taskResult.time && taskResult.date) {
-        try {
-          const userSettings = await UserService.getUserSettings();
-          const reminderSettings = userSettings.reminder_settings;
-          if (reminderSettings && reminderSettings.enabled === true) {
-            await scheduleTaskNotification(
-              taskResult,
-              "Task Reminder",
-              null,
-              reminderSettings
+        (async () => {
+          try {
+            const userSettings = await UserService.getUserSettings();
+            const reminderSettings = userSettings.reminder_settings;
+            if (reminderSettings && reminderSettings.enabled === true) {
+              await scheduleTaskNotification(
+                taskResult,
+                "Task Reminder",
+                null,
+                reminderSettings
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error rescheduling notification for uncompleted task:",
+              error
             );
           }
-        } catch (error) {
-          console.error(
-            "Error rescheduling notification for uncompleted task:",
-            error
-          );
-        }
+        })();
       }
 
       return taskResult;

@@ -18,6 +18,10 @@ function createQueryBuilder({ data = null, error = null } = {}) {
   return builder;
 }
 
+// 通知排程現為 fire-and-forget（不再被呼叫端 await），測試斷言前需明確讓出
+// event loop 一次，等背景的 Promise chain 跑完，避免依賴巧合的微任務時序。
+const flushAsync = () => new Promise((resolve) => setTimeout(resolve, 0));
+
 const mockUser = { id: "user-1", email: "alan@example.com", user_metadata: {} };
 
 jest.mock("../supabaseClient", () => ({
@@ -177,6 +181,7 @@ describe("TaskService notification translations threading (F2)", () => {
       { title: "Buy milk", time: "09:00", date: "2026-07-10" },
       translations
     );
+    await flushAsync();
 
     expect(scheduleTaskNotification).toHaveBeenCalledTimes(1);
     expect(scheduleTaskNotification.mock.calls[0][4]).toBe(translations);
@@ -198,6 +203,7 @@ describe("TaskService notification translations threading (F2)", () => {
     const translations = { taskReminder: "工作提醒" };
 
     await TaskService.updateTask("t1", { time: "10:00" }, translations);
+    await flushAsync();
 
     expect(scheduleTaskNotification).toHaveBeenCalledTimes(1);
     expect(scheduleTaskNotification.mock.calls[0][4]).toBe(translations);
@@ -231,6 +237,7 @@ describe("TaskService.toggleTaskChecked", () => {
     );
 
     await TaskService.toggleTaskChecked("real-1", false);
+    await flushAsync();
 
     expect(scheduleTaskNotification).toHaveBeenCalledTimes(1);
     expect(scheduleTaskNotification.mock.calls[0][0]).toMatchObject({

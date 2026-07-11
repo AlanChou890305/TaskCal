@@ -282,40 +282,20 @@ export async function scheduleTaskNotification(
  */
 export async function cancelTaskNotification(notificationIds, taskId = null) {
   try {
-    // 如果提供了 taskId，則查找並取消該任務的所有通知
+    // 如果提供了 taskId，則直接取消該任務的確定性 ID 通知
+    // 通知 ID 格式固定為 task-{taskId}-{minutesBefore}，minutesBefore 只會是 30/10/5
+    // （見 SettingScreen 提醒時間選項），不需要先枚舉全部已排程通知再過濾
     if (taskId) {
-      console.log(`🔍 Cancelling notifications for Task ID: ${taskId}`);
-      
-      // 獲取所有已安排的通知
-      const allScheduled = await Notifications.getAllScheduledNotificationsAsync();
-      
-      // 篩選出屬於該任務的通知
-      const taskNotifications = allScheduled.filter(
-        (n) => n.content.data && n.content.data.taskId === taskId
-      );
-      
-      if (taskNotifications.length > 0) {
-        console.log(`Found ${taskNotifications.length} notifications to cancel`);
-        for (const notification of taskNotifications) {
-          await Notifications.cancelScheduledNotificationAsync(notification.identifier);
-          console.log(`✅ Cancelled notification: ${notification.identifier}`);
-        }
-      } else {
-        console.log("No existing notifications found for this task");
-      }
-      
-      // 額外保險：嘗試取消可能的確定性 ID
-      // 即使 getAllScheduledNotificationsAsync 漏掉（極少見），這也能確保清理
       const commonTimes = [30, 10, 5];
-      for (const time of commonTimes) {
-        const potentialId = `task-${taskId}-${time}`;
-        try {
-          await Notifications.cancelScheduledNotificationAsync(potentialId);
-        } catch (e) {
-          // 忽略錯誤，可能不存在
-        }
-      }
-      
+      await Promise.all(
+        commonTimes.map((time) =>
+          Notifications.cancelScheduledNotificationAsync(
+            `task-${taskId}-${time}`
+          ).catch(() => {
+            // 忽略錯誤，代表該時間點本來就沒有排程
+          })
+        )
+      );
       return;
     }
 
