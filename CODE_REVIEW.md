@@ -14,7 +14,7 @@
 | 功能穩健性 | 🟢 已修復關鍵項 | 通知/Widget 清除/查詢失敗誤判/重複排程/空標題已修 |
 | 資料結構 | 🟢 已修復 | `checked`/`is_completed` 雙欄位已收斂為單欄位 |
 | 效能 | 🟢 已修復熱點 | CalendarScreen 任務列表已 memo 化 |
-| 可維護性 | 🟡 已建立測試基礎 | 有 jest 環境 + 19 個測試，巨型檔案拆分未做 |
+| 可維護性 | 🟢 已建立測試基礎並完成拆分 | 有 jest 環境 + 23 個測試，CalendarScreen 巨型檔案已拆分 |
 
 ---
 
@@ -67,14 +67,11 @@
 |------|------|--------|
 | 零測試覆蓋 | 建立 jest-expo 測試環境（`npm test`），針對本次修復涉及的高風險邏輯補上回歸測試（目前累計 23 個）：`taskTypes` 欄位驗證、`taskService` 的 temp-id guard、通知取消/重排/多語系傳遞、title 空值防線、`widgetService` 的排序格式與 clear 邏輯 | `225dc7c` 起累計 |
 | （附帶修復）npm --legacy-peer-deps 誤刪相依套件 | 安裝 jest 時誤用該旗標，導致 `react-native-worklets`（reanimated 4.x 必需的 peer dependency）被移除，babel/build 全面失敗；已重新安裝並固定為直接依賴 | `225dc7c` |
+| CalendarScreen 檔案拆分 | 4482 行的巨型檔案拆分為：`CalendarGrid.js`（日曆本體）、`TaskListArea.js`（任務清單）、`TaskItem.js`（單一任務列，`React.memo`）、`EditTaskModal.js`+`DatePickerOverlay.js`+`TimePickerOverlay.js`（編輯 Modal）、`useTaskMove.js`（拖曳邏輯）、`CalendarScreen.styles.js`（共用樣式）。`CalendarScreen.js` 收斂為 container（只保留 state、資料載入 effect、CRUD handler），純重構不改變行為；過程中一併清除數個確認零使用的死程式碼（`renderDeleteConfirmModal`、`renderDate`/`renderDateContent`、`handleVerticalGesture`、`getWeekStart` 等）。已通過 babel 語法檢查、`npm test` 23/23、`expo export --platform web` 完整 bundle 驗證 | `b965005` |
 
 ---
 
 ## 🔲 尚待處理項目
-
-### 可維護性（🔴 高工作量，未做）
-
-- **CalendarScreen 檔案拆分**：4489 行的巨型檔案本次只做了效能 memo 化，沒有做拆分重構（日曆本體、任務清單、編輯 Modal、拖曳邏輯分離）。建議在有更完整測試覆蓋或可互動驗證環境時再進行，風險較高。
 
 ### 功能與風險（🟡 中低風險，深入調查 SettingScreen/SplashScreen 時發現）
 
@@ -85,5 +82,4 @@
 ## 追蹤建議
 
 - 上述「尚待處理」項目風險相對較低，可視開發排程逐項處理，比照本次做法一項一 commit。
-- CalendarScreen 拆分建議獨立列為一個工作階段，且需要實機 smoke test（無自動化 UI 測試覆蓋）。
 - 之後每次修這份清單裡的項目，建議同步更新本檔案的狀態。
