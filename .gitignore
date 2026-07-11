@@ -187,3 +187,4 @@ coverage/
 android/
 
 # Fastlane
+.vercel
