@@ -78,49 +78,7 @@ Supabase and Xcode setup guides.
 
 ## Version History
 
-### v2.0.3 — 2026-07-11
-- Fixed a date-parsing bug that could shift task dates for users in negative UTC timezones
-- Improved notification reliability when toggling task reminders off
-- Performance improvements when switching months, editing tasks, and using Settings
-- Various stability fixes across sign-in, task sync, and the home-screen widget
-
-### v2.0.2 — 2026-06-22
-- New: daily morning reminder for your tasks
-- Fixed tasks disappearing when moved to a different date
-- Fixed the keyboard blocking the time picker while editing
-- Fixed the Today marker being invisible on the calendar
-- Stability and polish improvements
-
-### v2.0.1 — 2026-06-14
-- Stability improvements and bug fixes
-- Updated App Store metadata (all three languages)
-
-### v2.0.0 — 2026-05
-- Completely redesigned UI with the new Indigo design system
-- Redesigned Task Detail screen with inline editing
-- Calendar improvements: task dots, Today highlight, banner polish
-- Added lock-screen and Large home-screen widgets
-- Added crash monitoring (Sentry + ErrorBoundary) and a batch of crash/bug fixes
-
-### v1.3.2 — 2026-03-23
-- Onboarding for new users; keyboard auto-focus on task modals
-- Fixed theme stuck on light mode after login; fixed onboarding re-appearing
-- Spanish translation fully synced
-
-### v1.3.1 — 2026-03-15
-- Ads temporarily paused (ad-free for all users)
-- Map preview text fully localized (en / zh-TW / es)
-
-### v1.2.9 — 2026-02-25
-- Adaptive Light/Dark splash screen; unified brand color across all UI
-- Fixed tab bar dark flash on switch
-
-### v1.2.8 — 2026-02-09
-- Auto theme mode follows iOS system appearance, with real-time detection
-
-### v1.2.4
-- In-app version update check; Google Maps URL preview in tasks
-- AdMob integration; optimized data preload order and parallel loading
+Full changelog for every release lives on the [GitHub Releases page](https://github.com/AlanChou890305/TaskCal/releases).
 
 ---
 
