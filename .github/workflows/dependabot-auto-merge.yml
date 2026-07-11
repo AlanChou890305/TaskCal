@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
   auto-merge:
     name: Auto-merge Dependabot PRs
