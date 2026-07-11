@@ -193,12 +193,17 @@ grep "MARKETING_VERSION\|CURRENT_PROJECT_VERSION" ios/TaskCal.xcodeproj/project.
 > 將來線上版本出問題時，可用 `git checkout {tag}` 一行回到與 App Store 一模一樣的程式碼，
 > 不必翻 git log 對日期、猜 build number。
 
-**重要原則**：
-- **只在「實際 build 並送審」的那個 commit 打 tag**，不是每次 commit 都打。
-- tag 要打在「版本號 bump 完、準備 Archive」的那個 commit 上。
-- tag 命名一律用：`v{version}-build{build}`，例如 `v2.0.0-build39`。
+**⚠️ 這一步和步驟 1-5（版本號 bump + commit）是分開的流程，不會自動接續執行。**
 
-**操作時機**：在使用者完成 commit、準備 Xcode Archive 送審時提醒並執行。
+Claude 沒有 Xcode 或 App Store Connect 的存取權限，**無法自行判斷有沒有真的 Archive、真的送審**。
+版本號 bump 完並 commit 之後，**流程到此為止，不要主動打 tag**。
+
+**重要原則**：
+- **只在「使用者明確告知已經 Archive／已送審／已上傳」時才打 tag**，不是版本號 bump 完就打，也不是每次 commit 都打。
+- 觸發詞例如：「送審了」「已經 Archive 了」「上傳完成」「submitted」等使用者明確的完成宣告。
+- 如果對話中不確定是否已經送審（例如只是說「準備要 Archive」），**主動詢問使用者「這個版本已經送出 Archive／審核了嗎？」**，得到肯定答覆才執行，不要自行假設或提前打 tag。
+- tag 要打在「版本號 bump」的那個 commit 上（不一定是當下的 HEAD，可能是稍早的 commit）。
+- tag 命名一律用：`v{version}-build{build}`，例如 `v2.0.0-build39`。
 
 ```bash
 # 1. 確認目前 HEAD 就是要送審的 commit（版本號已 bump）
@@ -226,6 +231,36 @@ git checkout v{version}-build{build}   # 回到該版本送審時的程式碼
 | Tag | 版本 | Build | 送審日期 | Commit |
 |-----|------|-------|---------|--------|
 | `v2.0.0-build38` | 2.0.0 | 38 | 2026-06-05 | `d31d46e` |
+| `v2.0.3-build42` | 2.0.3 | 42 | 2026-07-11 | `ef8c8be` |
+
+### 步驟 7: 建立 GitHub Release
+
+> **目的**：tag 只是復原錨點，GitHub Release 讓 RELEASE_NOTES.md 的內容在 GitHub 上可見、可搜尋，
+> 也是團隊/未來自己回顧「這個版本改了什麼」最快的地方。
+
+**重要原則**：
+- **每次打 tag 之後都要建立對應的 Release**，兩者一一對應，不要只推 tag 不建 Release。
+- Release 標題固定格式：`v{version} (Build {build})`。
+- Release 內容直接取用 RELEASE_NOTES.md 的「What's New」三語段落（English / 繁體中文 / Español）。
+- tag 必須先推到遠端（`git push origin v{version}-build{build}`），`gh release create` 才找得到它。
+
+```bash
+# 1. 確保 tag 已推送到遠端
+git push origin v{version}-build{build}
+
+# 2. 用 RELEASE_NOTES.md 的內容建立 Release
+gh release create v{version}-build{build} \
+  --title "v{version} (Build {build})" \
+  --notes-file <(sed -n '/## What.s New/,/^---$/p' RELEASE_NOTES.md)
+
+# 3. 確認 Release 已建立
+gh release view v{version}-build{build}
+```
+
+**如果 tag 是後補的**（例如漏掉某個版本沒建 tag/release，事後補上）：
+- tag 直接打在當初 bump 版本號的那個 commit 上（不是 HEAD），例如：
+  `git tag -a v{version}-build{build} {commit-hash} -m "..."`
+- Release 一樣依上面步驟建立，`gh release create` 會自動指向該 tag 對應的 commit。
 
 ## 輸出格式
 
@@ -333,18 +368,15 @@ chore: Bump version to {version} (Build {build})
 Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
 \`\`\`
 
-commit 後建立 release tag（復原錨點）：
-\`\`\`
-git tag -a v{version}-build{build} -m "App Store 送審版本 {version} (Build {build})"
-git push origin v{version}-build{build}   # 可選
-\`\`\`
+**⚠️ tag 與 Release 不在這次流程自動執行**，要等使用者明確說「已經送審/Archive 完成」才做（見步驟 6、7）。
 
 ### 下一步
 1. 完成上述檢查清單
 2. 提交 commit: `git add -A && git commit`
-3. **建立 release tag**: `git tag -a v{version}-build{build}`（見步驟 6）
-4. 推送到 GitHub: `git push origin {branch}` 並 `git push origin v{version}-build{build}`
-5. 執行 `/clear` 清除 context
+3. 推送到 GitHub: `git push origin {branch}`
+4. 進行 Xcode Archive 並送 App Store 審核
+5. **等使用者回報「已送審/已上傳 Archive」後**，才執行步驟 6（打 tag + push tag）與步驟 7（建立 GitHub Release）
+6. 執行 `/clear` 清除 context
 ```
 
 ## 特殊情況處理
