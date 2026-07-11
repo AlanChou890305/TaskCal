@@ -36,10 +36,7 @@ import { cancelTaskNotification } from "../services/notificationService";
 import { dataPreloadService } from "../services/dataPreloadService";
 import { registerCallbacks, clearCallbacks } from "../utils/navigationCallbacks";
 import { format } from "date-fns";
-import {
-  formatTimestamp,
-  parseLocalDateStr,
-} from "../utils/dateUtils";
+import { parseLocalDateStr } from "../utils/dateUtils";
 import AdBanner, { ADS_PAUSED } from "../components/AdBanner";
 import { BlurView } from "expo-blur";
 import { PRIMARY } from "../config/theme";

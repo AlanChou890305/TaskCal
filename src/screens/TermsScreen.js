@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
 import SheetNav from "../components/SheetNav";
+import { useLazyTermsTranslations } from "../hooks/useLazyTermsTranslations";
 
 const Clause = ({ index, title, content, theme, isLast }) => {
   const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
@@ -62,27 +63,48 @@ const Clause = ({ index, title, content, theme, isLast }) => {
 };
 
 function TermsScreen() {
-  const { t } = useContext(LanguageContext);
+  const { t, language } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const handleClose = () => navigation.goBack();
+  const termsT = useLazyTermsTranslations(language);
 
   const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
   const sansFamily = theme.typography?.title1?.fontFamily;
   const bodyFamily = theme.typography?.body?.fontFamily;
 
+  if (!termsT) {
+    return (
+      <SafeAreaView
+        edges={[]}
+        style={{ flex: 1, backgroundColor: theme.background }}
+        accessibilityLabel="Terms of Use Screen"
+      >
+        <SheetNav
+          title={t.terms}
+          backLabel={t.settingsTitle || "Settings"}
+          onBack={handleClose}
+          theme={theme}
+        />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const clauses = [
-    { title: t.termsAcceptance,    content: t.termsAcceptanceText },
-    { title: t.termsDescription,   content: t.termsDescriptionText },
-    { title: t.termsAccounts,      content: t.termsAccountsText },
-    { title: t.termsContent,       content: t.termsContentText },
-    { title: t.termsAcceptableUse, content: t.termsAcceptableUseText },
-    { title: t.termsPrivacy,       content: t.termsPrivacyText },
-    { title: t.termsAvailability,  content: t.termsAvailabilityText },
-    { title: t.termsLiability,     content: t.termsLiabilityText },
-    { title: t.termsChanges,       content: t.termsChangesText },
-    { title: t.termsContact,       content: t.termsContactText },
+    { title: termsT.termsAcceptance,    content: termsT.termsAcceptanceText },
+    { title: termsT.termsDescription,   content: termsT.termsDescriptionText },
+    { title: termsT.termsAccounts,      content: termsT.termsAccountsText },
+    { title: termsT.termsContent,       content: termsT.termsContentText },
+    { title: termsT.termsAcceptableUse, content: termsT.termsAcceptableUseText },
+    { title: termsT.termsPrivacy,       content: termsT.termsPrivacyText },
+    { title: termsT.termsAvailability,  content: termsT.termsAvailabilityText },
+    { title: termsT.termsLiability,     content: termsT.termsLiabilityText },
+    { title: termsT.termsChanges,       content: termsT.termsChangesText },
+    { title: termsT.termsContact,       content: termsT.termsContactText },
   ];
 
   return (
@@ -92,7 +114,7 @@ function TermsScreen() {
       accessibilityLabel="Terms of Use Screen"
     >
       <SheetNav
-        title={t.termsTitle}
+        title={termsT.termsTitle}
         backLabel={t.settingsTitle || "Settings"}
         onBack={handleClose}
         theme={theme}
@@ -125,7 +147,7 @@ function TermsScreen() {
               marginBottom: 4,
             }}
           >
-            {t.termsLastUpdated} {new Date().toLocaleDateString()}
+            {termsT.termsLastUpdated} {new Date().toLocaleDateString()}
           </Text>
           <Text
             style={{
@@ -138,7 +160,7 @@ function TermsScreen() {
               marginBottom: 10,
             }}
           >
-            {t.termsTitle}
+            {termsT.termsTitle}
           </Text>
           <Text
             style={{
@@ -149,7 +171,7 @@ function TermsScreen() {
               color: theme.textSecondary,
             }}
           >
-            {t.termsAcknowledgment}
+            {termsT.termsAcknowledgment}
           </Text>
         </View>
 

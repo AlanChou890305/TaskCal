@@ -93,83 +93,6 @@ export default {
     "Are you sure you want to delete your account? This action cannot be undone. All your tasks and data will be permanently deleted.",
   deleteAccountError: "Failed to delete account. Please try again.",
   deleteAccountSuccess: "Account deleted successfully",
-  // Terms of Use translations
-  termsTitle: "Terms of Use",
-  termsLastUpdated: "Last updated:",
-  termsAcceptance: "1. Acceptance of Terms",
-  termsAcceptanceText:
-    'Welcome to TaskCal ("we," "our company," or "the Service Provider"). By accessing, downloading, installing, or using our task management application, you acknowledge that you have read, understood, and agree to be bound by these Terms of Use. If you do not agree to any part of these terms, please discontinue use of the Service immediately.',
-  termsDescription: "2. Service Description",
-  termsDescriptionText:
-    "TaskCal is a comprehensive personal task management application designed to help users effectively organize and manage their daily tasks and schedules. Our Service provides the following key features:\n• Task creation, editing, and deletion\n• Calendar integration and task scheduling\n• Google Single Sign-On (SSO) authentication\n• Cross-device data synchronization\n• Task reminder notifications\n• Personalized settings and preference management\n• Secure cloud storage and backup",
-  termsAccounts: "3. User Accounts and Authentication",
-  termsAccountsText:
-    "Account Creation:\n• You must create an account using Google Single Sign-On (SSO)\n• You must be at least 13 years old to use this Service\n• You agree to provide accurate, complete, and truthful information\n• You are responsible for maintaining the security of your account\n\nAccount Responsibilities:\n• You are responsible for maintaining the confidentiality of your account credentials\n• You are fully responsible for all activities that occur under your account\n• You must immediately notify us of any unauthorized use of your account\n• You may not transfer your account to any third party\n• You must comply with all applicable laws and regulations",
-  termsContent: "4. User Content and Data Ownership",
-  termsContentText:
-    "Content Ownership:\n• You retain complete ownership of all content you create within the App\n• This includes, but is not limited to, task titles, descriptions, notes, links, and attachments\n• You maintain all intellectual property rights to your content\n\nData Usage:\n• You are solely responsible for your content and data\n• We do not claim ownership of your personal tasks or information\n• You grant us necessary technical permissions to provide the Service\n• We will not use your personal content for commercial purposes\n• We respect your privacy and data protection rights",
-  termsAcceptableUse: "5. Acceptable Use Policy",
-  termsAcceptableUseText:
-    "You agree not to:\n• Use the Service for any unlawful purpose or in violation of any applicable laws\n• Attempt to gain unauthorized access to the App or its related systems\n• Interfere with, disrupt, or damage the normal operation of the Service\n• Create, upload, or share harmful, offensive, discriminatory, or rights-violating content\n• Engage in any activities that may compromise the security of the Service\n• Use automated tools or bots to access the Service\n• Reverse engineer, decompile, or disassemble the App\n• Violate any third-party rights or intellectual property laws",
-  termsPrivacy: "6. Privacy and Data Protection",
-  termsPrivacyText:
-    "We take your privacy seriously. Our data processing practices are governed by our Privacy Policy, which provides detailed information about how we collect, use, store, and protect your personal information.\n\nImportant Points:\n• Please carefully review our Privacy Policy\n• By using the Service, you consent to our data processing practices\n• We implement industry-standard security measures to protect your data\n• You have the right to control your personal information\n• We comply with applicable data protection laws and regulations",
-  termsAvailability: "7. Service Availability and Maintenance",
-  termsAvailabilityText:
-    "Service Commitment:\n• We strive to provide a stable and reliable service experience\n• However, we cannot guarantee absolute uninterrupted service\n• We maintain high availability standards and monitor our systems continuously\n\nMaintenance and Updates:\n• We may perform scheduled maintenance that temporarily affects service\n• We reserve the right to modify, suspend, or discontinue the Service at any time\n• We will provide advance notice of significant changes when possible\n• We schedule maintenance during off-peak hours whenever possible\n• We regularly update the Service to improve functionality and security",
-  termsLiability: "8. Limitation of Liability and Disclaimers",
-  termsLiabilityText:
-    "Disclaimers:\n• The Service is provided 'as is' without warranties of any kind, express or implied\n• We do not guarantee error-free, uninterrupted, or completely secure service\n• We disclaim all warranties regarding merchantability, fitness for a particular purpose, and non-infringement\n\nLimitation of Liability:\n• To the maximum extent permitted by law, we shall not be liable for:\n  - Direct, indirect, incidental, or consequential damages\n  - Any losses resulting from use or inability to use the Service\n  - Data loss, business interruption, or other commercial losses\n  - Damages exceeding the amount paid for the Service in the past 12 months",
-  termsChanges: "9. Modifications to Terms",
-  termsChangesText:
-    "Right to Modify:\n• We reserve the right to modify these Terms of Use at any time\n• Significant changes will be communicated through in-app notifications or email\n• Modified terms will take effect immediately upon posting\n• We will provide at least 30 days' notice for material changes\n\nAcceptance of Changes:\n• Your continued use of the Service constitutes acceptance of modified terms\n• If you disagree with the changes, please discontinue use and delete your account\n• We recommend reviewing these terms periodically to stay informed of updates\n• You can access the current terms at any time through the App",
-  termsContact: "10. Contact Information and Dispute Resolution",
-  termsContactText:
-    "Technical Support:\n• For technical issues, please contact us through the in-app support feature\n• We will respond to your inquiries within a reasonable timeframe\n• Support is available during business hours (Monday-Friday, 9 AM - 6 PM)\n\nDispute Resolution:\n• We encourage resolving disputes through friendly negotiation\n• These terms are governed by the laws of the jurisdiction where our company is incorporated\n• Any legal proceedings should be brought in the appropriate courts\n• We are committed to fair and transparent dispute resolution processes",
-  termsAcknowledgment:
-    "Thank you for choosing TaskCal. By using our Service, you acknowledge that you have thoroughly read, understood, and agree to be bound by these Terms of Use. We are committed to providing you with an excellent task management experience.",
-  // Privacy Policy translations
-  privacyTitle: "Privacy Policy",
-  privacyLastUpdated: "Last updated:",
-  privacyIntroduction: "1. Policy Overview",
-  privacyIntroductionText:
-    'TaskCal ("we," "our company," or "the Service Provider") recognizes the importance of personal privacy and is committed to protecting the security of your personal data. This Privacy Policy provides detailed information about how we collect, use, store, protect, and share your personal information when you use the TaskCal task management application.\n\nWe are committed to complying with relevant laws and regulations, including data protection laws, to ensure your privacy rights are fully protected.',
-  privacyInformation: "2. Types of Personal Data We Collect",
-  privacyAccountInfo: "Account-Related Data:",
-  privacyAccountInfoText:
-    "Basic Account Information:\n• Email address (obtained through Google SSO)\n• Display name (customizable)\n• Profile picture (if provided by Google account)\n• Account creation time and last login time\n\nTask Management Data:\n• Task titles, descriptions, and detailed content\n• Task due dates and reminder times\n• Task categories, priorities, and tags\n• Task links and attachment information\n• Task completion status and history\n\nUsage Behavior Data:\n• Application usage frequency and patterns\n• Feature usage preferences and settings\n• Device information and operating system version\n• Error reports and performance data (anonymized)",
-  privacyUse: "3. Purposes and Legal Basis for Data Processing",
-  privacyUseText:
-    "We use your personal data for the following purposes:\n\nService Provision:\n• Provide core task management functionality\n• Sync your task data across devices\n• Send task reminder notifications\n• Maintain and improve service quality\n\nTechnical Support:\n• Diagnose and resolve technical issues\n• Provide customer service and technical support\n• Conduct system maintenance and updates\n\nSecurity Protection:\n• Prevent unauthorized access\n• Detect and prevent fraudulent activities\n• Protect system and data security\n\nLegal Basis:\n• Based on your explicit consent\n• To fulfill our service contract with you\n• To comply with legal obligations\n• To protect our legitimate interests",
-  privacyStorage: "4. Data Storage and Security Protection Measures",
-  privacyStorageText:
-    "Data Storage:\n• Secure storage using Supabase cloud infrastructure\n• Data distributed across multiple geographic locations\n• Regular data backup and disaster recovery testing\n• Redundant systems to ensure data availability\n\nSecurity Measures:\n• Industry-standard encryption technology (AES-256)\n• Data transmission encrypted using TLS 1.3\n• Multi-layered access control and authentication\n• Regular security vulnerability scans and penetration testing\n• Comprehensive data access logging and monitoring systems\n• Regular security audits and compliance assessments\n\nPersonnel Management:\n• Only authorized personnel can access personal data\n• All employees sign confidentiality agreements\n• Regular privacy protection training\n• Established data processing standard operating procedures",
-  privacySharing: "5. Data Sharing and Third-Party Disclosure",
-  privacySharingText:
-    "We commit not to sell, rent, or trade your personal data. We only share your data in the following circumstances:\n\nWith Your Consent:\n• When you have given explicit consent\n• You may withdraw consent at any time\n• Clear opt-in mechanisms for data sharing\n\nLegal Requirements:\n• To comply with court orders or legal requirements\n• To cooperate with government investigations\n• To protect our legitimate rights and interests\n• To respond to valid legal requests\n\nService Providers:\n• Collaborate with trusted third-party service providers (such as Google, Supabase)\n• Sign strict data protection agreements\n• Ensure third parties follow the same privacy protection standards\n• Regularly review third-party compliance\n• Maintain oversight of data processing activities\n\nEmergency Situations:\n• To protect your life or the lives of others\n• To prevent significant harm from occurring\n• To respond to public health emergencies",
-  privacyThirdParty: "6. Third-Party Service Integration",
-  privacyThirdPartyText:
-    "This application integrates the following third-party services:\n\nGoogle Services:\n• Google Single Sign-On (SSO) authentication\n• Used for identity verification and account management\n• Subject to Google's Privacy Policy\n• Limited data sharing for authentication purposes\n\nSupabase Platform:\n• Cloud database and backend services\n• Provides secure data storage and API services\n• Subject to Supabase's data protection policy\n• Encrypted data transmission and storage\n\nImportant Reminders:\n• These third-party services have their own privacy policies\n• We encourage you to review the relevant policies\n• We regularly review third-party service compliance\n• We take immediate appropriate action if security issues are discovered\n• We maintain contracts that require data protection standards",
-  privacyRights: "7. Your Privacy Rights",
-  privacyRightsText:
-    "Under applicable laws and regulations, you have the following rights:\n\nRight of Access:\n• Request information about the personal data we hold about you\n• Understand the purposes and methods of data processing\n• Obtain information about data processing activities\n• Receive a copy of your personal data\n\nRight of Rectification:\n• Request correction of inaccurate personal data\n• Request completion of incomplete personal data\n• Modify some data through app settings\n• Update your profile information\n\nRight of Erasure:\n• Request deletion of your personal data\n• Delete your account and associated data\n• Request restriction of data processing in specific circumstances\n• Right to be forgotten\n\nRight of Data Portability:\n• Request your data in a structured format\n• Transfer data to other service providers\n• Download backup of your task data\n• Export your data in common formats\n\nRight to Withdraw Consent:\n• Withdraw consent for data processing at any time\n• Stop receiving certain types of notifications\n• Adjust privacy setting preferences\n• Opt out of marketing communications",
-  privacyRetention: "8. Data Retention Periods",
-  privacyRetentionText:
-    "We retain your personal data according to the following principles:\n\nDuring Account Active Period:\n• Retain data continuously while your account is active\n• Used for service provision and technical support\n• Maintain service quality and security\n• Support account recovery if needed\n\nAfter Account Deletion:\n• Immediately delete personally identifiable data\n• Anonymized statistical data may be retained for analysis\n• Legal requirement exceptions apply\n• Complete data removal within 30 days\n\nSpecial Circumstances:\n• May extend retention during legal proceedings\n• May extend retention during security incident investigations\n• Maximum retention not exceeding 7 years (legal requirement limit)\n• Compliance with regulatory requirements\n\nData Destruction:\n• Use secure deletion technology\n• Ensure data cannot be recovered\n• Regular verification of deletion effectiveness\n• Certificate of data destruction when required",
-  privacyChildren: "9. Children's Privacy Protection",
-  privacyChildrenText:
-    "Age Restrictions:\n• This service is not intended for children under 13\n• We do not knowingly collect personal data from children under 13\n• We immediately delete any such data if discovered\n• Age verification mechanisms in place\n\nParental Supervision:\n• We recommend parental supervision of minor children using this service\n• Please contact us immediately if you discover inappropriate use\n• We will cooperate with parents for appropriate handling\n• Parental consent required for users under 16\n\nSpecial Protection:\n• More cautious data processing for minors\n• Additional privacy protection measures\n• Regular policy reviews\n• Enhanced security for minor accounts\n• Educational resources for parents",
-  privacyInternational: "10. International Data Transfers",
-  privacyInternationalText:
-    "Transfer Scope:\n• Your data may be transferred to regions outside your country\n• Primarily for cloud services and technical support\n• Follow international data protection standards\n• Limited to necessary service operations\n\nProtection Measures:\n• Sign data protection agreements with recipients\n• Ensure appropriate technical and organizational measures\n• Regular assessment of transfer security\n• Compliance with relevant international regulations\n• Standard Contractual Clauses where applicable\n\nYour Rights:\n• Request information about data transfer details\n• Request restrictions on international transfers\n• Withdraw consent for transfers at any time\n• Object to transfers based on legitimate interests",
-  privacyChanges: "11. Policy Updates and Notifications",
-  privacyChangesText:
-    "Update Process:\n• We regularly review and update this Privacy Policy\n• Significant changes will be announced 30 days in advance\n• Notify through in-app notifications or email\n• Update date displayed at the top of the policy\n• Version control and change tracking\n\nTypes of Changes:\n• Addition of new data collection types\n• Modification of data use purposes\n• Updates to security protection measures\n• Adjustments to your rights content\n• Changes in legal requirements\n\nAcceptance of Changes:\n• Continued use of the service constitutes acceptance of the new policy\n• If you disagree with changes, you may discontinue use and delete your account\n• We recommend reviewing the latest policy content regularly\n• Clear communication about material changes\n• Easy access to previous versions",
-  privacyContact: "12. Contact Us and Complaint Channels",
-  privacyContactText:
-    "Privacy Inquiries:\n• In-app support feature\n• Email: privacy@todo-app.com\n• We will respond within 7 business days\n• Dedicated privacy officer contact\n\nData Protection Complaints:\n• Submit complaints if you have concerns about data processing\n• We take every complaint seriously\n• Provide clear processing results and explanations\n• Escalation procedures for unresolved issues\n\nRegulatory Authorities:\n• Contact relevant supervisory authorities if dissatisfied with our response\n• Data Protection Authority in your jurisdiction\n• Legal remedies available\n• Independent dispute resolution mechanisms",
-  privacyAcknowledgment:
-    "Thank you for trusting TaskCal. We are committed to continuously improving our privacy protection measures to provide you with secure and reliable task management services. If you have any privacy-related questions, please don't hesitate to contact us.",
   googleAccount: "Google",
   signInWithGoogle: "Sign in with Google",
   signInWithApple: "Sign in with Apple",
@@ -231,10 +154,6 @@ export default {
   feedbackTitlePlaceholder: "Brief summary…",
   optional: "Optional",
   feedbackDetails: "Message",
-  bugReport: "Love note",
-  improvementSuggestion: "Improvement",
-  featureRequest: "Idea",
-  feedbackOther: "Question",
   feedbackLove: "Love note",
   feedbackBug: "Bug",
   feedbackIdea: "Idea",

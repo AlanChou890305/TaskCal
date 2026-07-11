@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { LanguageContext, ThemeContext } from "../contexts";
 import SheetNav from "../components/SheetNav";
+import { useLazyTermsTranslations } from "../hooks/useLazyTermsTranslations";
 
 const NumberedSection = ({ index, title, content, theme, isLast }) => {
   const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
@@ -62,29 +63,50 @@ const NumberedSection = ({ index, title, content, theme, isLast }) => {
 };
 
 function PrivacyScreen() {
-  const { t } = useContext(LanguageContext);
+  const { t, language } = useContext(LanguageContext);
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const handleClose = () => navigation.goBack();
+  const privacyT = useLazyTermsTranslations(language);
 
   const monoFamily = theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium";
   const sansFamily = theme.typography?.title1?.fontFamily;
   const bodyFamily = theme.typography?.body?.fontFamily;
 
+  if (!privacyT) {
+    return (
+      <SafeAreaView
+        edges={[]}
+        style={{ flex: 1, backgroundColor: theme.background }}
+        accessibilityLabel="Privacy Policy Screen"
+      >
+        <SheetNav
+          title={t.privacy}
+          backLabel={t.settingsTitle || "Settings"}
+          onBack={handleClose}
+          theme={theme}
+        />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const sections = [
-    { title: t.privacyIntroduction,   content: t.privacyIntroductionText },
-    { title: t.privacyInformation,    content: t.privacyAccountInfoText },
-    { title: t.privacyUse,            content: t.privacyUseText },
-    { title: t.privacyStorage,        content: t.privacyStorageText },
-    { title: t.privacySharing,        content: t.privacySharingText },
-    { title: t.privacyThirdParty,     content: t.privacyThirdPartyText },
-    { title: t.privacyRights,         content: t.privacyRightsText },
-    { title: t.privacyRetention,      content: t.privacyRetentionText },
-    { title: t.privacyChildren,       content: t.privacyChildrenText },
-    { title: t.privacyInternational,  content: t.privacyInternationalText },
-    { title: t.privacyChanges,        content: t.privacyChangesText },
-    { title: t.privacyContact,        content: t.privacyContactText },
+    { title: privacyT.privacyIntroduction,   content: privacyT.privacyIntroductionText },
+    { title: privacyT.privacyInformation,    content: privacyT.privacyAccountInfoText },
+    { title: privacyT.privacyUse,            content: privacyT.privacyUseText },
+    { title: privacyT.privacyStorage,        content: privacyT.privacyStorageText },
+    { title: privacyT.privacySharing,        content: privacyT.privacySharingText },
+    { title: privacyT.privacyThirdParty,     content: privacyT.privacyThirdPartyText },
+    { title: privacyT.privacyRights,         content: privacyT.privacyRightsText },
+    { title: privacyT.privacyRetention,      content: privacyT.privacyRetentionText },
+    { title: privacyT.privacyChildren,       content: privacyT.privacyChildrenText },
+    { title: privacyT.privacyInternational,  content: privacyT.privacyInternationalText },
+    { title: privacyT.privacyChanges,        content: privacyT.privacyChangesText },
+    { title: privacyT.privacyContact,        content: privacyT.privacyContactText },
   ];
 
   return (
@@ -94,7 +116,7 @@ function PrivacyScreen() {
       accessibilityLabel="Privacy Policy Screen"
     >
       <SheetNav
-        title={t.privacyTitle}
+        title={privacyT.privacyTitle}
         backLabel={t.settingsTitle || "Settings"}
         onBack={handleClose}
         theme={theme}
@@ -127,7 +149,7 @@ function PrivacyScreen() {
               marginBottom: 4,
             }}
           >
-            {t.privacyLastUpdated} {new Date().toLocaleDateString()}
+            {privacyT.privacyLastUpdated} {new Date().toLocaleDateString()}
           </Text>
           <Text
             style={{
@@ -140,7 +162,7 @@ function PrivacyScreen() {
               marginBottom: 10,
             }}
           >
-            {t.privacyTitle}
+            {privacyT.privacyTitle}
           </Text>
           <Text
             style={{
@@ -151,7 +173,7 @@ function PrivacyScreen() {
               color: theme.textSecondary,
             }}
           >
-            {t.privacyAcknowledgment}
+            {privacyT.privacyAcknowledgment}
           </Text>
         </View>
 
