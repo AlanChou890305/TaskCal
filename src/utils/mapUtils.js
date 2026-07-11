@@ -1,3 +1,10 @@
+// Google Maps URL 的判斷 pattern，模組層級常數避免 isGoogleMapsUrl 每次呼叫都重建 RegExp
+const GOOGLE_MAPS_URL_PATTERNS = [
+  /^https?:\/\/(www\.)?(maps\.)?google\.(com|com\.\w{2,3}|co\.\w{2})\/maps/,
+  /^https?:\/\/goo\.gl\/maps/,
+  /^https?:\/\/maps\.app\.goo\.gl/,
+];
+
 /**
  * 檢測 URL 是否為 Google Maps 連結
  * @param {string} url - 要檢測的 URL
@@ -7,13 +14,8 @@ export const isGoogleMapsUrl = (url) => {
   if (!url || typeof url !== "string") return false;
 
   const normalizedUrl = url.trim().toLowerCase();
-  const googleMapsPatterns = [
-    /^https?:\/\/(www\.)?(maps\.)?google\.(com|com\.\w{2,3}|co\.\w{2})\/maps/,
-    /^https?:\/\/goo\.gl\/maps/,
-    /^https?:\/\/maps\.app\.goo\.gl/,
-  ];
 
-  return googleMapsPatterns.some((pattern) => pattern.test(normalizedUrl));
+  return GOOGLE_MAPS_URL_PATTERNS.some((pattern) => pattern.test(normalizedUrl));
 };
 
 /**

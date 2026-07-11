@@ -40,13 +40,16 @@ export const TASK_STATUS = {
   CANCELLED: "cancelled",
 };
 
+// TASK_FIELDS 的合法欄位名稱集合，供 validateTaskFields 每次呼叫重複查找
+const VALID_TASK_FIELD_KEYS = new Set(Object.values(TASK_FIELDS));
+
 // 驗證任務欄位是否存在於資料庫
 export const validateTaskFields = (fields) => {
   const validFields = {};
   const invalidFields = [];
 
   Object.entries(fields).forEach(([key, value]) => {
-    if (Object.values(TASK_FIELDS).includes(key)) {
+    if (VALID_TASK_FIELD_KEYS.has(key)) {
       validFields[key] = value;
     } else {
       invalidFields.push(key);
