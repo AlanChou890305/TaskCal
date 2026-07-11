@@ -54,59 +54,47 @@ async function recordTaskCompletionAndMaybePrompt() {
   if (Platform.OS !== "ios" && Platform.OS !== "android") return;
 
   try {
+    // 一次讀出這輪判斷需要的所有 key，取代原本 4 次序列化 getItem
+    const entries = await AsyncStorage.multiGet([
+      COMPLETED_COUNT_KEY,
+      LAST_ACTIVE_DAY_KEY,
+      DISTINCT_DAYS_KEY,
+      PROMPT_COUNT_KEY,
+      LAST_PROMPT_AT_KEY,
+    ]);
+    const values = Object.fromEntries(entries);
+
     // 1. 累計完成數 +1
-    const prevCount = parseInt(
-      (await AsyncStorage.getItem(COMPLETED_COUNT_KEY)) || "0",
-      10,
-    );
-    const count = prevCount + 1;
-    await AsyncStorage.setItem(COMPLETED_COUNT_KEY, String(count));
+    const count = parseInt(values[COMPLETED_COUNT_KEY] || "0", 10) + 1;
 
     // 2. 更新「完成過待辦的不同日子數」（回訪訊號）
-    const distinctDays = await updateDistinctDays();
+    // 只在跟上次記錄的日期不同時 +1，計數有上界、不會無限成長。
+    const today = todayKey();
+    const isNewActiveDay = values[LAST_ACTIVE_DAY_KEY] !== today;
+    let distinctDays = parseInt(values[DISTINCT_DAYS_KEY] || "0", 10);
+    if (isNewActiveDay) distinctDays += 1;
 
     // 3. 取得已彈次數（同時作為下一個門檻的索引）
-    const promptCount = parseInt(
-      (await AsyncStorage.getItem(PROMPT_COUNT_KEY)) || "0",
-      10,
-    );
+    const promptCount = parseInt(values[PROMPT_COUNT_KEY] || "0", 10);
+
+    // 一次寫入本輪一定需要更新的 key，取代原本最多 2 次序列化 setItem
+    const writes = [[COMPLETED_COUNT_KEY, String(count)]];
+    if (isNewActiveDay) {
+      writes.push([DISTINCT_DAYS_KEY, String(distinctDays)]);
+      writes.push([LAST_ACTIVE_DAY_KEY, today]);
+    }
+    await AsyncStorage.multiSet(writes);
 
     // 4. 是否達成所有條件
     if (!shouldPrompt(count, distinctDays, promptCount)) return;
 
     // 5. 節流：兩次彈窗間隔天數
-    if (!(await passesCooldown())) return;
+    if (!passesCooldown(values[LAST_PROMPT_AT_KEY])) return;
 
     // 6. 原生彈窗
     await requestNativeReview(count, promptCount);
   } catch (error) {
     console.warn("⚠️ [Review] recordTaskCompletionAndMaybePrompt failed:", error);
-  }
-}
-
-/**
- * 更新並回傳「完成過待辦的不同日子數」。
- * 只在跟上次記錄的日期不同時 +1，計數有上界、不會無限成長。
- */
-async function updateDistinctDays() {
-  try {
-    const today = todayKey();
-    const lastActiveDay = await AsyncStorage.getItem(LAST_ACTIVE_DAY_KEY);
-    let distinctDays = parseInt(
-      (await AsyncStorage.getItem(DISTINCT_DAYS_KEY)) || "0",
-      10,
-    );
-
-    if (lastActiveDay !== today) {
-      distinctDays += 1;
-      await AsyncStorage.setItem(DISTINCT_DAYS_KEY, String(distinctDays));
-      await AsyncStorage.setItem(LAST_ACTIVE_DAY_KEY, today);
-    }
-
-    return distinctDays;
-  } catch (error) {
-    console.warn("⚠️ [Review] updateDistinctDays failed:", error);
-    return 0;
   }
 }
 
@@ -128,19 +116,14 @@ function shouldPrompt(count, distinctDays, promptCount) {
 
 /**
  * 節流：兩次彈窗至少間隔 MIN_DAYS_BETWEEN_PROMPTS 天。
+ * @param {string|null} lastPromptAt - 上次彈窗時間（已由呼叫端批次讀出）
  */
-async function passesCooldown() {
-  try {
-    const lastPromptAt = await AsyncStorage.getItem(LAST_PROMPT_AT_KEY);
-    if (lastPromptAt) {
-      const elapsed = Date.now() - new Date(lastPromptAt).getTime();
-      if (elapsed < MIN_DAYS_BETWEEN_PROMPTS * DAY_IN_MS) return false;
-    }
-    return true;
-  } catch (error) {
-    console.warn("⚠️ [Review] passesCooldown check failed:", error);
-    return false;
+function passesCooldown(lastPromptAt) {
+  if (lastPromptAt) {
+    const elapsed = Date.now() - new Date(lastPromptAt).getTime();
+    if (elapsed < MIN_DAYS_BETWEEN_PROMPTS * DAY_IN_MS) return false;
   }
+  return true;
 }
 
 /**
@@ -160,8 +143,10 @@ async function requestNativeReview(count, promptCount) {
 
     // 記錄彈出（注意：requestReview 不保證一定顯示，由系統決定，
     // 但我們仍計入節流，避免過度嘗試）
-    await AsyncStorage.setItem(PROMPT_COUNT_KEY, String(promptCount + 1));
-    await AsyncStorage.setItem(LAST_PROMPT_AT_KEY, new Date().toISOString());
+    await AsyncStorage.multiSet([
+      [PROMPT_COUNT_KEY, String(promptCount + 1)],
+      [LAST_PROMPT_AT_KEY, new Date().toISOString()],
+    ]);
 
     mixpanelService.track("Review Prompt Shown", {
       completed_count: count,
