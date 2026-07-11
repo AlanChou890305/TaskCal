@@ -62,32 +62,44 @@ const AdBanner = ({
   }, [userType]);
 
   useEffect(() => {
+    // 廣告全域暫停期間，不需要查使用者狀態（廣告本來就不會顯示）
+    if (ADS_PAUSED) return;
     // 如果已經有傳入 userType，就不需要重複檢查
     if (userType) return;
+
+    let cancelled = false;
 
     const checkUserStatus = async () => {
       try {
         // 優先檢查預載入緩存
         const cachedData = dataPreloadService.getCachedData();
         if (cachedData && cachedData.userSettings) {
-          setIsMember(cachedData.userSettings.user_type === "member");
-          setIsLoadingUserStatus(false);
+          if (!cancelled) {
+            setIsMember(cachedData.userSettings.user_type === "member");
+            setIsLoadingUserStatus(false);
+          }
           return;
         }
 
         // 如果沒有緩存，從 UserService 獲取
         const settings = await UserService.getUserSettings();
-        if (settings) {
+        if (!cancelled && settings) {
           setIsMember(settings.user_type === "member");
         }
       } catch (error) {
         console.error("Error checking user status for ads:", error);
       } finally {
-        setIsLoadingUserStatus(false);
+        if (!cancelled) {
+          setIsLoadingUserStatus(false);
+        }
       }
     };
 
     checkUserStatus();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
