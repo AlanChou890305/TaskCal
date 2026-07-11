@@ -11,10 +11,84 @@ import {
   View,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { memo } from "react";
 import { MapPreview } from "../MapPreview";
 import { styles } from "../../screens/CalendarScreen.styles";
 import { DatePickerOverlay } from "./DatePickerOverlay";
 import { TimePickerOverlay } from "./TimePickerOverlay";
+
+// 定義在 module scope（而非 EditTaskModal 內部），避免每次打字造成的 re-render
+// 產生「新的元件型別」，讓 React 把整段子樹當成不同元件 unmount 再 mount。
+const FieldRow = memo(function FieldRow({
+  theme,
+  iconName,
+  labelText,
+  value,
+  isPlaceholder,
+  onPress,
+  webInput,
+}) {
+  const monoKickerStyle = {
+    fontFamily:
+      theme.typography?.monoKicker?.fontFamily || "JetBrainsMono_500Medium",
+    fontSize: 9,
+    fontWeight: "500",
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={styles.modalFieldRow}
+    >
+      <MaterialIcons name={iconName} size={18} color={theme.textSecondary} />
+      <View style={{ flex: 1, marginLeft: 14 }}>
+        <Text
+          style={[
+            monoKickerStyle,
+            { color: theme.textTertiary, marginBottom: 1 },
+          ]}
+        >
+          {labelText}
+        </Text>
+        {Platform.OS === "web" && webInput ? (
+          webInput
+        ) : (
+          <Text
+            style={{
+              fontFamily: theme.typography?.body?.fontFamily,
+              fontSize: 15,
+              fontWeight: "500",
+              color: isPlaceholder ? theme.textTertiary : theme.text,
+              letterSpacing: -0.2,
+            }}
+          >
+            {value}
+          </Text>
+        )}
+      </View>
+      <MaterialIcons
+        name="chevron-right"
+        size={16}
+        color={theme.textTertiary}
+      />
+    </TouchableOpacity>
+  );
+});
+
+const FieldDivider = memo(function FieldDivider({ theme }) {
+  return (
+    <View
+      style={{
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: theme.rule,
+        marginLeft: 16 + 18 + 14,
+      }}
+    />
+  );
+});
 
 export function EditTaskModal({
   theme,
@@ -80,63 +154,6 @@ export function EditTaskModal({
     if (isZH) return `${y} 年 ${m} 月 ${d} 日`;
     return `${dowNames[dow]}, ${monNames[m - 1]} ${d}`;
   };
-
-  const FieldRow = ({
-    iconName,
-    labelText,
-    value,
-    isPlaceholder,
-    onPress,
-    webInput,
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      style={styles.modalFieldRow}
-    >
-      <MaterialIcons name={iconName} size={18} color={theme.textSecondary} />
-      <View style={{ flex: 1, marginLeft: 14 }}>
-        <Text
-          style={[
-            monoKickerStyle,
-            { color: theme.textTertiary, marginBottom: 1 },
-          ]}
-        >
-          {labelText}
-        </Text>
-        {Platform.OS === "web" && webInput ? (
-          webInput
-        ) : (
-          <Text
-            style={{
-              fontFamily: theme.typography?.body?.fontFamily,
-              fontSize: 15,
-              fontWeight: "500",
-              color: isPlaceholder ? theme.textTertiary : theme.text,
-              letterSpacing: -0.2,
-            }}
-          >
-            {value}
-          </Text>
-        )}
-      </View>
-      <MaterialIcons
-        name="chevron-right"
-        size={16}
-        color={theme.textTertiary}
-      />
-    </TouchableOpacity>
-  );
-
-  const FieldDivider = () => (
-    <View
-      style={{
-        height: StyleSheet.hairlineWidth,
-        backgroundColor: theme.rule,
-        marginLeft: 16 + 18 + 14,
-      }}
-    />
-  );
 
   return (
     <Modal
@@ -339,6 +356,7 @@ export function EditTaskModal({
                   </View>
                 ) : (
                   <FieldRow
+                    theme={theme}
                     iconName="event"
                     labelText={isZH ? "日期" : "DATE"}
                     value={
@@ -353,7 +371,7 @@ export function EditTaskModal({
                   />
                 )}
 
-                <FieldDivider />
+                <FieldDivider theme={theme} />
 
                 {/* Time */}
                 {Platform.OS === "web" ? (
@@ -392,6 +410,7 @@ export function EditTaskModal({
                   </View>
                 ) : (
                   <FieldRow
+                    theme={theme}
                     iconName="access-time"
                     labelText={isZH ? "時間" : "TIME"}
                     value={taskTime || (isZH ? "無" : "None")}
@@ -414,7 +433,7 @@ export function EditTaskModal({
                   />
                 )}
 
-                <FieldDivider />
+                <FieldDivider theme={theme} />
 
                 {/* Link */}
                 <View
