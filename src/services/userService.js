@@ -20,6 +20,16 @@ export class UserService {
     );
   }
 
+  // 從 auth user 萃取顯示名稱，各處 fallback 順序保持一致
+  static getUserDisplayName(user) {
+    return (
+      user?.user_metadata?.name ||
+      user?.user_metadata?.full_name ||
+      user?.email?.split("@")[0] ||
+      "User"
+    );
+  }
+
   static normalizeAuthUser(user) {
     if (!user || !user.id || !user.email) {
       return null;
@@ -265,8 +275,7 @@ export class UserService {
 
         // 從 auth.users 獲取 display_name（如果 settings 中沒有提供）
         // 這樣可以確保 user_settings 中的 display_name 始終是最新的
-        const authDisplayName =
-          user.user_metadata?.name || user.email?.split("@")[0] || "User";
+        const authDisplayName = UserService.getUserDisplayName(user);
 
         // 只更新傳入的欄位，不影響其他欄位（如 theme）
         const updateData = {
@@ -487,7 +496,7 @@ export class UserService {
       return {
         id: user.id,
         email: user.email,
-        name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+        name: UserService.getUserDisplayName(user),
         avatar_url: user.user_metadata?.avatar_url,
         created_at: user.created_at,
         provider: provider,
@@ -588,8 +597,7 @@ export class UserService {
       await this.getUserSettings(user);
 
       // 從 auth.users 獲取 display_name（用於在 table editor 中顯示）
-      const authDisplayName =
-        user.user_metadata?.name || user.email?.split("@")[0] || "User";
+      const authDisplayName = UserService.getUserDisplayName(user);
 
       // 獲取當前版本資訊
       const versionInfo = versionService.getCurrentVersionInfo();

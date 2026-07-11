@@ -43,6 +43,13 @@ jest.mock("../userService", () => ({
     getUserSettings: jest.fn(() =>
       Promise.resolve({ reminder_settings: { enabled: true, times: [30] } })
     ),
+    getUserDisplayName: jest.fn(
+      (user) =>
+        user?.user_metadata?.name ||
+        user?.user_metadata?.full_name ||
+        user?.email?.split("@")[0] ||
+        "User"
+    ),
   },
 }));
 

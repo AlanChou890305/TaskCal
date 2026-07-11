@@ -47,11 +47,7 @@ export class TaskService {
       }
 
       // 提取用戶顯示名稱（只提取一次）
-      const userDisplayName =
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User";
+      const userDisplayName = UserService.getUserDisplayName(user);
 
       // Group tasks by date
       const tasksByDate = {};
@@ -137,11 +133,7 @@ export class TaskService {
       }
 
       // 預先提取用戶顯示名稱（只提取一次）
-      const userDisplayName =
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User";
+      const userDisplayName = UserService.getUserDisplayName(user);
 
       // Group tasks by date（優化：使用更高效的數據結構）
       const tasksByDate = {};
@@ -206,11 +198,7 @@ export class TaskService {
       }
 
       // 提取用戶顯示名稱（只提取一次）
-      const userDisplayName =
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User";
+      const userDisplayName = UserService.getUserDisplayName(user);
 
       return (data || []).map((task) => {
         return {
@@ -244,11 +232,7 @@ export class TaskService {
       }
 
       // 提取用戶顯示名稱
-      const userDisplayName =
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User";
+      const userDisplayName = UserService.getUserDisplayName(user);
 
       // 使用安全的任務物件創建函數
       const taskData = {
@@ -352,11 +336,7 @@ export class TaskService {
       }
 
       // 如果更新用戶相關信息，重新計算顯示名稱
-      const userDisplayName =
-        user.user_metadata?.name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User";
+      const userDisplayName = UserService.getUserDisplayName(user);
 
       // 清理更新資料，確保空字串轉為 null
       // title 是必填欄位，例外處理：空字串不寫入，避免呼叫端忘記擋空值時把標題清空
