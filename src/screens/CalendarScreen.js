@@ -64,13 +64,7 @@ function CalendarScreen({ navigation, route }) {
   const { userType, loadingUserType } = useContext(UserContext);
   const insets = useSafeAreaInsets();
   const { isDesktop, isMobile, isTablet } = useResponsive();
-  const getCurrentDate = () => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+  const getCurrentDate = useCallback(() => getToday(), []);
 
   const [tasks, setTasks] = useState({});
   // 鏡射最新 tasks，讓任務操作 handler 可讀取即時值而不必把 tasks 放進

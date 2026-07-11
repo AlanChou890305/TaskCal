@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -54,7 +54,7 @@ const EN_MONTHS = [
   "December",
 ];
 
-export function CalendarGrid({
+export const CalendarGrid = memo(function CalendarGrid({
   theme,
   t,
   language,
@@ -75,8 +75,12 @@ export function CalendarGrid({
   const scrollStartY = useRef(0); // Track scroll start position for swipe detection
   const isScrolling = useRef(false); // Track if user is actively scrolling
 
+  const monthDates = useMemo(
+    () => getMonthDates(visibleYear, visibleMonth),
+    [visibleYear, visibleMonth],
+  );
+
   const renderCalendar = () => {
-    const monthDates = getMonthDates(visibleYear, visibleMonth);
     const today = getCurrentDate();
     const currentMonth = new Date(visibleYear, visibleMonth, 1);
 
@@ -408,4 +412,4 @@ export function CalendarGrid({
       </View>
     </View>
   );
-}
+});
