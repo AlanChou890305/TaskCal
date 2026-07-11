@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { FlatList, Platform, Text, View } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Svg, { Line, Circle, Rect } from "react-native-svg";
@@ -54,7 +54,7 @@ export function TaskListArea({
         onLongPress={onStartMove}
       />
     ),
-    [theme, t, moveMode, taskToMove, onToggle, onEdit, onStartMove],
+    [theme, t, moveMode, taskToMove?.id, onToggle, onEdit, onStartMove],
   );
 
   // Handler for horizontal swipe in task area
@@ -75,6 +75,21 @@ export function TaskListArea({
   const dayTasks = tasks[selectedDate] || [];
   // 如果正在載入且還沒有任何任務數據，顯示 skeleton
   const shouldShowSkeleton = isLoadingTasks && Object.keys(tasks).length === 0;
+
+  const sortedDayTasks = useMemo(
+    () =>
+      dayTasks.slice().sort((a, b) => {
+        // 已完成的任務排到最底下
+        const aCompleted = a.is_completed;
+        const bCompleted = b.is_completed;
+        if (aCompleted !== bCompleted) {
+          return aCompleted ? 1 : -1;
+        }
+        // 未完成的任務按時間排序
+        return (a.time || "").localeCompare(b.time || "");
+      }),
+    [dayTasks],
+  );
 
   const [selY, selM, selD] = selectedDate.split("-").map(Number);
   const selDateObj = new Date(selY, selM - 1, selD);
@@ -231,16 +246,7 @@ export function TaskListArea({
         ) : (
           <View style={{ flex: 1, backgroundColor: theme.background }}>
             <FlatList
-              data={dayTasks.slice().sort((a, b) => {
-                // 已完成的任務排到最底下
-                const aCompleted = a.is_completed;
-                const bCompleted = b.is_completed;
-                if (aCompleted !== bCompleted) {
-                  return aCompleted ? 1 : -1;
-                }
-                // 未完成的任務按時間排序
-                return (a.time || "").localeCompare(b.time || "");
-              })}
+              data={sortedDayTasks}
               keyExtractor={(item) => item.id}
               renderItem={renderTask}
               contentContainerStyle={styles.tasksScrollContent}
