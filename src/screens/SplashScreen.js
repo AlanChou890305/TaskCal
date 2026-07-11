@@ -60,6 +60,15 @@ const SplashScreen = ({ navigation }) => {
   // ref, 而非 state：所有讀取點都在 useEffect(deps=[navigation]) 內的 closure 裡，
   // state 只會停留在 effect 第一次執行時的值，之後的檢查會永遠讀到過期的 false
   const hasNavigatedRef = useRef(false);
+  // Google 登入的 checkSessionWithRetry 重試鏈用的 setTimeout id，unmount 時清除，
+  // 避免對已卸載元件呼叫 setIsSigningIn/navigation.reset
+  const sessionRetryTimeoutIdsRef = useRef([]);
+  useEffect(() => {
+    return () => {
+      sessionRetryTimeoutIdsRef.current.forEach(clearTimeout);
+      sessionRetryTimeoutIdsRef.current = [];
+    };
+  }, []);
   // On web, show loading indicator while OAuth code exchange is in progress
   const [isCheckingSession, setIsCheckingSession] = useState(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return false;
@@ -1168,10 +1177,11 @@ const SplashScreen = ({ navigation }) => {
               // Retry if we haven't reached max attempts
               if (attempt < maxAttempts) {
                 const delay = 2000 * attempt; // Increasing delay: 2s, 4s, 6s, 8s
-                setTimeout(
+                const retryTimeoutId = setTimeout(
                   () => checkSessionWithRetry(attempt + 1, maxAttempts),
                   delay,
                 );
+                sessionRetryTimeoutIdsRef.current.push(retryTimeoutId);
               } else {
                 console.error(
                   "[Auth Fallback] All attempts exhausted, no session found",
@@ -1199,7 +1209,11 @@ const SplashScreen = ({ navigation }) => {
           };
 
           // Start checking after 2 seconds
-          setTimeout(() => checkSessionWithRetry(1, 5), 2000);
+          const initialRetryTimeoutId = setTimeout(
+            () => checkSessionWithRetry(1, 5),
+            2000,
+          );
+          sessionRetryTimeoutIdsRef.current.push(initialRetryTimeoutId);
         }
       } else {
       }
