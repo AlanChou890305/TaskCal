@@ -10,6 +10,16 @@ export class UserService {
   static pendingUpdateRequest = null; // 追蹤正在進行的更新請求
   static cachedAuthUserUpdatedAt = null;
 
+  // 判斷錯誤是否為網路連線問題（而非 Supabase/RLS 等業務錯誤）
+  static isNetworkError(error) {
+    return Boolean(
+      error?.message?.includes("Network request failed") ||
+        error?.message?.includes("Failed to fetch") ||
+        error?.message?.includes("network") ||
+        (!error?.code && error?.message),
+    );
+  }
+
   static normalizeAuthUser(user) {
     if (!user || !user.id || !user.email) {
       return null;
@@ -142,14 +152,7 @@ export class UserService {
 
         // 只記錄非 PGRST116 的錯誤（PGRST116 是記錄不存在的正常情況）
         if (error.code !== "PGRST116") {
-          // 檢查是否為網絡錯誤
-          const isNetworkError =
-            error.message?.includes("Network request failed") ||
-            error.message?.includes("Failed to fetch") ||
-            error.message?.includes("network") ||
-            (!error.code && error.message);
-
-          if (isNetworkError) {
+          if (UserService.isNetworkError(error)) {
             console.warn(
               "⚠️ Network error fetching user settings:",
               error.message,
@@ -193,14 +196,7 @@ export class UserService {
         app_build_number: data.app_build_number,
       };
     } catch (error) {
-      // 檢查是否為網絡錯誤
-      const isNetworkError =
-        error.message?.includes("Network request failed") ||
-        error.message?.includes("Failed to fetch") ||
-        error.message?.includes("network") ||
-        (!error.code && error.message);
-
-      if (isNetworkError) {
+      if (UserService.isNetworkError(error)) {
         console.warn("⚠️ Network error in getUserSettings:", error.message);
       } else {
         console.error("❌ Error in getUserSettings:", {
@@ -332,14 +328,7 @@ export class UserService {
           data = upsertResult.data;
           error = null;
         } else if (error) {
-          // 檢查是否為網絡錯誤
-          const isNetworkError =
-            error.message?.includes("Network request failed") ||
-            error.message?.includes("Failed to fetch") ||
-            error.message?.includes("network") ||
-            !error.code; // Supabase 錯誤通常有 code，網絡錯誤可能沒有
-
-          if (isNetworkError) {
+          if (UserService.isNetworkError(error)) {
             console.warn(
               "⚠️ Network error updating user settings:",
               error.message,
@@ -367,14 +356,7 @@ export class UserService {
           email_preferences: data.email_preferences,
         };
       } catch (error) {
-        // 檢查是否為網絡錯誤
-        const isNetworkError =
-          error.message?.includes("Network request failed") ||
-          error.message?.includes("Failed to fetch") ||
-          error.message?.includes("network") ||
-          (!error.code && error.message);
-
-        if (isNetworkError) {
+        if (UserService.isNetworkError(error)) {
           console.warn(
             "⚠️ Network error in updateUserSettings:",
             error.message,
@@ -536,14 +518,7 @@ export class UserService {
         .single();
 
       if (error) {
-        // 檢查是否為網絡錯誤
-        const isNetworkError =
-          error.message?.includes("Network request failed") ||
-          error.message?.includes("Failed to fetch") ||
-          error.message?.includes("network") ||
-          (!error.code && error.message);
-
-        if (isNetworkError) {
+        if (UserService.isNetworkError(error)) {
           console.warn(
             "⚠️ Network error fetching user settings with auth:",
             error.message,
@@ -581,14 +556,7 @@ export class UserService {
         last_sign_in_at: user.last_sign_in_at,
       };
     } catch (error) {
-      // 檢查是否為網絡錯誤
-      const isNetworkError =
-        error.message?.includes("Network request failed") ||
-        error.message?.includes("Failed to fetch") ||
-        error.message?.includes("network") ||
-        (!error.code && error.message);
-
-      if (isNetworkError) {
+      if (UserService.isNetworkError(error)) {
         console.warn(
           "⚠️ Network error in getUserSettingsWithAuth:",
           error.message,
@@ -643,13 +611,7 @@ export class UserService {
         .eq("user_id", user.id);
 
       if (error) {
-        // 檢查是否為網絡錯誤或權限問題
-        const isNetworkError =
-          error.message?.includes("Network request failed") ||
-          error.message?.includes("Failed to fetch") ||
-          error.message?.includes("network");
-
-        if (isNetworkError) {
+        if (UserService.isNetworkError(error)) {
           console.warn(
             "⚠️ Network error updating platform info:",
             error.message,
@@ -668,13 +630,7 @@ export class UserService {
         `📱 Platform updated: ${Platform.OS}, Version: ${versionInfo.version} (Build ${versionInfo.buildNumber}), Timezone: ${userTimezone}`,
       );
     } catch (error) {
-      // 檢查是否為網絡錯誤
-      const isNetworkError =
-        error.message?.includes("Network request failed") ||
-        error.message?.includes("Failed to fetch") ||
-        error.message?.includes("network");
-
-      if (isNetworkError) {
+      if (UserService.isNetworkError(error)) {
         console.warn("⚠️ Network error updating platform info:", error.message);
       } else {
         console.error(
