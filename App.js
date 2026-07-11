@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useCallback, useEffect } from "react";
 import { Platform, View, Text, Image, ActivityIndicator, useColorScheme, Appearance } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -136,7 +136,7 @@ function App() {
   useWebSetup(getAppDisplayName());
 
   // setLanguage: save to Supabase + AsyncStorage fallback
-  const setLanguage = async (lang) => {
+  const setLanguage = useCallback(async (lang) => {
     console.log(`🌐 Setting language to: ${lang}`);
     setLanguageState(lang);
 
@@ -169,10 +169,10 @@ function App() {
       }
       AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
     }
-  };
+  }, [setLanguageState]);
 
   // setThemeMode: save to Supabase
-  const setThemeMode = async (mode) => {
+  const setThemeMode = useCallback(async (mode) => {
     console.log(`🎨 Setting theme to: ${mode}`);
     setThemeModeState(mode);
 
@@ -182,12 +182,12 @@ function App() {
     } catch (error) {
       console.error("❌ Error saving theme to Supabase:", error);
     }
-  };
+  }, [setThemeModeState]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const newMode = themeMode === "light" ? "dark" : "light";
     setThemeMode(newMode);
-  };
+  }, [themeMode, setThemeMode]);
 
   const t = translations[language] || translations.en;
 
@@ -299,6 +299,41 @@ function App() {
     );
   }
 
+  // 三個 Context 的 value 各自 useMemo：避免任何一個 App 層 state 變動
+  // （例如 useVersionCheck 非同步設定 updateInfo）就讓全部下游 consumer 重新 render。
+  const themeContextValue = useMemo(
+    () => ({ theme, themeMode, setThemeMode, toggleTheme, loadTheme }),
+    [theme, themeMode, setThemeMode, toggleTheme, loadTheme]
+  );
+
+  const userContextValue = useMemo(
+    () => ({
+      userType,
+      loadingUserType,
+      setUserType: setUserTypeState,
+      loadUserType,
+      setUpdateInfo,
+      setIsUpdateModalVisible,
+      isSimulatingUpdate,
+      setIsSimulatingUpdate,
+    }),
+    [
+      userType,
+      loadingUserType,
+      setUserTypeState,
+      loadUserType,
+      setUpdateInfo,
+      setIsUpdateModalVisible,
+      isSimulatingUpdate,
+      setIsSimulatingUpdate,
+    ]
+  );
+
+  const languageContextValue = useMemo(
+    () => ({ language, setLanguage, t }),
+    [language, setLanguage, t]
+  );
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
     <ErrorBoundary
@@ -307,22 +342,9 @@ function App() {
         if (SENTRY_DSN) Sentry.captureException(error);
       }}
     >
-    <ThemeContext.Provider
-      value={{ theme, themeMode, setThemeMode, toggleTheme, loadTheme }}
-    >
-      <UserContext.Provider
-        value={{
-          userType,
-          loadingUserType,
-          setUserType: setUserTypeState,
-          loadUserType,
-          setUpdateInfo,
-          setIsUpdateModalVisible,
-          isSimulatingUpdate,
-          setIsSimulatingUpdate,
-        }}
-      >
-        <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <ThemeContext.Provider value={themeContextValue}>
+      <UserContext.Provider value={userContextValue}>
+        <LanguageContext.Provider value={languageContextValue}>
           <NavigationContainer
             ref={navigationRef}
             linking={{
