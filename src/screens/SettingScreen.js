@@ -74,6 +74,11 @@ function SettingScreen() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // shimmer 只有載入中才有視覺用途，載入完成後主動停止，
+    // 不要只靠 unmount 才停（Settings 畫面常駐掛載數分鐘）
+    if (!isLoadingProfile && !isLoadingSettings) {
+      return undefined;
+    }
     const shimmerLoop = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, {
@@ -90,7 +95,7 @@ function SettingScreen() {
     );
     shimmerLoop.start();
     return () => shimmerLoop.stop();
-  }, []);
+  }, [isLoadingProfile, isLoadingSettings, shimmerAnim]);
   const [languageDropdownVisible, setLanguageDropdownVisible] = useState(false);
   const [themeDropdownVisible, setThemeDropdownVisible] = useState(false);
   const [userTypeDropdownVisible, setUserTypeDropdownVisible] = useState(false);
