@@ -1,44 +1,41 @@
-# Release Notes - Version 2.0.2 (Build 41)
+# Release Notes - Version 2.0.3 (Build 42)
 
-**Release Date**: 2026-06-22
+**Release Date**: 2026-07-11
 
 ---
 
 ## What's New
 
 ### English
-- New: a daily morning reminder so you never miss what's on your list
-- Fixed tasks disappearing when you moved them to a different date
-- Smoother time editing — the keyboard no longer blocks the time picker
-- Today's marker is now clearly visible on the calendar
-- Various stability and polish improvements
+- Fixed a date-parsing bug that could shift task dates for users in negative UTC timezones
+- Improved notification reliability — turning off task reminders no longer affects your daily summary
+- Faster app response when switching months, editing tasks, and using Settings
+- Various stability fixes across sign-in, task sync, and the home-screen widget
 
 ### 繁體中文
-- 新增：每日早晨提醒，待辦事項不再錯過
-- 修正變更日期時任務消失的問題
-- 編輯時間更順手 — 鍵盤不再擋住時間選擇器
-- 日曆上「今天」的標記現在清楚可見
-- 多項穩定性與細節優化
+- 修正跨時區使用者可能遇到的日期解析錯誤
+- 提升通知穩定性 — 關閉任務提醒不再影響每日摘要通知
+- 切換月份、編輯任務、操作設定頁時反應更快
+- 修正多項登入、任務同步與主畫面 Widget 的穩定性問題
 
 ### Español
-- Nuevo: un recordatorio matutino diario para no olvidar tus tareas
-- Corregido: las tareas ya no desaparecen al cambiar su fecha
-- Edición de hora más fluida: el teclado ya no tapa el selector de hora
-- El marcador de hoy ahora se ve claramente en el calendario
-- Mejoras de estabilidad y detalles
+- Corregido un error de fechas que podía desajustar tareas para usuarios en zonas horarias UTC negativas
+- Mejorada la fiabilidad de las notificaciones: desactivar los recordatorios ya no afecta al resumen diario
+- Respuesta más rápida al cambiar de mes, editar tareas y usar los ajustes
+- Varias correcciones de estabilidad en el inicio de sesión, la sincronización de tareas y el widget
 
 ---
 
 ## Promotional Text (App Store)
 
 ### English
-Never miss a task with the new daily morning reminder. Plus a smoother calendar, easier time editing, and a more reliable experience all around.
+A smoother, more reliable TaskCal — faster performance, fixed timezone date bugs, and improved notification and sync stability.
 
 ### 繁體中文
-全新每日早晨提醒，待辦不再錯過！日曆更流暢、時間編輯更順手，整體體驗更穩定可靠。
+更流暢、更穩定的 TaskCal — 效能提升，修正跨時區日期錯誤，通知與同步更可靠。
 
 ### Español
-No olvides ninguna tarea con el nuevo recordatorio matutino. Calendario más fluido, edición de hora más fácil y una experiencia más fiable.
+TaskCal más fluido y fiable: mejor rendimiento, corrección de fechas por zona horaria y notificaciones más estables.
 
 ---
 
