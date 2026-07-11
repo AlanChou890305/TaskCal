@@ -4,6 +4,29 @@ import SwiftUI
 private let appGroupId   = "group.com.cty0305.too.doo.list.data"
 private let widgetDataKey = "widgetTasksByDate"
 
+// UserDefaults(suiteName:) 建立實例有成本，appGroupId 是常數，快取單一實例重複使用
+private let widgetUserDefaults = UserDefaults(suiteName: appGroupId)
+
+// DateFormatter 建立成本高（Apple 文件建議快取重用），三處共用 formatter 改為模組層級常數
+private let enUSSymbolsFormatter: DateFormatter = {
+  let fmt = DateFormatter()
+  fmt.locale = Locale(identifier: "en_US")
+  return fmt
+}()
+
+private let monthNameFormatter: DateFormatter = {
+  let fmt = DateFormatter()
+  fmt.locale = Locale(identifier: "en_US")
+  fmt.dateFormat = "MMMM"
+  return fmt
+}()
+
+private let dayKeyFormatter: DateFormatter = {
+  let fmt = DateFormatter()
+  fmt.dateFormat = "yyyy-MM-dd"
+  return fmt
+}()
+
 // Indigo G2 palette — light
 private let palAccent  = Color(red: 59/255,  green: 75/255,  blue: 122/255)  // #3B4B7A
 private let palPaper   = Color(red: 242/255, green: 241/255, blue: 235/255)  // #F2F1EB
@@ -100,16 +123,11 @@ private func buildCalendarDays(for date: Date) -> [CalendarDay] {
 }
 
 private func monthName(from date: Date) -> String {
-  let fmt = DateFormatter()
-  fmt.locale = Locale(identifier: "en_US")
-  fmt.dateFormat = "MMMM"
-  return fmt.string(from: date)
+  return monthNameFormatter.string(from: date)
 }
 
 private func weekdayAbbr(from date: Date) -> String {
-  let fmt = DateFormatter()
-  fmt.locale = Locale(identifier: "en_US")
-  return fmt.shortWeekdaySymbols[Calendar.current.component(.weekday, from: date) - 1].uppercased()
+  return enUSSymbolsFormatter.shortWeekdaySymbols[Calendar.current.component(.weekday, from: date) - 1].uppercased()
 }
 
 // ── Widget definition ─────────────────────────────────────────────────────────
@@ -160,17 +178,18 @@ struct TaskCalWidgetProvider: TimelineProvider {
     let cal         = Calendar.current
     let tmrw        = cal.startOfDay(for: Date().addingTimeInterval(86400))
     let midnight    = cal.date(byAdding: .minute, value: 1, to: tmrw) ?? tmrw
-    let nextHour    = cal.date(byAdding: .hour,   value: 1, to: Date()) ?? Date()
-    completion(Timeline(entries: [entry], policy: .after(min(midnight, nextHour))))
+    // 只在日期跨天時才排下一次刷新；資料變動由 RN 端呼叫 WidgetReloader
+    // (WidgetCenter.shared.reloadAllTimelines()) 主動觸發，不需要每小時強制重整
+    // 來檢查資料是否變動，可省下每天約 20 次不必要的 timeline 重整配額消耗。
+    completion(Timeline(entries: [entry], policy: .after(midnight)))
   }
 
   private func todayKey() -> String {
-    let fmt = DateFormatter(); fmt.dateFormat = "yyyy-MM-dd"
-    return fmt.string(from: Date())
+    return dayKeyFormatter.string(from: Date())
   }
 
   private func loadAllTasksByDate() -> [String: [WidgetTask]] {
-    guard let store = UserDefaults(suiteName: appGroupId),
+    guard let store = widgetUserDefaults,
           let json  = store.string(forKey: widgetDataKey),
           let data  = json.data(using: .utf8),
           let dict  = try? JSONDecoder().decode([String: [WidgetTask]].self, from: data)
@@ -182,10 +201,8 @@ struct TaskCalWidgetProvider: TimelineProvider {
 // "WED · APR" — weekday + month, no day number
 private func kickerString(from date: Date) -> String {
   let cal = Calendar.current
-  let fmt = DateFormatter()
-  fmt.locale = Locale(identifier: "en_US")
-  let wd = fmt.shortWeekdaySymbols[cal.component(.weekday, from: date) - 1].uppercased()
-  let mo = fmt.shortMonthSymbols[cal.component(.month,   from: date) - 1].uppercased()
+  let wd = enUSSymbolsFormatter.shortWeekdaySymbols[cal.component(.weekday, from: date) - 1].uppercased()
+  let mo = enUSSymbolsFormatter.shortMonthSymbols[cal.component(.month,   from: date) - 1].uppercased()
   return "\(wd) · \(mo)"
 }
 
