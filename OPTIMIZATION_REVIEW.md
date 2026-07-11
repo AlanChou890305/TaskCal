@@ -6,7 +6,7 @@
 
 **與 `CODE_REVIEW.md` 的關係**：互補、不重複。`CODE_REVIEW.md`（2026-07-10）涵蓋安全性、功能風險、資料結構、已修復的效能熱點（CalendarScreen 任務列表 memo 化）與可維護性起步；本文件**只收錄尚未處理的效能與優化機會**，且刻意不重複前份報告已列的安全性/功能 bug。
 
-**進度**：2026-07-11 已完成前 5 項優先建議（A1、A2、B3、B1、A4），並接續完成 B4、B5、C1-C3、D1-D2、E1-E2、F1-F4、G（各自獨立 commit，詳見下方對應段落的 ✅ 標記）。B2（SettingScreen 拆分/memo 化）維持原計畫，需要獨立排一個工作階段，本輪未做。E3、C2、D3 三項評估後判斷風險/效益不划算，決定跳過（原因見對應段落）。
+**進度**：2026-07-11 已完成前 5 項優先建議（A1、A2、B3、B1、A4），並接續完成 B4、B5、C1-C3、D1-D2、E1-E2、F1-F4、G、B2（各自獨立 commit，詳見下方對應段落的 ✅ 標記）。E3、C2、D3 三項評估後判斷風險/效益不划算，決定跳過（原因見對應段落）。目前優化建議清單中的待辦項目已全數處理完畢。
 
 ---
 
@@ -66,10 +66,11 @@
 **建議**：三個 `value` 分別用 `useMemo` 包裝（依賴陣列只放真正變動的欄位）；`setLanguage`/`setThemeMode`/`toggleTheme` 先改 `useCallback`（否則 `useMemo` 的依賴陣列仍會因函式參照每次變動而失效）；評估把 `updateInfo`/`isUpdateModalVisible` 相關 setter 移出 `UserContext`，改成單純 props 傳給 `VersionUpdateModal`。
 **修復狀態**：`815a96e` 只處理了 `useMemo`/`useCallback` 部分（槓桿最大、成本最低的部分）。「`UserContext` 拆分 userType 與版更彈窗狀態」這個獨立子問題**尚未處理**，仍待後續評估。
 
-### B2. `src/screens/SettingScreen.js`（2556 行）— 全檔案 0 個 `useMemo`、0 個 `React.memo`，僅 1 個 `useCallback`
+### ✅ B2（已修復，`dffd6ea`）. `src/screens/SettingScreen.js`（2556 行）— 全檔案 0 個 `useMemo`、0 個 `React.memo`，僅 1 個 `useCallback`
 已覆核第 60-99 行，確認有 4 組獨立 dropdown 開關 state（language/theme/userType/reminder）及多個其他 state，但缺乏任何子樹拆分或 memoization。任何一個 dropdown 切換或欄位輸入都會重新 render 整個 2500+ 行的 JSX（含多組 inline `.map()` 渲染）。這與 `CalendarScreen` 之前用 `React.memo` + `useCallback` + `tasksRef` 解決過的問題是同一類型，只是尚未套用到這個檔案；且因為是全 App 第二大檔案（僅次於已拆分的 SplashScreen），拆分/memo 化的維護效益也最大。
 **影響**：Settings 是使用者常駐、常互動的頁面（4 個 dropdown + 多個開關），每次互動都重繪整個巨型子樹。
 **建議**：拆出 Profile / 語言-主題-使用者類型 dropdown / 提醒設定 / 關於版本 等子元件並各自 `React.memo`；事件 handler 補 `useCallback`。可與既有的「2556 行難以維護」問題一併排入同一個重構工作階段。
+**修復狀態**：拆成 `src/components/settings/` 下 5 個 `memo` 化子元件——`ProfileCard`（頭像/姓名/登入方式）、`DeveloperToolsCard`（`__DEV__` 專用）、`GeneralSettingsCard`（語言/主題/提醒 dropdown + 每日待辦提醒 toggle，原檔案中最大的互動區塊）、`SupportLegalCard`、`AboutVersionCard`。會傳給這些子元件的 handler（`handleUserTypeChange`、`handleVersionPress`、`toggleDailySummary`、`updateReminderSettings`，以及新拆出的 `handleTestUpdateModal`/`handleToggleSimulateUpdate`/`handleForceLogoutOnboarding`/`handleDailySummaryToggle`）全部改用 `useCallback`；`setLanguage`/`setThemeMode`/context 內各 setter 已在 B1 確認為穩定參照，可直接當 prop 傳遞不需額外包裝。主檔案從 2561 行降到約 1360 行。已跑過 jest 測試套件（23 個測試）與 babel 語法解析驗證，未做實機/模擬器 smoke test。
 
 ### ✅ B3（已修復，`4fa6416`）. `src/components/calendar/EditTaskModal.js:84, 131` — `FieldRow`／`FieldDivider` 定義在元件內部（component-in-render 反模式）
 每次使用者在新增/編輯任務彈窗打字（`taskText`/`taskTime`/`taskDate` 狀態變動由父層 `CalendarScreen` 提升管理），`EditTaskModal` 就會重新 render，而每次 render 都會產生「新的元件型別」`FieldRow`/`FieldDivider`，React 因型別不同會把日期列、時間列整段 **unmount 再 mount**，而非單純更新 props。
@@ -200,10 +201,11 @@ Hooks 順序限制讓 `checkUserStatus` effect 必須先跑完才會走到後面
 
 **2026-07-11（同日接續）** 完成 B4、B5、C1、C3、D1、D2、E1、E2、F1-F4、G，各自獨立 commit，均通過 jest 測試套件（23 個測試）驗證；iOS Widget 的 Swift 改動額外用 Xcode 26 對 `TaskCalWidgetExtension` scheme 做 iphonesimulator debug build 確認 `BUILD SUCCEEDED`（同樣未做實機/模擬器 smoke test，僅驗證可編譯）。
 
+**2026-07-11（獨立工作階段）** 完成 B2（`dffd6ea`）— `SettingScreen.js` 拆成 5 個 `memo` 化子元件（`ProfileCard`/`DeveloperToolsCard`/`GeneralSettingsCard`/`SupportLegalCard`/`AboutVersionCard`），主檔案從 2561 行降到約 1360 行，並將傳給子元件的 handler 全部改用 `useCallback`。已通過 jest 測試套件（23 個測試）與 babel 語法解析驗證，**未做實機/模擬器 smoke test**。
+
 評估後決定跳過的項目（原因見對應段落）：
-- **B2** — SettingScreen 拆分/memo 化：維持原計畫，需要獨立排一個工作階段。
 - **C2** — `locales/index.js` 依語言動態載入：C1 完成後剩餘體積已大幅縮小，且需改動 `App.js` 核心啟動狀態機，風險與剩餘效益不成比例。
 - **D3** — widget body 衍生值下放/`buildCalendarDays` 快取：計算量小、無實機驗證環境下重構風險不划算。
 - **E3** — `useAppLoading.js` 的 `sharedSettingsPromise`：純假設性未來風險，目前無實際問題。
 
-其餘尚待處理項目：僅剩 **B2 SettingScreen 拆分**，維持原建議獨立排一個工作階段，且需要實機 smoke test。
+清單中的待辦項目已全數處理完畢（含跳過項目的評估）。B2 的變更牽涉 Settings 頁面的多個互動路徑（dropdown、開關、Developer Tools），建議在下次有裝置/模擬器可用時安排一次 smoke test 驗證。
