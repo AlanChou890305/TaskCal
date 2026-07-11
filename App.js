@@ -267,40 +267,10 @@ function App() {
 
   const theme = getTheme(actualThemeMode);
 
-  const showingSplash = ((!fontsLoaded || loadingLang || loadingTheme) && !fontTimeout) ||
-      initialRoute === null;
-
-  if (!showingSplash && !App._loggedReady) {
-    App._loggedReady = true;
-    console.log(`⏱️ [App] Time to interactive: ${Date.now() - APP_START_TIME}ms`);
-  }
-
-  if (showingSplash) {
-    const isDark = systemColorScheme === "dark";
-    const bg = isDark ? "#14182A" : "#F2F1EB";
-    const iconBg = isDark ? "#8B98D0" : "#3B4B7A";
-    const iconColor = isDark ? "#14182A" : "#F2F1EB";
-    return (
-      <View style={{ flex: 1, backgroundColor: bg, justifyContent: "center", alignItems: "center" }}>
-        <View style={{
-          width: 108, height: 108, borderRadius: 24,
-          backgroundColor: iconBg,
-          alignItems: "center", justifyContent: "center",
-          shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.10, shadowRadius: 12, elevation: 4,
-        }}>
-          <Svg width={56} height={56} viewBox="0 0 24 24">
-            <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={iconColor} strokeWidth="1.6" strokeLinecap="round"/>
-            <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={iconColor} strokeWidth="1.7"/>
-            <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={iconColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </Svg>
-        </View>
-      </View>
-    );
-  }
-
   // 三個 Context 的 value 各自 useMemo：避免任何一個 App 層 state 變動
   // （例如 useVersionCheck 非同步設定 updateInfo）就讓全部下游 consumer 重新 render。
+  // 必須放在下面的 showingSplash 提前 return 之前，否則載入畫面顯示期間會
+  // 少呼叫這幾個 hook，導致 render 之間 hook 數量不一致（Rules of Hooks 違規）。
   const themeContextValue = useMemo(
     () => ({ theme, themeMode, setThemeMode, toggleTheme, loadTheme }),
     [theme, themeMode, setThemeMode, toggleTheme, loadTheme]
@@ -333,6 +303,38 @@ function App() {
     () => ({ language, setLanguage, t }),
     [language, setLanguage, t]
   );
+
+  const showingSplash = ((!fontsLoaded || loadingLang || loadingTheme) && !fontTimeout) ||
+      initialRoute === null;
+
+  if (!showingSplash && !App._loggedReady) {
+    App._loggedReady = true;
+    console.log(`⏱️ [App] Time to interactive: ${Date.now() - APP_START_TIME}ms`);
+  }
+
+  if (showingSplash) {
+    const isDark = systemColorScheme === "dark";
+    const bg = isDark ? "#14182A" : "#F2F1EB";
+    const iconBg = isDark ? "#8B98D0" : "#3B4B7A";
+    const iconColor = isDark ? "#14182A" : "#F2F1EB";
+    return (
+      <View style={{ flex: 1, backgroundColor: bg, justifyContent: "center", alignItems: "center" }}>
+        <View style={{
+          width: 108, height: 108, borderRadius: 24,
+          backgroundColor: iconBg,
+          alignItems: "center", justifyContent: "center",
+          shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.10, shadowRadius: 12, elevation: 4,
+        }}>
+          <Svg width={56} height={56} viewBox="0 0 24 24">
+            <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={iconColor} strokeWidth="1.6" strokeLinecap="round"/>
+            <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={iconColor} strokeWidth="1.7"/>
+            <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={iconColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </Svg>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
