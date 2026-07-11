@@ -285,11 +285,12 @@ function CalendarScreen({ navigation, route }) {
 
     const fetchTasksForVisibleRange = async () => {
       try {
-        // 首先檢查用戶認證狀態
+        // 首先檢查用戶認證狀態（用本地 session 而非遠端 getUser()，避免每次切換月份都打一次網路驗證）
         const {
-          data: { user },
+          data: { session },
           error: authError,
-        } = await supabase.auth.getUser();
+        } = await supabase.auth.getSession();
+        const user = session?.user ?? null;
 
         if (!user) {
           console.warn("⚠️ [CalendarScreen] No authenticated user found");
