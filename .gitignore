@@ -49,6 +49,9 @@ manifest.json
 # Claude Code
 .claude/mcp_settings.json
 
+# gstack (local browse-tool session data)
+.gstack/
+
 # OS
 .DS_Store
 .DS_Store?
