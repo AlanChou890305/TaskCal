@@ -155,18 +155,8 @@ export function EditTaskModal({
     return `${dowNames[dow]}, ${monNames[m - 1]} ${d}`;
   };
 
-  return (
-    <Modal
-      animationType="slide"
-      transparent={false}
-      presentationStyle="fullScreen"
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-      accessibilityViewIsModal={true}
-    >
-      <View
-        style={[styles.modalOverlay, { backgroundColor: theme.background }]}
-      >
+  const content = (
+    <View style={[styles.modalOverlay, { backgroundColor: theme.background }]}>
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{ flex: 1 }}
@@ -604,7 +594,27 @@ export function EditTaskModal({
           setTempTime={setTempTime}
           setTaskTime={setTaskTime}
         />
-      </View>
+    </View>
+  );
+
+  // RN 的 <Modal> 在網頁上會 portal 到 document.body，跳脫 ResponsiveContainer
+  // 的手機尺寸卡片邊界，變成滿版頁面。網頁改用一般 View 疊在卡片內，維持與
+  // iOS 版一致的版面；原生平台維持全螢幕 Modal 呈現。
+  if (Platform.OS === "web") {
+    if (!modalVisible) return null;
+    return <View style={StyleSheet.absoluteFillObject}>{content}</View>;
+  }
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={false}
+      presentationStyle="fullScreen"
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(false)}
+      accessibilityViewIsModal={true}
+    >
+      {content}
     </Modal>
   );
 }
