@@ -1,5 +1,5 @@
 import { memo, Fragment } from "react";
-import { View, Text, TouchableOpacity, Animated, StyleSheet, Switch } from "react-native";
+import { View, Text, TouchableOpacity, Animated, StyleSheet, Switch, Platform } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -409,6 +409,9 @@ export const GeneralSettingsCard = memo(function GeneralSettingsCard({
                 false: switchTrackOff,
                 true: theme.primary,
               }}
+              {...(Platform.OS === "web"
+                ? { thumbColor: "#FFFFFF", activeThumbColor: "#FFFFFF" }
+                : null)}
               ios_backgroundColor={switchTrackOff}
             />
           </View>
@@ -609,6 +612,9 @@ export const GeneralSettingsCard = memo(function GeneralSettingsCard({
             false: switchTrackOff,
             true: theme.primary,
           }}
+          {...(Platform.OS === "web"
+            ? { thumbColor: "#FFFFFF", activeThumbColor: "#FFFFFF" }
+            : null)}
           ios_backgroundColor={switchTrackOff}
         />
       </View>
