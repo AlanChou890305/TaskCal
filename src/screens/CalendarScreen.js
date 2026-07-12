@@ -27,7 +27,6 @@ import {
 import { supabase } from "../services/supabaseClient";
 import { LanguageContext, ThemeContext, UserContext } from "../contexts";
 import { useResponsive } from "../hooks/useResponsive";
-import { ResponsiveContainer } from "../components/ResponsiveContainer";
 import { TaskService } from "../services/taskService";
 import { widgetService } from "../services/widgetService";
 import { mixpanelService } from "../services/mixpanelService";
@@ -1217,17 +1216,15 @@ function CalendarScreen({ navigation, route }) {
       style={{ flex: 1, backgroundColor: theme.background }}
       edges={["top"]}
     >
-      <ResponsiveContainer style={{ flex: 1 }}>
-        {Platform.OS === "web" ? (
-          calendarContent
-        ) : (
-          <GestureHandlerRootView
-            style={[styles.container, { backgroundColor: theme.background }]}
-          >
-            {calendarContent}
-          </GestureHandlerRootView>
-        )}
-      </ResponsiveContainer>
+      {Platform.OS === "web" ? (
+        calendarContent
+      ) : (
+        <GestureHandlerRootView
+          style={[styles.container, { backgroundColor: theme.background }]}
+        >
+          {calendarContent}
+        </GestureHandlerRootView>
+      )}
     </SafeAreaView>
   );
 }

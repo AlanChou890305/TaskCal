@@ -55,6 +55,7 @@ import TermsScreen from "./src/screens/TermsScreen";
 import PrivacyScreen from "./src/screens/PrivacyScreen";
 import VersionUpdateModal from "./src/components/VersionUpdateModal";
 import ErrorBoundary from "./src/components/ErrorBoundary";
+import { ResponsiveContainer } from "./src/components/ResponsiveContainer";
 
 // Hooks
 import { useAppLoading } from "./src/hooks/useAppLoading";
@@ -318,21 +319,23 @@ function App() {
     const iconBg = isDark ? "#8B98D0" : "#3B4B7A";
     const iconColor = isDark ? "#14182A" : "#F2F1EB";
     return (
-      <View style={{ flex: 1, backgroundColor: bg, justifyContent: "center", alignItems: "center" }}>
-        <View style={{
-          width: 108, height: 108, borderRadius: 24,
-          backgroundColor: iconBg,
-          alignItems: "center", justifyContent: "center",
-          shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.10, shadowRadius: 12, elevation: 4,
-        }}>
-          <Svg width={56} height={56} viewBox="0 0 24 24">
-            <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={iconColor} strokeWidth="1.6" strokeLinecap="round"/>
-            <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={iconColor} strokeWidth="1.7"/>
-            <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={iconColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-          </Svg>
+      <ResponsiveContainer style={{ flex: 1, backgroundColor: bg }} isDark={isDark}>
+        <View style={{ flex: 1, backgroundColor: bg, justifyContent: "center", alignItems: "center" }}>
+          <View style={{
+            width: 108, height: 108, borderRadius: 24,
+            backgroundColor: iconBg,
+            alignItems: "center", justifyContent: "center",
+            shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.10, shadowRadius: 12, elevation: 4,
+          }}>
+            <Svg width={56} height={56} viewBox="0 0 24 24">
+              <Path d="M8 3 V6 M16 3 V6" fill="none" stroke={iconColor} strokeWidth="1.6" strokeLinecap="round"/>
+              <Rect x="3.5" y="5.5" width="17" height="15" rx="2" fill="none" stroke={iconColor} strokeWidth="1.7"/>
+              <Path d="M7.5 13.5 l3 3 6.5-6.5" fill="none" stroke={iconColor} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            </Svg>
+          </View>
         </View>
-      </View>
+      </ResponsiveContainer>
     );
   }
 
@@ -347,61 +350,63 @@ function App() {
     <ThemeContext.Provider value={themeContextValue}>
       <UserContext.Provider value={userContextValue}>
         <LanguageContext.Provider value={languageContextValue}>
-          <NavigationContainer
-            ref={navigationRef}
-            linking={{
-              prefixes: [
-                getRedirectUrl(),
-                "http://localhost:8081",
-                "taskcal://",
-              ],
-              config: {
-                screens: {
-                  Splash: "",
-                  MainTabs: "app",
-                  Terms: "terms",
-                  Privacy: "privacy",
-                  Support: "support",
+          <ResponsiveContainer style={{ flex: 1, backgroundColor: theme.background }} isDark={theme.mode === 'dark'}>
+            <NavigationContainer
+              ref={navigationRef}
+              linking={{
+                prefixes: [
+                  getRedirectUrl(),
+                  "http://localhost:8081",
+                  "taskcal://",
+                ],
+                config: {
+                  screens: {
+                    Splash: "",
+                    MainTabs: "app",
+                    Terms: "terms",
+                    Privacy: "privacy",
+                    Support: "support",
+                  },
                 },
-              },
-            }}
-            onStateChange={() => {
-              if (typeof document !== "undefined") {
-                document.title = getAppDisplayName();
-              }
-            }}
-          >
-            <Stack.Navigator
-              screenOptions={{
-                headerShown: false,
-                gestureEnabled: true,
-                gestureDirection: "horizontal",
               }}
-              initialRouteName={initialRoute || "Splash"}
+              onStateChange={() => {
+                if (typeof document !== "undefined") {
+                  document.title = getAppDisplayName();
+                }
+              }}
             >
-              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-              <Stack.Screen name="Splash" component={SplashScreen} />
-              <Stack.Screen
-                name="MainTabs"
-                component={MainTabs}
-                options={{
+              <Stack.Navigator
+                screenOptions={{
                   headerShown: false,
-                  gestureEnabled: false,
-                  animationEnabled: false,
+                  gestureEnabled: true,
+                  gestureDirection: "horizontal",
                 }}
+                initialRouteName={initialRoute || "Splash"}
+              >
+                <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+                <Stack.Screen name="Splash" component={SplashScreen} />
+                <Stack.Screen
+                  name="MainTabs"
+                  component={MainTabs}
+                  options={{
+                    headerShown: false,
+                    gestureEnabled: false,
+                    animationEnabled: false,
+                  }}
+                />
+                <Stack.Screen name="Terms" component={TermsScreen} />
+                <Stack.Screen name="Privacy" component={PrivacyScreen} />
+              </Stack.Navigator>
+              <VersionUpdateModal
+                visible={isUpdateModalVisible}
+                onClose={() => setIsUpdateModalVisible(false)}
+                updateInfo={updateInfo}
+                forceUpdate={updateInfo?.forceUpdate}
+                theme={theme}
+                t={t}
               />
-              <Stack.Screen name="Terms" component={TermsScreen} />
-              <Stack.Screen name="Privacy" component={PrivacyScreen} />
-            </Stack.Navigator>
-            <VersionUpdateModal
-              visible={isUpdateModalVisible}
-              onClose={() => setIsUpdateModalVisible(false)}
-              updateInfo={updateInfo}
-              forceUpdate={updateInfo?.forceUpdate}
-              theme={theme}
-              t={t}
-            />
-          </NavigationContainer>
+            </NavigationContainer>
+          </ResponsiveContainer>
         </LanguageContext.Provider>
       </UserContext.Provider>
     </ThemeContext.Provider>

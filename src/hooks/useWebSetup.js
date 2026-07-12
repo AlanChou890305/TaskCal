@@ -30,18 +30,6 @@ export const useWebSetup = (appName) => {
           font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Noto Sans TC',
             system-ui, sans-serif !important;
         }
-        body {
-          display: flex;
-          justify-content: center;
-          background-color: #f2f2f2;
-        }
-        #root {
-          width: 375px;
-          max-width: 375px;
-          min-height: 100vh;
-          background-color: #fff;
-          box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
-        }
       `;
       document.head.appendChild(style);
       cleanupElements.push(style);
