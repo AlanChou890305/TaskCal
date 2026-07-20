@@ -70,7 +70,7 @@
     "babel-plugin-transform-remove-console": "^6.9.4",
     "jest": "^30.4.2",
     "jest-expo": "~54.0.17",
-    "puppeteer": "^24.43.1",
+    "puppeteer": "^25.3.0",
     "typescript": "~5.9.2"
   },
   "private": true,
